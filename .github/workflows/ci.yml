@@ -43,7 +43,6 @@ jobs:
       - name: Install dependencies (force)
         run: |
           uv pip install --python .venv/bin/python --upgrade --reinstall -r requirements.txt
-          uv pip install --python .venv/bin/python --upgrade --reinstall -r requirements-dev.txt
 
       # Optional but very useful: prints the exact versions used in CI
       - name: Show installed packages
