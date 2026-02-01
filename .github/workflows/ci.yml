@@ -17,12 +17,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"  # harmless; uv uses its own cache, but this doesn't hurt
 
       - name: Install uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
+      # Cache only uv's download/build cache (NOT the venv)
       - name: Cache uv downloads
         uses: actions/cache@v4
         with:
@@ -31,14 +33,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uv-
 
-      - name: Create venv
+      # Always create a fresh venv each run (prevents stale installs)
+      - name: Create fresh venv
         run: |
+          rm -rf .venv
           uv venv
 
-      - name: Install dependencies
+      # Force venv to match requirements exactly
+      - name: Install dependencies (force)
         run: |
-          uv pip install --python .venv/bin/python -r requirements.txt
-          uv pip install --python .venv/bin/python -r requirements-dev.txt
+          uv pip install --python .venv/bin/python --upgrade --reinstall -r requirements.txt
+          uv pip install --python .venv/bin/python --upgrade --reinstall -r requirements-dev.txt
+
+      # Optional but very useful: prints the exact versions used in CI
+      - name: Show installed packages
+        run: |
+          .venv/bin/python -V
+          .venv/bin/python -m pip freeze | sort
 
       - name: Lint with ruff
         run: |
