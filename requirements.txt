@@ -43,9 +43,9 @@ typing-extensions==4.14.1
 tzdata==2024.2
 urllib3==2.2.3
 
-ruff==0.9.6
-mypy==1.14.1
-pytest==8.3.4
-pytest-cov==6.0.0
-pre-commit==4.0.1
-types-requests==2.32.0.20241016
+ruff==0.14.14
+mypy==1.19.1
+pytest==9.0.2
+pytest-cov==7.0.0
+pre-commit==4.5.1
+types-requests==2.32.4.20260107

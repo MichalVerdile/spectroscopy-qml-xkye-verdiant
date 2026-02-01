@@ -44,12 +44,6 @@ jobs:
         run: |
           uv pip install --python .venv/bin/python --upgrade --reinstall -r requirements.txt
 
-      # Optional but very useful: prints the exact versions used in CI
-      - name: Show installed packages
-        run: |
-          .venv/bin/python -V
-          .venv/bin/python -m pip freeze | sort
-
       - name: Lint with ruff
         run: |
           .venv/bin/ruff check src/ benchmark/ tests/
