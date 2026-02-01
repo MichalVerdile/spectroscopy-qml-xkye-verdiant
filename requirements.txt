@@ -2,7 +2,7 @@
 # Generated on 2026-01-30
 # Update via: uv pip compile pyproject.toml -o requirements.txt
 
-numpy==2.0.2
+numpy==1.26.4
 pandas==2.2.3
 pyarrow==15.0.2
 scikit-learn==1.5.2
