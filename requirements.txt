@@ -1,5 +1,4 @@
 # Core dependencies - pinned versions for reproducibility
-# Generated on 2026-01-30
 # Update via: uv pip compile pyproject.toml -o requirements.txt
 
 numpy==2.4.2
@@ -16,7 +15,7 @@ pydantic==2.12.5
 qiskit==2.3.0
 qiskit-machine-learning==0.9.0
 
-# Transitive dependencies (auto-resolved)
+# Transitive dependencies
 certifi==2024.8.30
 charset-normalizer==3.3.2
 contourpy==1.3.0
@@ -36,7 +35,7 @@ pyparsing==3.1.4
 python-dateutil==2.9.0.post0
 pytz==2024.2
 requests==2.32.3
-scipy==1.14.1
+scipy==1.17.0
 six==1.16.0
 sympy==1.13.3
 threadpoolctl==3.5.0
