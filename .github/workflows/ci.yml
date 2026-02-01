@@ -8,62 +8,56 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.12"]
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install uv
-      run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/uv
-        key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-uv-
+      - name: Cache uv downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
-    - name: Install dependencies
-      run: |
-        uv venv
-        source .venv/bin/activate
-        uv pip install -r requirements.txt
-        uv pip install -e ".[dev]"
+      - name: Create venv
+        run: |
+          uv venv
 
-    - name: Lint with ruff
-      run: |
-        source .venv/bin/activate
-        ruff check src/ benchmark/ tests/
+      - name: Install dependencies
+        run: |
+          uv pip install --python .venv/bin/python -r requirements.txt
+          uv pip install --python .venv/bin/python -r requirements-dev.txt
 
-    - name: Format check with ruff
-      run: |
-        source .venv/bin/activate
-        ruff format --check src/ benchmark/ tests/
+      - name: Lint with ruff
+        run: |
+          .venv/bin/ruff check src/ benchmark/ tests/
 
-    - name: Type check with mypy
-      run: |
-        source .venv/bin/activate
-        mypy src/
+      - name: Format check with ruff
+        run: |
+          .venv/bin/ruff format --check src/ benchmark/ tests/
 
-    - name: Test with pytest
-      run: |
-        source .venv/bin/activate
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term
+      - name: Type check with mypy
+        run: |
+          .venv/bin/mypy src/
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+      - name: Test with pytest
+        run: |
+          .venv/bin/pytest tests/ --cov=src --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
