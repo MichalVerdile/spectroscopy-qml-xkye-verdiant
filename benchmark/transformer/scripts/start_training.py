@@ -1,15 +1,12 @@
+import argparse
 import os
 import subprocess
-
 from pathlib import Path
-
-import argparse
-
 
 
 def create_input(template_path: str, output_path: str, data_path: str, src_train_path: str, tgt_train_path: str, src_val_path: str, tgt_val_path: str, log_path: str, seed: int):
     # Create nmt yaml
-    with open(template_path, 'r') as f:
+    with open(template_path) as f:
         template = f.read()
 
     src_vocab_path = os.path.join(output_path, 'data', 'vocab', 'vocab.src')
@@ -31,7 +28,7 @@ def gen_vocab(log_path, input_file_path):
         subprocess.call(['onmt_build_vocab', '-config', input_file_path, '-n_sample', '-1'], stdout= out, stderr=out)
 
 def main(template_path: str, output_path: str, seed: int):
-    
+
     log_path = os.path.join(output_path, 'logs')
     os.makedirs(log_path, exist_ok=True)
 
@@ -41,7 +38,7 @@ def main(template_path: str, output_path: str, seed: int):
     tgt_train_path = os.path.join(data_path, 'tgt-train.txt')
     src_val_path = os.path.join(data_path, 'src-val.txt')
     tgt_val_path = os.path.join(data_path, 'tgt-val.txt')
-    
+
     # Create input yaml
     print('Creating input...')
     input_file_path = create_input(template_path, output_path, data_path, src_train_path, tgt_train_path, src_val_path, tgt_val_path, log_path, seed)
@@ -51,7 +48,7 @@ def main(template_path: str, output_path: str, seed: int):
     gen_vocab(log_path, input_file_path)
 
     input_file_path = os.path.join(output_path, 'input.yaml')
-    
+
     # Start trainig
     print('Starting training...')
     train_logs_path = os.path.join(log_path, 'train')
