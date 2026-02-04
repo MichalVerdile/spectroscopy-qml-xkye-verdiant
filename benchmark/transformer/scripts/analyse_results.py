@@ -1,8 +1,10 @@
-from rdkit import Chem, RDLogger
 from pathlib import Path
+
 import click
 import pandas as pd
 import tqdm.auto as tqdm
+from rdkit import Chem, RDLogger
+
 
 def canonicalise(smiles):
     RDLogger.DisableLog('rdApp.*')

@@ -1,22 +1,28 @@
 # Adapted from Guwon Jung: https://github.com/gj475/irchracterizationcnn
 
-import numpy as np
 import pickle
-import pandas as pd
-
-from keras import backend as K
-from keras.models import Model
-from keras.layers import Input, MaxPooling1D, Dropout, Activation
-from keras.layers import Conv1D, Dense, Flatten, BatchNormalization
-from keras.optimizers import Adam
-from sklearn.metrics import f1_score
-from sklearn.model_selection import train_test_split 
 from pathlib import Path
-import click
-from rdkit import Chem
-from rdkit import RDLogger
-from scipy.interpolate import interp1d
 
+import click
+import numpy as np
+import pandas as pd
+from keras import backend as K
+from keras.layers import (
+    Activation,
+    BatchNormalization,
+    Conv1D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    MaxPooling1D,
+)
+from keras.models import Model
+from keras.optimizers import Adam
+from rdkit import Chem, RDLogger
+from scipy.interpolate import interp1d
+from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
 
 functional_groups = {
     'Acid anhydride': Chem.MolFromSmarts('[CX3](=[OX1])[OX2][CX3](=[OX1])'),
@@ -70,7 +76,7 @@ def get_functional_groups(smiles: str) -> dict:
     RDLogger.DisableLog('rdApp.*')
     smiles = smiles.strip().replace(' ', '')
     mol = Chem.MolFromSmiles(smiles)
-    if mol is None: 
+    if mol is None:
         return None
     func_groups = list()
     for func_group_name, smarts in functional_groups.items():
@@ -90,7 +96,7 @@ def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
 
     # 1st CNN layer.
     x = Conv1D(filters=31,
-               kernel_size=(11), 
+               kernel_size=(11),
                strides=1,
                padding='same')(input_tensor)
     x = BatchNormalization()(x)
@@ -164,11 +170,11 @@ def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
 
     prediction = model.predict(X_test)
     return (prediction > 0.5).astype(int)
-    
+
 
 
 def interpolate_to_600(spec):
-    
+
 
     old_x = np.arange(len(spec))
     new_x = np.linspace(min(old_x), max(old_x), 600)
@@ -185,7 +191,7 @@ def make_msms_spectrum(spectrum):
             peak_pos = 9999
 
         msms_spectrum[peak_pos] = peak[1]
-    
+
     return msms_spectrum
 
 
@@ -203,7 +209,7 @@ def main(analytical_data, out_path, column, seed):
         column = 'msms_positive_40ev'
     elif column == 'neg_msms':
         column = 'msms_negative_40ev'
-    
+
     for i, parquet_file in enumerate(analytical_data.glob("*.parquet")):
         data = pd.read_parquet(parquet_file, columns=[column, 'smiles'])
 
@@ -221,7 +227,7 @@ def main(analytical_data, out_path, column, seed):
 
         print("Loaded Data: ", i)
 
-    train, test = train_test_split(training_data, test_size=0.1, random_state=seed) 
+    train, test = train_test_split(training_data, test_size=0.1, random_state=seed)
 
     X_train = np.stack(train[column].to_list())
     y_train = np.stack(train['func_group'].to_list())
@@ -239,4 +245,4 @@ def main(analytical_data, out_path, column, seed):
 
 if __name__ == '__main__':
     main()
-    
+

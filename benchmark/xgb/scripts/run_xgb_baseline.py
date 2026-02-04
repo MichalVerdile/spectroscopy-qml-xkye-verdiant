@@ -1,16 +1,13 @@
+import pickle
 from pathlib import Path
 
 import click
-import pandas as pd
-import pickle
-from sklearn.model_selection import train_test_split
-from rdkit import Chem
-from rdkit import RDLogger
 import numpy as np
-from xgboost import XGBClassifier
+import pandas as pd
+from rdkit import Chem, RDLogger
 from sklearn.metrics import f1_score
-
-
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
 
 functional_groups = {
     'Acid anhydride': Chem.MolFromSmarts('[CX3](=[OX1])[OX2][CX3](=[OX1])'),
@@ -64,7 +61,7 @@ def get_functional_groups(smiles: str) -> dict:
     RDLogger.DisableLog('rdApp.*')
     smiles = smiles.strip().replace(' ', '')
     mol = Chem.MolFromSmiles(smiles)
-    if mol is None: 
+    if mol is None:
         return None
     func_groups = list()
     for func_group_name, smarts in functional_groups.items():
@@ -80,7 +77,7 @@ def make_msms_spectrum(spectrum):
             peak_pos = 9999
 
         msms_spectrum[peak_pos] = peak[1]
-    
+
     return msms_spectrum
 
 def cast_to_32(arr):
@@ -97,8 +94,8 @@ def main(
     column: str,
     cores: int = -1,
     seed: int = 3245
-):  
-    
+):
+
     # Make the training data
     print("Loading Data")
     training_data = None
@@ -125,7 +122,7 @@ def main(
         del data
 
         print("Loaded Data: ", i)
-    
+
     train, test = train_test_split(training_data, test_size=0.1, random_state=seed)
     classifier = XGBClassifier(verbosity=2, n_jobs=cores)
 
@@ -136,7 +133,7 @@ def main(
     pred = classifier.predict(test[column].to_list())
     print(f1_score(test['func_group'].to_list(), pred, average='micro'))
 
-    
+
     with open(out_path / 'results.pickle', 'wb') as file:
         results = {'pred': pred, 'tgt': test['func_group'].to_list()}
         pickle.dump(results, file)

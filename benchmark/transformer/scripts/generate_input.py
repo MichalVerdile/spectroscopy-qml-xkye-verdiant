@@ -1,35 +1,33 @@
 from pathlib import Path
 
 import click
-import pandas as pd
-from tqdm.auto import tqdm
-from typing import Tuple, List, Dict, Union
-
-from rxn.chemutils.tokenization import tokenize_smiles
-from sklearn.model_selection import train_test_split
-import regex as re
-from scipy.interpolate import interp1d
 import numpy as np
+import pandas as pd
+import regex as re
+from rxn.chemutils.tokenization import tokenize_smiles
+from scipy.interpolate import interp1d
+from sklearn.model_selection import train_test_split
+from tqdm.auto import tqdm
 
 
-def split_data(data: pd.DataFrame, seed: int) -> Tuple[pd.DataFrame]:
+def split_data(data: pd.DataFrame, seed: int) -> tuple[pd.DataFrame]:
     train, test = train_test_split(data, test_size=0.1, random_state=seed, shuffle=True)
     train, val = train_test_split(train, test_size=0.05, random_state=seed, shuffle=True)
 
     return train, test, val
 
 def tokenize_formula(formula: str) -> list:
-    return ' '.join(re.findall("[A-Z][a-z]?|\d+|.", formula)) + ' '
+    return ' '.join(re.findall(r"[A-Z][a-z]?|\d+|.", formula)) + ' '
 
-def process_hnmr(multiplets: List[Dict[str, Union[str, float, int]]]) -> str:
+def process_hnmr(multiplets: list[dict[str, str | float | int]]) -> str:
 
     multiplet_str = "1HNMR "
     for peak in multiplets:
-        range_max = float(peak["rangeMax"]) 
-        range_min = float(peak["rangeMin"]) 
+        range_max = float(peak["rangeMax"])
+        range_min = float(peak["rangeMin"])
 
         formatted_peak = ""
-        formatted_peak = formatted_peak + "{:.2f} {:.2f} ".format(range_max, range_min)        
+        formatted_peak = formatted_peak + f"{range_max:.2f} {range_min:.2f} "
         formatted_peak = formatted_peak +  "{} {}H ".format(
                                                             peak["category"],
                                                             peak["nH"],
@@ -38,7 +36,7 @@ def process_hnmr(multiplets: List[Dict[str, Union[str, float, int]]]) -> str:
         if js != "None":
             split_js = js.split("_")
             split_js = list(filter(None, split_js))
-            processed_js = ["{:.2f}".format(float(j)) for j in split_js]
+            processed_js = [f"{float(j):.2f}" for j in split_js]
             formatted_js = "J " + " ".join(processed_js)
             formatted_peak += formatted_js
 
@@ -48,7 +46,7 @@ def process_hnmr(multiplets: List[Dict[str, Union[str, float, int]]]) -> str:
     multiplet_str = multiplet_str[:-2]
     return multiplet_str
 
-def process_cnmr(carbon_nmr: List[Dict[str, Union[str, float, int]]]) -> str:
+def process_cnmr(carbon_nmr: list[dict[str, str | float | int]]) -> str:
     nmr_string = "13CNMR "
     for peak in carbon_nmr:
         nmr_string += str(round(float(peak["delta (ppm)"]), 1)) + " "
@@ -59,31 +57,29 @@ def process_ir(ir: np.ndarray, interpolation_points: int = 400) -> str:
     original_x = np.linspace(400, 4000, 1800)
     interpolation_x = np.linspace(400, 4000, interpolation_points)
 
-    
+
     interp = interp1d(original_x, ir)
     interp_ir = interp(interpolation_x)
 
     # Normalise
     interp_ir = interp_ir + abs(min(interp_ir))
-    interp_ir = (interp_ir / max(interp_ir)) * 100 
+    interp_ir = (interp_ir / max(interp_ir)) * 100
     interp_ir = np.round(interp_ir, decimals=0).astype(int).astype(str)
     return 'IR ' + ' '.join(interp_ir) + ' '
 
-def process_msms(msms: List[List[float]]) -> List[str]:
+def process_msms(msms: list[list[float]]) -> list[str]:
     msms_string = ''
     for peak in msms:
-        msms_string = msms_string + "{:.1f} {:.1f} ".format(
-            round(peak[0], 1), round(peak[1], 1)
-        )
+        msms_string = msms_string + f"{round(peak[0], 1):.1f} {round(peak[1], 1):.1f} "
     return msms_string
 
 
 def tokenise_data(
     data: pd.DataFrame,
-    h_nmr: bool, 
+    h_nmr: bool,
     c_nmr: bool,
     ir: bool,
-    pos_msms: bool, 
+    pos_msms: bool,
     neg_msms: bool,
     formula: bool
 ):
@@ -91,7 +87,7 @@ def tokenise_data(
 
     for i in tqdm(range(len(data))):
         tokenized_formula = tokenize_formula(data.iloc[i]['molecular_formula'])
-        
+
         if formula:
             tokenized_input = tokenized_formula
         else:
@@ -122,7 +118,7 @@ def tokenise_data(
             neg_msms_string += "E1Neg " + process_msms(data.iloc[i]["msms_negative_20ev"])
             neg_msms_string += "E2Neg " + process_msms(data.iloc[i]["msms_negative_40ev"])
             tokenized_input += neg_msms_string
-        
+
         tokenized_target = tokenize_smiles(data.iloc[i]["smiles"])
         input_list.append({'source': tokenized_input.strip(), 'target': tokenized_target})
 
@@ -146,7 +142,7 @@ def save_set(data_set: pd.DataFrame, out_path: Path, set_type: str, pred_spectra
 
         for item in src:
             f.write(f"{item}\n")
-        
+
     with (out_path / f"tgt-{set_type}.txt").open("w") as f:
         if pred_spectra:
             tgt = spectra
@@ -191,8 +187,8 @@ def main(
     formula: bool = True,
     pred_spectra: bool = False,
     seed: int = 3245
-):  
-    
+):
+
     # Make the training data
     tokenised_data = list()
     for parquet_file in tqdm.tqdm(analytical_data.glob("*.parquet"), total=245):
