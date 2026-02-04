@@ -31,4 +31,3 @@ Model: pos_msms
   F1 Score (macro): 0.0073
   Precision:      0.0585
   Recall:         0.0586
-
