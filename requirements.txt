@@ -14,6 +14,10 @@ tqdm==4.67.2
 pydantic==2.12.5
 qiskit==2.3.0
 qiskit-machine-learning==0.9.0
+keras==3.13.2
+tensorflow==2.20.0
+click==8.1.8
+xgboost==3.1.3
 
 # Transitive dependencies
 certifi==2024.8.30

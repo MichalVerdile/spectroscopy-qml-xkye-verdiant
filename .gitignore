@@ -53,14 +53,6 @@ dmypy.json
 # Ruff
 .ruff_cache/
 
-# Results and outputs (never commit experiment results)
-results/
-results/*/
-outputs/
-wandb/
-mlruns/
-lightning_logs/
-
 # Model checkpoints (too large for git)
 *.pth
 *.pt
