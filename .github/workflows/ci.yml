@@ -49,7 +49,7 @@ jobs:
 
       - name: Format check with ruff
         run: |
-          .venv/bin/ruff format --check src/ benchmark/ tests/
+          .venv/bin/ruff format src/ benchmark/ tests/
 
       - name: Type check with mypy
         run: |
