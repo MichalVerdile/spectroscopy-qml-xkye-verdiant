@@ -16,9 +16,9 @@ Closes #
 
 ## Changes Made
 <!-- Bullet points describing what was changed -->
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing
 <!-- Describe the tests you ran and how to reproduce them -->

@@ -13,7 +13,7 @@ This repository contains the research code and experiments for exploring domain-
 
 We investigate machine learning approaches for multi-modal spectroscopic data including:
 - **H-NMR** (Hydrogen Nuclear Magnetic Resonance)
-- **C-NMR** (Carbon-13 Nuclear Magnetic Resonance)  
+- **C-NMR** (Carbon-13 Nuclear Magnetic Resonance)
 - **IR** (Infrared Spectroscopy)
 - **MS/MS** (Tandem Mass Spectrometry - positive/negative modes)
 
@@ -70,7 +70,7 @@ spectroscopy-qml-thesis/
    ```bash
    # macOS/Linux
    curl -LsSf https://astral.sh/uv/install.sh | sh
-   
+
    # Windows (PowerShell)
    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
@@ -79,7 +79,7 @@ spectroscopy-qml-thesis/
    ```bash
    # Create venv with Python 3.12
    uv venv --python 3.12
-   
+
    # Activate the environment
    # Windows (PowerShell):
    .venv\Scripts\Activate.ps1
@@ -87,7 +87,7 @@ spectroscopy-qml-thesis/
    .venv\Scripts\activate.bat
    # macOS/Linux:
    source .venv/bin/activate
-   
+
    # Install all dependencies (including dev tools)
    uv pip install -r requirements.txt
    uv pip install -e ".[dev]"
@@ -179,11 +179,11 @@ All experiments are configured via YAML files in `configs/`. Example structure:
 experiment:
   name: "experiment_name"
   seed: 42
-  
+
 data:
   path: "data/processed/spectra.parquet"
   train_split: 0.8
-  
+
 model:
   type: "cnn"
   # ... model-specific params
@@ -246,4 +246,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ZHAW for supporting this Bachelor's thesis research
 - RDKit for molecular structure handling
 - PyTorch for deep learning framework
-

@@ -11,11 +11,11 @@ python ./benchmark/transformer/generate_input.py \
         --analytical_data ./data/raw/ \
         --out_path ./benchmark/transformer/models/h_nmr \
         --formula \
-        --h_nmr 
+        --h_nmr
 
 python ./benchmark/transformer/start_training.py \
-        --out_path ./benchmark/transformer/models/h_nmr 
- 
+        --out_path ./benchmark/transformer/models/h_nmr
+
 
 # C NMR
 python ./benchmark/transformer/generate_input.py \
@@ -25,7 +25,7 @@ python ./benchmark/transformer/generate_input.py \
         --c_nmr
 
 python ./benchmark/transformer/start_training.py \
-        --out_path ./benchmark/transformer/models/c_nmr 
+        --out_path ./benchmark/transformer/models/c_nmr
 
 
 # C NMR + H NMR
@@ -37,5 +37,4 @@ python ./benchmark/transformer/generate_input.py \
         --c_nmr
 
 python ./benchmark/transformer/start_training.py \
-        --out_path ./benchmark/transformer/models/c_h_nmr 
-
+        --out_path ./benchmark/transformer/models/c_h_nmr

@@ -5,15 +5,15 @@ save_data: {}
 
 ## Where the vocab will be written
 src_vocab: {}
-tgt_vocab: {} 
+tgt_vocab: {}
 
 overwrite: True
 
 # Corpus opts:
 data:
     corpus_1:
-        path_src: {} 
-        path_tgt: {} 
+        path_src: {}
+        path_tgt: {}
     valid:
         path_src: {}
         path_tgt: {}
@@ -29,7 +29,7 @@ tensorboard: True
 tensorboard_log_dir: {}
 
 # Where to save the checkpoints
-save_model: {} 
+save_model: {}
 save_checkpoint_steps: 10000
 
 # Model parameters
@@ -48,7 +48,7 @@ layers: 4
 transformer_ff: 2048
 heads: 8
 
-accum_count: 8 
+accum_count: 8
 optim: adam
 adam_beta1: 0.9
 adam_beta2: 0.998
