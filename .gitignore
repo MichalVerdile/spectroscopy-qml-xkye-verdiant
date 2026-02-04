@@ -36,11 +36,6 @@ ENV/
 *~
 .DS_Store
 
-# Jupyter
-.ipynb_checkpoints/
-jupyter/.ipynb_checkpoints/
-*.ipynb
-
 # Testing
 .pytest_cache/
 .coverage
@@ -57,16 +52,6 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
-
-# Data directories (never commit datasets)
-data/raw/
-data/processed/
-data/external/
-data/*.parquet
-data/*.csv
-data/*.pkl
-data/*.h5
-data/*.hdf5
 
 # Results and outputs (never commit experiment results)
 results/
