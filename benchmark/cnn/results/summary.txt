@@ -1,0 +1,33 @@
+================================================================================
+CNN Model Evaluation Summary
+================================================================================
+
+Model: cnmr
+  Accuracy:       0.0031
+  F1 Score (macro): 0.0014
+  Precision:      0.0629
+  Recall:         0.0638
+
+Model: hnmr
+  Accuracy:       0.2091
+  F1 Score (macro): 0.0258
+  Precision:      0.0172
+  Recall:         0.0670
+
+Model: ir
+  Accuracy:       0.0997
+  F1 Score (macro): 0.0309
+  Precision:      0.0430
+  Recall:         0.0767
+
+Model: neg_msms
+  Accuracy:       0.0043
+  F1 Score (macro): 0.0023
+  Precision:      0.0183
+  Recall:         0.0661
+
+Model: pos_msms
+  Accuracy:       0.0175
+  F1 Score (macro): 0.0073
+  Precision:      0.0585
+  Recall:         0.0586
