@@ -121,7 +121,7 @@ def main(analytical_data: Path, out_path: Path, column: str, cores: int = -1, se
         print("Loaded Data: ", i)
 
     train, test = train_test_split(training_data, test_size=0.1, random_state=seed)
-    classifier = XGBClassifier(verbosity=2, n_jobs=cores)
+    classifier = XGBClassifier(tree_method="hist", device="cuda",verbosity=2)
 
     print("Training Classifier")
     classifier.fit(train[column].to_list(), train["func_group"].to_list())
