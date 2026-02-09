@@ -23,6 +23,8 @@ from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
+import os
+os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
 
 functional_groups = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
@@ -169,7 +171,18 @@ def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
             return 2.5000001187436284e-06
 
     print("Start training")
-    # Start training.
+    X_test = X_test.reshape(X_test.shape[0], 600, 1)
+
+    from keras.callbacks import LearningRateScheduler
+    lrs = LearningRateScheduler(custom_learning_rate_schedular)
+
+    model.fit(
+        X_train, y_train,
+        epochs=42,
+        batch_size=32,
+        verbose=2,
+        callbacks=[lrs],
+    )
 
     prediction = model.predict(X_test)
     return (prediction > 0.5).astype(int)

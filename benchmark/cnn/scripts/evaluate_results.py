@@ -4,10 +4,8 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 from sklearn.metrics import (
     accuracy_score,
-    confusion_matrix,
     f1_score,
     precision_score,
     recall_score,
@@ -34,131 +32,102 @@ def load_results(model_dir):
 
 
 def calculate_metrics(predictions, targets):
+    """Calculate metrics for multi-label classification."""
     metrics = {}
 
     pred = np.array(predictions)
     tgt = np.array(targets)
 
-    if len(pred.shape) > 1 and pred.shape[1] > 1:
-        pred_classes = np.argmax(pred, axis=1)
-        tgt_classes = np.argmax(tgt, axis=1) if len(tgt.shape) > 1 else tgt
-    else:
-        pred_classes = pred
-        tgt_classes = tgt
+    if pred.dtype in [np.float64, np.float32]:
+        if pred.min() >= 0 and pred.max() <= 1:
+            pred = (pred >= 0.5).astype(int)
+    
+    pred = pred.astype(int)
+    tgt = tgt.astype(int)
 
-    metrics["accuracy"] = accuracy_score(tgt_classes, pred_classes)
-    metrics["f1_macro"] = f1_score(tgt_classes, pred_classes, average="macro", zero_division=0)
-    metrics["f1_micro"] = f1_score(tgt_classes, pred_classes, average="micro", zero_division=0)
-    metrics["precision"] = precision_score(
-        tgt_classes, pred_classes, average="macro", zero_division=0
-    )
-    metrics["recall"] = recall_score(tgt_classes, pred_classes, average="macro", zero_division=0)
+    # Multi-label metrics
+    metrics["f1_micro"] = f1_score(tgt, pred, average="micro")
+    metrics["f1_macro"] = f1_score(tgt, pred, average="macro")
+    metrics["subset_accuracy"] = accuracy_score(tgt, pred)
+    metrics["hamming_accuracy"] = (tgt == pred).mean()
+    
+    metrics["precision_macro"] = precision_score(tgt, pred, average="macro")
+    metrics["recall_macro"] = recall_score(tgt, pred, average="macro")
 
-    return metrics, pred_classes, tgt_classes
+    return metrics, pred, tgt
 
 
 def print_summary(model_name, metrics):
     print(f"\n{'=' * 80}")
     print(f"{model_name}")
     print(f"{'=' * 80}")
-    print(f"  Accuracy:       {metrics['accuracy']:.4f}")
-    print(f"  F1 Score (macro): {metrics['f1_macro']:.4f}")
-    print(f"  F1 Score (micro): {metrics['f1_micro']:.4f}")
-    print(f"  Precision:      {metrics['precision']:.4f}")
-    print(f"  Recall:         {metrics['recall']:.4f}")
-
-
-def plot_confusion_matrices(results_dict, output_dir):
-    n_models = len(results_dict)
-    if n_models == 0:
-        return
-
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-    fig.suptitle("CNN Model Confusion Matrices", fontsize=16)
-    axes = axes.flatten()
-
-    for idx, (model_name, data) in enumerate(results_dict.items()):
-        if idx >= 6:
-            break
-
-        pred_classes = data["pred_classes"]
-        tgt_classes = data["tgt_classes"]
-
-        cm = confusion_matrix(tgt_classes, pred_classes)
-
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=axes[idx], cbar=True)
-        axes[idx].set_title(f"{model_name}")
-        axes[idx].set_ylabel("True Label")
-        axes[idx].set_xlabel("Predicted Label")
-
-    for idx in range(n_models, 6):
-        axes[idx].axis("off")
-
-    plt.tight_layout()
-    plt.savefig(output_dir / "confusion_matrices.png", dpi=300, bbox_inches="tight")
-    print(f"Saved confusion matrices to {output_dir / 'confusion_matrices.png'}")
-    plt.close()
+    print(f"  F1 Score (micro):    {metrics['f1_micro']:.4f}")
+    print(f"  F1 Score (macro):    {metrics['f1_macro']:.4f}")
+    print(f"  Subset Accuracy:     {metrics['subset_accuracy']:.4f}")
+    print(f"  Hamming Accuracy:    {metrics['hamming_accuracy']:.4f}")
+    print(f"  Precision (macro):   {metrics['precision_macro']:.4f}")
+    print(f"  Recall (macro):      {metrics['recall_macro']:.4f}")
 
 
 def plot_metrics_comparison(results_dict, output_dir):
     model_names = []
-    accuracies = []
-    f1_scores = []
-    precisions = []
-    recalls = []
+    f1_micros = []
+    f1_macros = []
+    subset_accuracies = []
+    hamming_accuracies = []
 
     for model_name, data in results_dict.items():
         metrics = data["metrics"]
         model_names.append(model_name)
-        accuracies.append(metrics["accuracy"])
-        f1_scores.append(metrics["f1_macro"])
-        precisions.append(metrics["precision"])
-        recalls.append(metrics["recall"])
+        f1_micros.append(metrics["f1_micro"])
+        f1_macros.append(metrics["f1_macro"])
+        subset_accuracies.append(metrics["subset_accuracy"])
+        hamming_accuracies.append(metrics["hamming_accuracy"])
 
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-    fig.suptitle("CNN Model Performance Comparison", fontsize=16)
+    fig.suptitle("Multi-Label Classification Performance Comparison", fontsize=16)
 
     x = np.arange(len(model_names))
     width = 0.6
 
-    axes[0, 0].bar(x, accuracies, width, color="steelblue", alpha=0.8)
+    axes[0, 0].bar(x, f1_micros, width, color="steelblue", alpha=0.8)
     axes[0, 0].set_ylabel("Score")
-    axes[0, 0].set_title("Accuracy")
+    axes[0, 0].set_title("F1 Score (Micro) - PRIMARY METRIC")
     axes[0, 0].set_xticks(x)
     axes[0, 0].set_xticklabels(model_names, rotation=45, ha="right")
     axes[0, 0].set_ylim([0, 1])
     axes[0, 0].grid(axis="y", alpha=0.3)
-    for i, v in enumerate(accuracies):
+    for i, v in enumerate(f1_micros):
         axes[0, 0].text(i, v + 0.02, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
 
-    axes[0, 1].bar(x, f1_scores, width, color="coral", alpha=0.8)
+    axes[0, 1].bar(x, f1_macros, width, color="coral", alpha=0.8)
     axes[0, 1].set_ylabel("Score")
     axes[0, 1].set_title("F1 Score (Macro)")
     axes[0, 1].set_xticks(x)
     axes[0, 1].set_xticklabels(model_names, rotation=45, ha="right")
     axes[0, 1].set_ylim([0, 1])
     axes[0, 1].grid(axis="y", alpha=0.3)
-    for i, v in enumerate(f1_scores):
+    for i, v in enumerate(f1_macros):
         axes[0, 1].text(i, v + 0.02, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
 
-    axes[1, 0].bar(x, precisions, width, color="lightgreen", alpha=0.8)
+    axes[1, 0].bar(x, subset_accuracies, width, color="lightgreen", alpha=0.8)
     axes[1, 0].set_ylabel("Score")
-    axes[1, 0].set_title("Precision")
+    axes[1, 0].set_title("Subset Accuracy (Exact Match)")
     axes[1, 0].set_xticks(x)
     axes[1, 0].set_xticklabels(model_names, rotation=45, ha="right")
     axes[1, 0].set_ylim([0, 1])
     axes[1, 0].grid(axis="y", alpha=0.3)
-    for i, v in enumerate(precisions):
+    for i, v in enumerate(subset_accuracies):
         axes[1, 0].text(i, v + 0.02, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
 
-    axes[1, 1].bar(x, recalls, width, color="plum", alpha=0.8)
+    axes[1, 1].bar(x, hamming_accuracies, width, color="plum", alpha=0.8)
     axes[1, 1].set_ylabel("Score")
-    axes[1, 1].set_title("Recall")
+    axes[1, 1].set_title("Hamming Accuracy")
     axes[1, 1].set_xticks(x)
     axes[1, 1].set_xticklabels(model_names, rotation=45, ha="right")
     axes[1, 1].set_ylim([0, 1])
     axes[1, 1].grid(axis="y", alpha=0.3)
-    for i, v in enumerate(recalls):
+    for i, v in enumerate(hamming_accuracies):
         axes[1, 1].text(i, v + 0.02, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
 
     plt.tight_layout()
@@ -197,16 +166,22 @@ def main():
         if model_path.is_dir():
             model_name = model_path.name
             results = load_results(model_path)
+            pred = np.array(results["predictions"])
+            tgt  = np.array(results["targets"])
+
+            print(model_name, pred.shape, tgt.shape, pred.dtype,
+            "pred min/max:", pred.min(), pred.max(),
+            "unique pred (sample):", np.unique(pred)[:10])
 
             if "predictions" in results and "targets" in results:
-                metrics, pred_classes, tgt_classes = calculate_metrics(
+                metrics, pred, tgt = calculate_metrics(
                     results["predictions"], results["targets"]
                 )
 
                 results_dict[model_name] = {
                     "metrics": metrics,
-                    "pred_classes": pred_classes,
-                    "tgt_classes": tgt_classes,
+                    "pred": pred,
+                    "tgt": tgt,
                 }
 
                 print_summary(model_name, metrics)
@@ -216,15 +191,12 @@ def main():
         print("Make sure training has completed and results are saved.")
         return
 
-    # Create visualizations
     print(f"\n{'=' * 80}")
     print("Generating Visualizations")
     print("=" * 80 + "\n")
 
-    plot_confusion_matrices(results_dict, output_dir)
     plot_metrics_comparison(results_dict, output_dir)
 
-    # Save summary to text file
     summary_file = output_dir / "summary.txt"
     with open(summary_file, "w") as f:
         f.write("=" * 80 + "\n")
@@ -234,10 +206,12 @@ def main():
         for model_name, data in results_dict.items():
             metrics = data["metrics"]
             f.write(f"Model: {model_name}\n")
-            f.write(f"  Accuracy:       {metrics['accuracy']:.4f}\n")
-            f.write(f"  F1 Score (macro): {metrics['f1_macro']:.4f}\n")
-            f.write(f"  Precision:      {metrics['precision']:.4f}\n")
-            f.write(f"  Recall:         {metrics['recall']:.4f}\n\n")
+            f.write(f"  F1 Score (micro):    {metrics['f1_micro']:.4f}\n")
+            f.write(f"  F1 Score (macro):    {metrics['f1_macro']:.4f}\n")
+            f.write(f"  Subset Accuracy:     {metrics['subset_accuracy']:.4f}\n")
+            f.write(f"  Hamming Accuracy:    {metrics['hamming_accuracy']:.4f}\n")
+            f.write(f"  Precision (macro):   {metrics['precision_macro']:.4f}\n")
+            f.write(f"  Recall (macro):      {metrics['recall_macro']:.4f}\n\n")
 
     print(f"Saved summary to {summary_file}")
 
