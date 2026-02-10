@@ -25,6 +25,23 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 import os
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+import tensorflow as tf
+tf.config.optimizer.set_jit(False)
+
+# GPU Configuration
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        # Enable memory growth to prevent TensorFlow from allocating all VRAM at once
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        print(f"✓ GPU(s) detected: {len(gpus)} device(s)")
+        print(f"  {[gpu.name for gpu in gpus]}")
+    except RuntimeError as e:
+        print(f"GPU configuration error: {e}")
+else:
+    print("⚠ No GPU detected - running on CPU")
 
 functional_groups = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
@@ -179,8 +196,8 @@ def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
     model.fit(
         X_train, y_train,
         epochs=42,
-        batch_size=32,
-        verbose=2,
+        batch_size=1024,
+        verbose=1,
         callbacks=[lrs],
     )
 
@@ -211,26 +228,48 @@ def make_msms_spectrum(spectrum):
 
 @click.command()
 @click.option("--analytical_data", type=click.Path(exists=True, path_type=Path), required=False)
-@click.option("--out_path", type=click.Path(exists=True, path_type=Path), required=False)
-@click.option("--column", type=str, required=False)
+@click.option("--base_out_path", type=click.Path(exists=True, path_type=Path), required=False)
+@click.option("--columns", type=str, required=False, help="Comma-separated list of columns to process")
 @click.option("--seed", type=int, default=3245)
-def main(analytical_data, out_path, column, seed):
-    print("Loading Data")
+def main(analytical_data, base_out_path, columns, seed):
+    # Parse columns to process
+    columns_to_process = columns.split(",") if columns else ["h_nmr_spectra", "c_nmr_spectra", "ir_spectra", "pos_msms", "neg_msms"]
+    
+    # Map column names to actual parquet column names and output paths
+    column_mapping = {
+        "h_nmr_spectra": ("h_nmr_spectra", "hnmr"),
+        "c_nmr_spectra": ("c_nmr_spectra", "cnmr"),
+        "ir_spectra": ("ir_spectra", "ir"),
+        "pos_msms": ("msms_positive_40ev", "pos_msms"),
+        "neg_msms": ("msms_negative_40ev", "neg_msms"),
+    }
+    
+    # Get all actual column names needed
+    actual_columns = set(["smiles"])
+    for col in columns_to_process:
+        actual_col, _ = column_mapping[col]
+        actual_columns.add(actual_col)
+    
+    print(f"Loading data for columns: {columns_to_process}")
+    print(f"Reading columns from parquet: {actual_columns}")
     training_data = None
 
-    if column == "pos_msms":
-        column = "msms_positive_40ev"
-    elif column == "neg_msms":
-        column = "msms_negative_40ev"
-
     for i, parquet_file in enumerate(analytical_data.glob("*.parquet")):
-        data = pd.read_parquet(parquet_file, columns=[column, "smiles"])
-
-        if "msms" in column:
-            data[column] = data[column].map(make_msms_spectrum)
-
+        data = pd.read_parquet(parquet_file, columns=list(actual_columns))
+        
+        # Process MSMS columns if present
+        if "msms_positive_40ev" in data.columns:
+            data["msms_positive_40ev"] = data["msms_positive_40ev"].map(make_msms_spectrum)
+        if "msms_negative_40ev" in data.columns:
+            data["msms_negative_40ev"] = data["msms_negative_40ev"].map(make_msms_spectrum)
+        
+        # Compute functional groups once
         data["func_group"] = data.smiles.map(get_functional_groups)
-        data[column] = data[column].map(interpolate_to_600)
+        
+        # Interpolate all spectrum columns
+        for col in actual_columns:
+            if col != "smiles" and col in data.columns:
+                data[col] = data[col].map(interpolate_to_600)
 
         if training_data is None:
             training_data = data
@@ -238,22 +277,38 @@ def main(analytical_data, out_path, column, seed):
             training_data = pd.concat((training_data, data))
         del data
 
-        print("Loaded Data: ", i)
+        print(f"Loaded parquet file {i+1}")
 
+    print(f"Total samples loaded: {len(training_data)}")
+    
+    # Split data once
     train, test = train_test_split(training_data, test_size=0.1, random_state=seed)
+    
+    # Process each column
+    for col_name in columns_to_process:
+        actual_col, output_dir = column_mapping[col_name]
+        print(f"\n{'='*60}")
+        print(f"Training model for: {col_name} (column: {actual_col})")
+        print(f"{'='*60}")
+        
+        X_train = np.stack(train[actual_col].to_list())
+        y_train = np.stack(train["func_group"].to_list())
+        X_test = np.stack(test[actual_col].to_list())
+        y_test = np.stack(test["func_group"].to_list())
 
-    X_train = np.stack(train[column].to_list())
-    y_train = np.stack(train["func_group"].to_list())
-    X_test = np.stack(test[column].to_list())
-    y_test = np.stack(test["func_group"].to_list())
+        # Train model
+        prediction = train_model(X_train, y_train, X_test, 37, "e", 0, 0)
 
-    # Train extended model.
-    prediction = train_model(X_train, y_train, X_test, 37, "e", 0, 0)
+        f1 = f1_score(y_test, prediction, average="micro")
+        print(f"F1 Score for {col_name}: {f1}")
 
-    print(f1_score(y_test, prediction, average="micro"))
-
-    with open(out_path / "results.pickle", "wb") as file:
-        pickle.dump({"pred": prediction, "tgt": y_test}, file)
+        # Save results
+        out_path = base_out_path / output_dir
+        out_path.mkdir(parents=True, exist_ok=True)
+        with open(out_path / "results.pickle", "wb") as file:
+            pickle.dump({"pred": prediction, "tgt": y_test}, file)
+        
+        print(f"Results saved to: {out_path / 'results.pickle'}")
 
 
 if __name__ == "__main__":
