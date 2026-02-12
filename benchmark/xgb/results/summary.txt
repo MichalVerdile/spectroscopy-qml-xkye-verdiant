@@ -1,0 +1,44 @@
+================================================================================
+CNN Model Evaluation Summary
+================================================================================
+
+Model: c_nmr
+  F1 Score (micro):    0.8054
+  F1 Score (macro):    0.4869
+  Subset Accuracy:     0.2303
+  Hamming Accuracy:    0.9540
+  Precision (macro):   0.7632
+  Recall (macro):      0.4006
+
+Model: h_nmr
+  F1 Score (micro):    0.7971
+  F1 Score (macro):    0.4836
+  Subset Accuracy:     0.1880
+  Hamming Accuracy:    0.9530
+  Precision (macro):   0.8477
+  Recall (macro):      0.3823
+
+Model: ir
+  F1 Score (micro):    0.8333
+  F1 Score (macro):    0.5364
+  Subset Accuracy:     0.2227
+  Hamming Accuracy:    0.9592
+  Precision (macro):   0.7404
+  Recall (macro):      0.4743
+
+Model: neg_msms
+  F1 Score (micro):    0.7613
+  F1 Score (macro):    0.3681
+  Subset Accuracy:     0.1205
+  Hamming Accuracy:    0.9448
+  Precision (macro):   0.7030
+  Recall (macro):      0.3057
+
+Model: pos_msms
+  F1 Score (micro):    0.7247
+  F1 Score (macro):    0.2899
+  Subset Accuracy:     0.0838
+  Hamming Accuracy:    0.9381
+  Precision (macro):   0.6788
+  Recall (macro):      0.2256
+
