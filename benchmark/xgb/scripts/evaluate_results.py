@@ -41,7 +41,7 @@ def calculate_metrics(predictions, targets):
     if pred.dtype in [np.float64, np.float32]:
         if pred.min() >= 0 and pred.max() <= 1:
             pred = (pred >= 0.5).astype(int)
-    
+
     pred = pred.astype(int)
     tgt = tgt.astype(int)
 
@@ -50,7 +50,7 @@ def calculate_metrics(predictions, targets):
     metrics["f1_macro"] = f1_score(tgt, pred, average="macro")
     metrics["subset_accuracy"] = accuracy_score(tgt, pred)
     metrics["hamming_accuracy"] = (tgt == pred).mean()
-    
+
     metrics["precision_macro"] = precision_score(tgt, pred, average="macro")
     metrics["recall_macro"] = recall_score(tgt, pred, average="macro")
 
@@ -167,16 +167,22 @@ def main():
             model_name = model_path.name
             results = load_results(model_path)
             pred = np.array(results["predictions"])
-            tgt  = np.array(results["targets"])
+            tgt = np.array(results["targets"])
 
-            print(model_name, pred.shape, tgt.shape, pred.dtype,
-            "pred min/max:", pred.min(), pred.max(),
-            "unique pred (sample):", np.unique(pred)[:10])
+            print(
+                model_name,
+                pred.shape,
+                tgt.shape,
+                pred.dtype,
+                "pred min/max:",
+                pred.min(),
+                pred.max(),
+                "unique pred (sample):",
+                np.unique(pred)[:10],
+            )
 
             if "predictions" in results and "targets" in results:
-                metrics, pred, tgt = calculate_metrics(
-                    results["predictions"], results["targets"]
-                )
+                metrics, pred, tgt = calculate_metrics(results["predictions"], results["targets"])
 
                 results_dict[model_name] = {
                     "metrics": metrics,
