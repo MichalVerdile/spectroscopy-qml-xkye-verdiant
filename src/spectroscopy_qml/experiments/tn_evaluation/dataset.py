@@ -1,0 +1,334 @@
+"""
+Dataset module for IR spectra functional group prediction.
+
+Handles:
+- Loading IR spectra from parquet files
+- Extracting functional group labels from SMILES using RDKit
+- Resampling to fixed grid
+- Intensity normalization (z-score or min-max)
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Literal
+
+import numpy as np
+import pandas as pd
+import torch
+from rdkit import Chem
+from scipy.interpolate import interp1d
+from torch.utils.data import Dataset
+
+# Functional groups defined by SMARTS patterns
+FUNCTIONAL_GROUPS: dict[str, str] = {
+    "alcohol": "[OX2H]",
+    "aldehyde": "[CX3H1](=O)[#6]",
+    "ketone": "[#6][CX3](=O)[#6]",
+    "carboxylic_acid": "[CX3](=O)[OX2H1]",
+    "ester": "[#6][CX3](=O)[OX2H0][#6]",
+    "ether": "[OD2]([#6])[#6]",
+    "amine_primary": "[NX3;H2;!$(NC=O)]",
+    "amine_secondary": "[NX3;H1;!$(NC=O)]",
+    "amine_tertiary": "[NX3;H0;!$(NC=O)]",
+    "amide": "[NX3][CX3](=[OX1])[#6]",
+    "nitrile": "[NX1]#[CX2]",
+    "halide_F": "[F]",
+    "halide_Cl": "[Cl]",
+    "halide_Br": "[Br]",
+    "aromatic": "c",
+    "alkene": "[CX3]=[CX3]",
+    "alkyne": "[CX2]#[CX2]",
+    "sulfonic_acid": "[SX4](=O)(=O)[OX2H]",
+    "sulfonamide": "[SX4](=O)(=O)[NX3]",
+    "thiol": "[SX2H]",
+    "nitro": "[NX3+](=O)[O-]",
+    "phenol": "[OX2H]c",
+}
+
+# Precompile SMARTS patterns for efficiency
+_COMPILED_PATTERNS: dict[str, Chem.Mol | None] = {}
+
+
+# Compile SMARTS once and then reuse it.
+def _get_compiled_pattern(name: str, smarts: str) -> Chem.Mol | None:
+    """Get or create compiled SMARTS pattern."""
+    if name not in _COMPILED_PATTERNS:
+        _COMPILED_PATTERNS[name] = Chem.MolFromSmarts(smarts)
+    return _COMPILED_PATTERNS[name]
+
+
+def extract_functional_groups(smiles: str, groups: dict[str, str] | None = None) -> dict[str, bool]:
+    """
+    Extract functional group presence from SMILES string.
+
+    Args:
+        smiles: SMILES string of the molecule
+        groups: Dictionary of {name: SMARTS} patterns (defaults to FUNCTIONAL_GROUPS)
+
+    Returns:
+        Dictionary of {group_name: is_present}
+    """
+    if groups is None:
+        groups = FUNCTIONAL_GROUPS
+
+    mol = Chem.MolFromSmiles(smiles)
+    result: dict[str, bool] = {}
+    """
+    The SMILES string is first converted by RDKit into a molecule graph object (MolFromSmiles),
+    and then HasSubstructMatch(pattern) checks whether the substructure defined by the SMARTS pattern
+    is present in this molecule (True/False).
+    """
+    if mol is None:
+        # Return all False for invalid SMILES
+        return {name: False for name in groups}
+
+    for name, smarts in groups.items():
+        pattern = _get_compiled_pattern(name, smarts)
+        if pattern is not None:
+            result[name] = mol.HasSubstructMatch(pattern)
+        else:
+            result[name] = False
+
+    return result
+
+
+# Set all spectra to vectors of equal length (important for CNN/batching).
+def resample_spectrum(
+    spectrum: np.ndarray,
+    target_length: int,
+    method: Literal["linear", "cubic"] = "linear",
+) -> np.ndarray:
+    """
+    Resample spectrum to fixed grid length.
+
+    Args:
+        spectrum: 1D array of spectral intensities
+        target_length: Desired output length
+        method: Interpolation method
+
+    Returns:
+        Resampled spectrum of shape (target_length,)
+    """
+    if len(spectrum) == target_length:
+        return spectrum.astype(np.float32)
+
+    x_old = np.linspace(0, 1, len(spectrum))
+    x_new = np.linspace(0, 1, target_length)
+
+    interpolator = interp1d(x_old, spectrum, kind=method, fill_value="extrapolate")
+    result: np.ndarray = np.asarray(interpolator(x_new), dtype=np.float32)
+    return result
+
+
+def normalize_spectrum(
+    spectrum: np.ndarray,
+    method: Literal["zscore", "minmax"] = "zscore",
+    eps: float = 1e-8,
+) -> np.ndarray:
+    """
+    Normalize spectrum intensity.
+
+    Args:
+        spectrum: 1D array of spectral intensities
+        method: Normalization method
+        eps: Small constant for numerical stability
+
+    Returns:
+        Normalized spectrum
+    """
+    spectrum = spectrum.astype(np.float32)
+
+    if method == "zscore":
+        mean = float(np.mean(spectrum))
+        std = float(np.std(spectrum))
+        result: np.ndarray = (spectrum - mean) / (std + eps)
+        return result
+    elif method == "minmax":
+        min_val = float(np.min(spectrum))
+        max_val = float(np.max(spectrum))
+        result = (spectrum - min_val) / (max_val - min_val + eps)
+        return result
+    else:
+        raise ValueError(f"Unknown normalization method: {method}")
+
+
+class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
+    """
+    PyTorch Dataset for IR spectra with functional group labels.
+
+    Loads IR spectra from parquet files, extracts functional group labels
+    from SMILES strings, and applies preprocessing.
+    """
+
+    def __init__(
+        self,
+        data_dir: str | Path,
+        target_length: int = 512,
+        normalization: Literal["zscore", "minmax"] = "zscore",
+        functional_groups: dict[str, str] | None = None,
+        max_chunks: int | None = None,
+        cache_labels: bool = True,
+    ):
+        """
+        Initialize dataset.
+
+        Args:
+            data_dir: Path to directory containing parquet files
+            target_length: Resample spectra to this length
+            normalization: Normalization method ("zscore" or "minmax")
+            functional_groups: Custom functional groups dict (defaults to FUNCTIONAL_GROUPS)
+            max_chunks: Maximum number of parquet chunks to load (for testing)
+            cache_labels: Whether to precompute and cache labels
+        """
+        self.data_dir = Path(data_dir)
+        self.target_length = target_length
+        self.normalization = normalization
+        self.functional_groups = functional_groups or FUNCTIONAL_GROUPS
+        self.group_names = list(self.functional_groups.keys())
+        self.num_classes = len(self.group_names)
+
+        # Load all data
+        self._load_data(max_chunks)
+
+        # Cache labels if requested
+        self._labels_cache: np.ndarray | None = None
+        if cache_labels:
+            self._precompute_labels()
+
+    def _load_data(self, max_chunks: int | None = None) -> None:
+        """Load IR spectra and SMILES from parquet files."""
+        parquet_files = sorted(self.data_dir.glob("aligned_chunk_*.parquet"))
+
+        if max_chunks is not None:
+            parquet_files = parquet_files[:max_chunks]
+
+        if not parquet_files:
+            raise FileNotFoundError(f"No parquet files found in {self.data_dir}")
+
+        dfs = []
+        for f in parquet_files:
+            df = pd.read_parquet(f, columns=["smiles", "ir_spectra"])
+            dfs.append(df)
+
+        self.data = pd.concat(dfs, ignore_index=True)
+
+        # Filter out rows with missing IR spectra
+        valid_mask = self.data["ir_spectra"].apply(lambda x: x is not None and len(x) > 0)
+        self.data = self.data[valid_mask].reset_index(drop=True)
+
+        print(f"Loaded {len(self.data)} samples from {len(parquet_files)} parquet files")
+
+    def _precompute_labels(self) -> None:
+        """Precompute all functional group labels."""
+        print("Precomputing functional group labels...")
+        labels = []
+        for smiles in self.data["smiles"]:
+            fg = extract_functional_groups(smiles, self.functional_groups)
+            labels.append([int(fg[name]) for name in self.group_names])
+        self._labels_cache = np.array(labels, dtype=np.float32)
+        print(f"Label distribution: {self._labels_cache.sum(axis=0).astype(int)}")
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Get a single sample.
+
+        Returns:
+            Tuple of (spectrum, labels) tensors
+        """
+        row = self.data.iloc[idx]
+
+        # Get and preprocess spectrum
+        spectrum = np.array(row["ir_spectra"], dtype=np.float32)
+        spectrum = resample_spectrum(spectrum, self.target_length)
+        spectrum = normalize_spectrum(spectrum, self.normalization)
+
+        # Get labels
+        if self._labels_cache is not None:
+            labels = self._labels_cache[idx]
+        else:
+            fg = extract_functional_groups(row["smiles"], self.functional_groups)
+            labels = np.array([float(fg[name]) for name in self.group_names], dtype=np.float32)
+
+        return torch.from_numpy(spectrum), torch.from_numpy(labels)
+
+    def get_label_weights(self) -> torch.Tensor:
+        """
+        Compute class weights for imbalanced labels.
+
+        Returns:
+            Tensor of shape (num_classes,) with positive class weights
+        """
+        if self._labels_cache is None:
+            self._precompute_labels()
+
+        assert self._labels_cache is not None  # for type checker
+        pos_counts = self._labels_cache.sum(axis=0)
+        neg_counts = len(self._labels_cache) - pos_counts
+
+        # Avoid division by zero
+        pos_counts = np.maximum(pos_counts, 1)
+
+        weights = neg_counts / pos_counts
+        return torch.from_numpy(weights.astype(np.float32))
+
+
+def create_data_splits(
+    dataset: IRFunctionalGroupDataset,
+    train_ratio: float = 0.7,
+    val_ratio: float = 0.15,
+    test_ratio: float = 0.15,
+    seed: int = 42,
+) -> tuple[torch.utils.data.Subset, torch.utils.data.Subset, torch.utils.data.Subset]:
+    """
+    Create train/val/test splits.
+
+    Args:
+        dataset: The full dataset
+        train_ratio: Fraction for training
+        val_ratio: Fraction for validation
+        test_ratio: Fraction for testing
+        seed: Random seed for reproducibility
+
+    Returns:
+        Tuple of (train_subset, val_subset, test_subset)
+    """
+    assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6
+
+    n = len(dataset)
+    indices = np.arange(n)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(indices)
+
+    train_end = int(n * train_ratio)
+    val_end = train_end + int(n * val_ratio)
+
+    train_indices = indices[:train_end].tolist()
+    val_indices = indices[train_end:val_end].tolist()
+    test_indices = indices[val_end:].tolist()
+
+    return (
+        torch.utils.data.Subset(dataset, train_indices),
+        torch.utils.data.Subset(dataset, val_indices),
+        torch.utils.data.Subset(dataset, test_indices),
+    )
+
+
+if __name__ == "__main__":
+    # Quick test
+    import sys
+
+    data_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/raw")
+
+    ds = IRFunctionalGroupDataset(data_dir, target_length=512, max_chunks=2)
+    print(f"Dataset size: {len(ds)}")
+    print(f"Number of classes: {ds.num_classes}")
+    print(f"Class names: {ds.group_names}")
+
+    x, y = ds[0]
+    print(f"Spectrum shape: {x.shape}")
+    print(f"Labels shape: {y.shape}")
+    print(f"Label weights: {ds.get_label_weights()}")
