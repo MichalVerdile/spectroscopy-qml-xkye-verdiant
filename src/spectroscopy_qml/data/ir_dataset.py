@@ -2,7 +2,7 @@
 Dataset module for IR spectra functional group prediction.
 
 Handles:
-- Loading IR spectra from parquet files
+- Loading IR spectra from parquet files => (benchmark/data/raw/ (aligned_chunk_*.parquet))
 - Extracting functional group labels from SMILES using RDKit
 - Resampling to fixed grid
 - Intensity normalization (z-score or min-max)
@@ -20,30 +20,45 @@ from rdkit import Chem
 from scipy.interpolate import interp1d
 from torch.utils.data import Dataset
 
-# Functional groups defined by SMARTS patterns
+# Functional groups defined by SMARTS patterns (37 classes, matching benchmark)
 FUNCTIONAL_GROUPS: dict[str, str] = {
-    "alcohol": "[OX2H]",
-    "aldehyde": "[CX3H1](=O)[#6]",
-    "ketone": "[#6][CX3](=O)[#6]",
-    "carboxylic_acid": "[CX3](=O)[OX2H1]",
-    "ester": "[#6][CX3](=O)[OX2H0][#6]",
-    "ether": "[OD2]([#6])[#6]",
-    "amine_primary": "[NX3;H2;!$(NC=O)]",
-    "amine_secondary": "[NX3;H1;!$(NC=O)]",
-    "amine_tertiary": "[NX3;H0;!$(NC=O)]",
-    "amide": "[NX3][CX3](=[OX1])[#6]",
-    "nitrile": "[NX1]#[CX2]",
-    "halide_F": "[F]",
-    "halide_Cl": "[Cl]",
-    "halide_Br": "[Br]",
-    "aromatic": "c",
-    "alkene": "[CX3]=[CX3]",
-    "alkyne": "[CX2]#[CX2]",
-    "sulfonic_acid": "[SX4](=O)(=O)[OX2H]",
-    "sulfonamide": "[SX4](=O)(=O)[NX3]",
-    "thiol": "[SX2H]",
-    "nitro": "[NX3+](=O)[O-]",
-    "phenol": "[OX2H]c",
+    "Acid anhydride": "[CX3](=[OX1])[OX2][CX3](=[OX1])",
+    "Acyl halide": "[CX3](=[OX1])[F,Cl,Br,I]",
+    "Alcohol": "[#6][OX2H]",
+    "Aldehyde": "[CX3H1](=O)[#6,H]",
+    "Alkane": "[CX4;H3,H2]",
+    "Alkene": "[CX3]=[CX3]",
+    "Alkyne": "[CX2]#[CX2]",
+    "Amide": "[NX3][CX3](=[OX1])[#6]",
+    "Amine": "[NX3;H2,H1,H0;!$(NC=O)]",
+    "Arene": "[cX3]1[cX3][cX3][cX3][cX3][cX3]1",
+    "Azo compound": "[#6][NX2]=[NX2][#6]",
+    "Carbamate": "[NX3][CX3](=[OX1])[OX2H0]",
+    "Carboxylic acid": "[CX3](=O)[OX2H]",
+    "Enamine": "[NX3][CX3]=[CX3]",
+    "Enol": "[OX2H][#6X3]=[#6]",
+    "Ester": "[#6][CX3](=O)[OX2H0][#6]",
+    "Ether": "[OD2]([#6])[#6]",
+    "Haloalkane": "[#6][F,Cl,Br,I]",
+    "Hydrazine": "[NX3][NX3]",
+    "Hydrazone": "[NX3][NX2]=[#6]",
+    "Imide": "[CX3](=[OX1])[NX3][CX3](=[OX1])",
+    "Imine": "[$([CX3]([#6])[#6]),$([CX3H][#6])]=[$([NX2][#6]),$([NX2H])]",
+    "Isocyanate": "[NX2]=[C]=[O]",
+    "Isothiocyanate": "[NX2]=[C]=[S]",
+    "Ketone": "[#6][CX3](=O)[#6]",
+    "Nitrile": "[NX1]#[CX2]",
+    "Phenol": "[OX2H][cX3]:[c]",
+    "Phosphine": "[PX3]",
+    "Sulfide": "[#16X2H0]",
+    "Sulfonamide": "[#16X4]([NX3])(=[OX1])(=[OX1])[#6]",
+    "Sulfonate": "[#16X4](=[OX1])(=[OX1])([#6])[OX2H0]",
+    "Sulfone": "[#16X4](=[OX1])(=[OX1])([#6])[#6]",
+    "Sulfonic acid": "[#16X4](=[OX1])(=[OX1])([#6])[OX2H]",
+    "Sulfoxide": "[#16X3]=[OX1]",
+    "Thial": "[CX3H1](=S)[#6,H]",
+    "Thioamide": "[NX3][CX3]=[SX1]",
+    "Thiol": "[#16X2H]",
 }
 
 # Precompile SMARTS patterns for efficiency
@@ -123,7 +138,7 @@ def resample_spectrum(
 
 def normalize_spectrum(
     spectrum: np.ndarray,
-    method: Literal["zscore", "minmax"] = "zscore",
+    method: str = "zscore",  # "zscore" or "minmax"
     eps: float = 1e-8,
 ) -> np.ndarray:
     """
@@ -165,7 +180,7 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
         self,
         data_dir: str | Path,
         target_length: int = 512,
-        normalization: Literal["zscore", "minmax"] = "zscore",
+        normalization: str = "zscore",  # "zscore" or "minmax"
         functional_groups: dict[str, str] | None = None,
         max_chunks: int | None = None,
         cache_labels: bool = True,
@@ -206,6 +221,7 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
         if not parquet_files:
             raise FileNotFoundError(f"No parquet files found in {self.data_dir}")
 
+        # Load IR spectra and SMILES into a single DataFrame
         dfs = []
         for f in parquet_files:
             df = pd.read_parquet(f, columns=["smiles", "ir_spectra"])
@@ -275,12 +291,27 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
         weights = neg_counts / pos_counts
         return torch.from_numpy(weights.astype(np.float32))
 
+    def get_active_class_mask(self) -> torch.Tensor:
+        """
+        Return a boolean mask for classes that occur at least once.
+
+        Classes with zero positives in the loaded subset are excluded from
+        loss/metrics to avoid unstable optimization and misleading macro scores.
+        """
+        if self._labels_cache is None:
+            self._precompute_labels()
+
+        assert self._labels_cache is not None
+        pos_counts = self._labels_cache.sum(axis=0)
+        mask = pos_counts > 0
+        return torch.from_numpy(mask.astype(np.bool_))
+
 
 def create_data_splits(
     dataset: IRFunctionalGroupDataset,
-    train_ratio: float = 0.7,
-    val_ratio: float = 0.15,
-    test_ratio: float = 0.15,
+    train_ratio: float = 0.8,
+    val_ratio: float = 0.1,
+    test_ratio: float = 0.1,
     seed: int = 42,
 ) -> tuple[torch.utils.data.Subset, torch.utils.data.Subset, torch.utils.data.Subset]:
     """
