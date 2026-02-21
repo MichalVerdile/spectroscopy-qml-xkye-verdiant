@@ -238,7 +238,7 @@ def make_msms_spectrum(spectrum):
 @click.option(
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
-@click.option("--seed", type=int, default=3245)
+@click.option("--seed", type=int, default=42)
 def main(analytical_data, base_out_path, columns, seed):
     # Parse columns to process
     columns_to_process = (
