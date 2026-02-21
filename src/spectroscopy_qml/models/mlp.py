@@ -20,14 +20,14 @@ class MLPEncoder(nn.Module):  # type: ignore[misc]
         input_length: int = 512,
         embedding_dim: int = 128,
         hidden_dims: list[int] | None = None,
-        dropout: float = 0.1,
+        dropout: float = 0.15,
     ):
         super().__init__()
         self.input_length = input_length
         self.embedding_dim = embedding_dim
 
         if hidden_dims is None:
-            hidden_dims = [512, 256, 128]
+            hidden_dims = [1024, 512, 256]
 
         layers: list[nn.Module] = []
 
@@ -37,7 +37,7 @@ class MLPEncoder(nn.Module):  # type: ignore[misc]
                 [
                     nn.Linear(in_dim, hidden_dim),
                     nn.LayerNorm(hidden_dim),
-                    nn.ReLU(inplace=True),
+                    nn.GELU(),
                     nn.Dropout(dropout),
                 ]
             )

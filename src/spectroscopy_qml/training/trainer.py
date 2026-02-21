@@ -28,6 +28,7 @@ class TrainingConfig:
     # Optimization
     learning_rate: float = 1e-3
     weight_decay: float = 1e-5
+    optimizer: str = "adamw"  # "adamw" or "adam"
     batch_size: int = 64
     num_epochs: int = 100
     grad_clip_norm: float | None = None
@@ -195,6 +196,61 @@ def compute_f1_scores(
     return float(f1_micro), float(f1_macro)
 
 
+@torch.no_grad()  # type: ignore[misc]
+def collect_predictions(
+    model: nn.Module,
+    dataloader: DataLoader,
+    device: str,
+    class_mask: torch.Tensor | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Collect probability predictions and targets for threshold tuning/evaluation.
+    """
+    model.eval()
+    all_predictions: list[np.ndarray] = []
+    all_targets: list[np.ndarray] = []
+
+    for batch_x, batch_y in dataloader:
+        batch_x = batch_x.to(device)
+        batch_y = batch_y.to(device)
+
+        logits = model(batch_x)
+        if class_mask is not None:
+            logits = logits[:, class_mask]
+            batch_y = batch_y[:, class_mask]
+
+        probs = torch.sigmoid(logits)
+        all_predictions.append(probs.cpu().numpy())
+        all_targets.append(batch_y.cpu().numpy())
+
+    return np.concatenate(all_predictions, axis=0), np.concatenate(all_targets, axis=0)
+
+
+def find_best_threshold(
+    predictions: np.ndarray,
+    targets: np.ndarray,
+    metric: str = "f1_micro",
+    thresholds: np.ndarray | None = None,
+) -> float:
+    """
+    Find a global probability threshold that maximizes validation F1.
+    """
+    if thresholds is None:
+        thresholds = np.linspace(0.1, 0.9, 17)
+
+    best_threshold = 0.5
+    best_score = -1.0
+
+    for threshold in thresholds:
+        f1_micro, f1_macro = compute_f1_scores(predictions, targets, threshold=float(threshold))
+        score = f1_micro if metric == "f1_micro" else f1_macro
+        if score > best_score:
+            best_score = score
+            best_threshold = float(threshold)
+
+    return best_threshold
+
+
 def train_epoch(
     model: nn.Module,
     dataloader: DataLoader,
@@ -259,6 +315,7 @@ def evaluate(
     criterion: nn.Module,
     device: str,
     class_mask: torch.Tensor | None = None,
+    threshold: float = 0.5,
 ) -> tuple[float, float, float]:
     """
     Evaluate model on a dataset.
@@ -294,7 +351,9 @@ def evaluate(
     # Compute metrics
     all_predictions_arr = np.concatenate(all_predictions, axis=0)
     all_targets_arr = np.concatenate(all_targets, axis=0)
-    f1_micro, f1_macro = compute_f1_scores(all_predictions_arr, all_targets_arr)
+    f1_micro, f1_macro = compute_f1_scores(
+        all_predictions_arr, all_targets_arr, threshold=threshold
+    )
 
     avg_loss = total_loss / len(dataloader.dataset)
 
@@ -334,11 +393,18 @@ def train_model(
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     # Optimizer
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=config.learning_rate,
-        weight_decay=config.weight_decay,
-    )
+    if config.optimizer == "adamw":
+        optimizer = torch.optim.AdamW(
+            model.parameters(),
+            lr=config.learning_rate,
+            weight_decay=config.weight_decay,
+        )
+    else:
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=config.learning_rate,
+            weight_decay=config.weight_decay,
+        )
 
     # Learning rate scheduler
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
