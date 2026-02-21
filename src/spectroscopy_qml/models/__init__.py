@@ -1,11 +1,6 @@
-"""
-Model architectures module.
+"""Model architectures module."""
 
-This module will contain:
-- Baseline models (XGBoost, simple CNNs)
-- Domain-specific architectures leveraging quantum-mechanical structure
-- Multi-modal fusion approaches
-- Attention mechanisms for spectroscopic features
+from .mlp import MLPEncoder
+from .mps import MPSEncoder, MPSEncoderSimple
 
-TODO: Implement model architectures
-"""
+__all__ = ["MLPEncoder", "MPSEncoder", "MPSEncoderSimple"]

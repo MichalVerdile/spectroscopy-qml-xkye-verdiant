@@ -1,0 +1,117 @@
+{
+  "timestamp": "20260220_192128",
+  "results": [
+    {
+      "model_name": "CNN",
+      "num_parameters": 338454,
+      "best_val_f1_micro": 0.6638706221578929,
+      "best_val_f1_macro": 0.5695772181572327,
+      "test_f1_micro": 0.6664087039650385,
+      "test_f1_macro": 0.5701615042751262,
+      "test_loss": 0.2782160751815941,
+      "best_epoch": 49,
+      "training_time_seconds": 659.5927360057831,
+      "config": {
+        "channels": [
+          32,
+          64,
+          128,
+          256
+        ]
+      }
+    },
+    {
+      "model_name": "MLP",
+      "num_parameters": 448022,
+      "best_val_f1_micro": 0.7027232674300161,
+      "best_val_f1_macro": 0.5721923586731467,
+      "test_f1_micro": 0.6966412679061261,
+      "test_f1_macro": 0.5752313572476704,
+      "test_loss": 0.2708058861706916,
+      "best_epoch": 48,
+      "training_time_seconds": 482.5938069820404,
+      "config": {}
+    },
+    {
+      "model_name": "MPS (D=4)",
+      "num_parameters": 7634,
+      "best_val_f1_micro": 0.3903525954946131,
+      "best_val_f1_macro": 0.21221567427234558,
+      "test_f1_micro": 0.3191869847777729,
+      "test_f1_macro": 0.13094329001628477,
+      "test_loss": 0.6587130317325895,
+      "best_epoch": 3,
+      "training_time_seconds": 933.8290710449219,
+      "config": {
+        "num_sites": 64,
+        "physical_dim": 4,
+        "bond_dim": 4
+      }
+    },
+    {
+      "model_name": "MPS (D=8)",
+      "num_parameters": 20258,
+      "best_val_f1_micro": 0.3814186022289345,
+      "best_val_f1_macro": 0.19179799903518474,
+      "test_f1_micro": 0.2716513908988583,
+      "test_f1_macro": 0.12266334835178343,
+      "test_loss": 0.6605613045291205,
+      "best_epoch": 0,
+      "training_time_seconds": 781.7537400722504,
+      "config": {
+        "num_sites": 64,
+        "physical_dim": 4,
+        "bond_dim": 8
+      }
+    },
+    {
+      "model_name": "MPS (D=16)",
+      "num_parameters": 69698,
+      "best_val_f1_micro": 0.4153175157013259,
+      "best_val_f1_macro": 0.15009692990855644,
+      "test_f1_micro": 0.24479043581010634,
+      "test_f1_macro": 0.1308503225531553,
+      "test_loss": 0.6594761059185124,
+      "best_epoch": 4,
+      "training_time_seconds": 988.4598958492279,
+      "config": {
+        "num_sites": 64,
+        "physical_dim": 4,
+        "bond_dim": 16
+      }
+    },
+    {
+      "model_name": "MPS (D=32)",
+      "num_parameters": 265346,
+      "best_val_f1_micro": 0.40304783490397234,
+      "best_val_f1_macro": 0.17441640477176687,
+      "test_f1_micro": 0.1368866402058708,
+      "test_f1_macro": 0.06459290035891857,
+      "test_loss": 0.6594336348108416,
+      "best_epoch": 11,
+      "training_time_seconds": 1376.3026168346405,
+      "config": {
+        "num_sites": 64,
+        "physical_dim": 4,
+        "bond_dim": 32
+      }
+    },
+    {
+      "model_name": "MPS Simple (D=16)",
+      "num_parameters": 12370,
+      "best_val_f1_micro": 0.36056139985418184,
+      "best_val_f1_macro": 0.18010482872146796,
+      "test_f1_micro": 0.2137803505386718,
+      "test_f1_macro": 0.09719548271798374,
+      "test_loss": 0.6595307993546334,
+      "best_epoch": 25,
+      "training_time_seconds": 1438.3411457538605,
+      "config": {
+        "num_sites": 64,
+        "physical_dim": 4,
+        "bond_dim": 16,
+        "variant": "simple"
+      }
+    }
+  ]
+}

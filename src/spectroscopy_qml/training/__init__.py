@@ -1,12 +1,25 @@
-"""
-Training utilities and loops.
+"""Training utilities and loops."""
 
-This module will contain:
-- Training loop implementations
-- Validation logic
-- Checkpoint management
-- Learning rate scheduling
-- Early stopping
+from .trainer import (
+    EarlyStopping,
+    FunctionalGroupClassifier,
+    TrainingConfig,
+    TrainingMetrics,
+    compute_f1_scores,
+    count_parameters,
+    evaluate,
+    train_epoch,
+    train_model,
+)
 
-TODO: Implement training infrastructure
-"""
+__all__ = [
+    "EarlyStopping",
+    "FunctionalGroupClassifier",
+    "TrainingConfig",
+    "TrainingMetrics",
+    "compute_f1_scores",
+    "count_parameters",
+    "evaluate",
+    "train_epoch",
+    "train_model",
+]
