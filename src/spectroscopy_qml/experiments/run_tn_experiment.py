@@ -38,9 +38,11 @@ from spectroscopy_qml.training import (
     FunctionalGroupClassifier,
     TrainingConfig,
     TrainingMetrics,
+    collect_predictions,
     compute_f1_scores,
     count_parameters,
     evaluate,
+    find_best_threshold,
     train_model,
 )
 
@@ -75,6 +77,7 @@ class ExperimentConfig:
     patience: int = 15
     grad_clip_norm: float = 1.0
     pos_weight_cap: float = 20.0
+    threshold_metric: str = "f1_micro"  # "f1_micro" or "f1_macro"
 
     # Output
     output_dir: str = "results/tn_evaluation"
@@ -147,6 +150,7 @@ def run_single_experiment(
     training_config: TrainingConfig,
     pos_weight: torch.Tensor | None = None,
     class_mask: torch.Tensor | None = None,
+    threshold_metric: str = "f1_micro",
 ) -> ExperimentResult:
     """
     Run a single experiment with given encoder.
@@ -184,11 +188,25 @@ def run_single_experiment(
     # Test evaluation
     model.to(training_config.device)
     criterion = torch.nn.BCEWithLogitsLoss()
+    val_predictions, val_targets = collect_predictions(
+        model, val_loader, training_config.device, class_mask=class_mask
+    )
+    best_threshold = find_best_threshold(
+        val_predictions,
+        val_targets,
+        metric=threshold_metric,
+    )
     test_loss, test_f1_micro, test_f1_macro = evaluate(
-        model, test_loader, criterion, training_config.device, class_mask=class_mask
+        model,
+        test_loader,
+        criterion,
+        training_config.device,
+        class_mask=class_mask,
+        threshold=best_threshold,
     )
 
     print(f"\nTest Results for {encoder_name}:")
+    print(f"  Best Threshold (val): {best_threshold:.2f}")
     print(f"  Test Loss: {test_loss:.4f}")
     print(f"  Test F1 Micro: {test_f1_micro:.4f}")
     print(f"  Test F1 Macro: {test_f1_macro:.4f}")
@@ -206,7 +224,7 @@ def run_single_experiment(
         test_loss=test_loss,
         best_epoch=metrics.best_epoch,
         training_time_seconds=training_time,
-        config={},
+        config={"threshold": best_threshold, "threshold_metric": threshold_metric},
     )
 
 
@@ -318,6 +336,7 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
         training_config=baseline_training_config,
         pos_weight=pos_weight,
         class_mask=class_mask,
+        threshold_metric=config.threshold_metric,
     )
     results.append(mlp_result)
 
@@ -341,6 +360,7 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
             training_config=mps_training_config,
             pos_weight=pos_weight,
             class_mask=class_mask,
+            threshold_metric=config.threshold_metric,
         )
         mps_result.config = {
             "num_sites": config.num_sites,
@@ -368,6 +388,7 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
         training_config=mps_training_config,
         pos_weight=pos_weight,
         class_mask=class_mask,
+        threshold_metric=config.threshold_metric,
     )
     mps_simple_result.config = {
         "num_sites": config.num_sites,
@@ -519,6 +540,13 @@ def main() -> None:
         help="Maximum positive class weight for BCE loss (set <=0 to disable capping)",
     )
     parser.add_argument(
+        "--threshold_metric",
+        type=str,
+        default="f1_micro",
+        choices=["f1_micro", "f1_macro"],
+        help="Validation metric used to tune decision threshold",
+    )
+    parser.add_argument(
         "--benchmark_cnn_results_path",
         type=str,
         default="benchmark/cnn/models/ir/results.pickle",
@@ -548,6 +576,7 @@ def main() -> None:
         patience=args.patience,
         grad_clip_norm=args.grad_clip_norm if args.grad_clip_norm > 0 else None,
         pos_weight_cap=args.pos_weight_cap,
+        threshold_metric=args.threshold_metric,
         benchmark_cnn_results_path=args.benchmark_cnn_results_path,
         seed=args.seed,
     )
