@@ -3,42 +3,42 @@ CNN Model Evaluation Summary
 ================================================================================
 
 Model: cnmr
-  F1 Score (micro):    0.6502
-  F1 Score (macro):    0.1031
-  Subset Accuracy:     0.0173
-  Hamming Accuracy:    0.9078
-  Precision (macro):   0.1224
-  Recall (macro):      0.1345
+  F1 Score (micro):    0.5970
+  F1 Score (macro):    0.1920
+  Subset Accuracy:     0.0021
+  Hamming Accuracy:    0.8768
+  Precision (macro):   0.3390
+  Recall (macro):      0.2559
 
 Model: hnmr
-  F1 Score (micro):    0.6207
-  F1 Score (macro):    0.1522
-  Subset Accuracy:     0.0085
-  Hamming Accuracy:    0.8932
-  Precision (macro):   0.4806
-  Recall (macro):      0.1994
+  F1 Score (micro):    0.8038
+  F1 Score (macro):    0.4550
+  Subset Accuracy:     0.2299
+  Hamming Accuracy:    0.9524
+  Precision (macro):   0.7412
+  Recall (macro):      0.3755
 
 Model: ir
-  F1 Score (micro):    0.9018
-  F1 Score (macro):    0.6998
-  Subset Accuracy:     0.4414
-  Hamming Accuracy:    0.9754
-  Precision (macro):   0.8215
-  Recall (macro):      0.6393
+  F1 Score (micro):    0.8990
+  F1 Score (macro):    0.6905
+  Subset Accuracy:     0.4329
+  Hamming Accuracy:    0.9746
+  Precision (macro):   0.8510
+  Recall (macro):      0.6289
 
 Model: neg_msms
-  F1 Score (micro):    0.6479
-  F1 Score (macro):    0.1346
-  Subset Accuracy:     0.0382
-  Hamming Accuracy:    0.9220
-  Precision (macro):   0.4545
-  Recall (macro):      0.1199
+  F1 Score (micro):    0.6456
+  F1 Score (macro):    0.1318
+  Subset Accuracy:     0.0367
+  Hamming Accuracy:    0.9215
+  Precision (macro):   0.4625
+  Recall (macro):      0.1181
 
 Model: pos_msms
-  F1 Score (micro):    0.6445
-  F1 Score (macro):    0.1262
-  Subset Accuracy:     0.0356
-  Hamming Accuracy:    0.9235
-  Precision (macro):   0.4390
-  Recall (macro):      0.1112
+  F1 Score (micro):    0.6428
+  F1 Score (macro):    0.1247
+  Subset Accuracy:     0.0340
+  Hamming Accuracy:    0.9231
+  Precision (macro):   0.4235
+  Recall (macro):      0.1101
 
