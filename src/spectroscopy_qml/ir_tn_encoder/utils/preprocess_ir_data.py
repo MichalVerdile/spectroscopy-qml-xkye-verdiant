@@ -95,7 +95,6 @@ def extract_functional_groups(smiles: str, groups: dict[str, str] | None = None)
     is present in this molecule (True/False).
     """
     if mol is None:
-        # Return all False for invalid SMILES
         return {name: False for name in groups}
 
     for name, smarts in groups.items():
@@ -108,7 +107,6 @@ def extract_functional_groups(smiles: str, groups: dict[str, str] | None = None)
     return result
 
 
-# Set all spectra to vectors of equal length (important for CNN/batching).
 def resample_spectrum(
     spectrum: np.ndarray,
     target_length: int,
@@ -168,7 +166,7 @@ def normalize_spectrum(
         raise ValueError(f"Unknown normalization method: {method}")
 
 
-class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
+class IRFunctionalGroupDataset(Dataset):
     """
     PyTorch Dataset for IR spectra with functional group labels.
 
@@ -203,7 +201,6 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
         self.group_names = list(self.functional_groups.keys())
         self.num_classes = len(self.group_names)
 
-        # Load all data
         self._load_data(max_chunks)
 
         # Cache labels if requested
@@ -212,7 +209,6 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
             self._precompute_labels()
 
     def _load_data(self, max_chunks: int | None = None) -> None:
-        """Load IR spectra and SMILES from parquet files."""
         parquet_files = sorted(self.data_dir.glob("aligned_chunk_*.parquet"))
 
         if max_chunks is not None:
@@ -221,7 +217,6 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
         if not parquet_files:
             raise FileNotFoundError(f"No parquet files found in {self.data_dir}")
 
-        # Load IR spectra and SMILES into a single DataFrame
         dfs = []
         for f in parquet_files:
             df = pd.read_parquet(f, columns=["smiles", "ir_spectra"])
@@ -237,7 +232,6 @@ class IRFunctionalGroupDataset(Dataset):  # type: ignore[misc]
 
     def _precompute_labels(self) -> None:
         """Precompute all functional group labels."""
-        print("Precomputing functional group labels...")
         labels = []
         for smiles in self.data["smiles"]:
             fg = extract_functional_groups(smiles, self.functional_groups)
@@ -346,20 +340,3 @@ def create_data_splits(
         torch.utils.data.Subset(dataset, val_indices),
         torch.utils.data.Subset(dataset, test_indices),
     )
-
-
-if __name__ == "__main__":
-    # Quick test
-    import sys
-
-    data_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/raw")
-
-    ds = IRFunctionalGroupDataset(data_dir, target_length=512, max_chunks=2)
-    print(f"Dataset size: {len(ds)}")
-    print(f"Number of classes: {ds.num_classes}")
-    print(f"Class names: {ds.group_names}")
-
-    x, y = ds[0]
-    print(f"Spectrum shape: {x.shape}")
-    print(f"Labels shape: {y.shape}")
-    print(f"Label weights: {ds.get_label_weights()}")

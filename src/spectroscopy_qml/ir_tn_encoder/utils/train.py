@@ -124,39 +124,6 @@ class EarlyStopping:
         return self.should_stop
 
 
-class FunctionalGroupClassifier(nn.Module):  # type: ignore[misc]
-    """
-    Full model: encoder + classifier head.
-    """
-
-    def __init__(self, encoder: nn.Module, num_classes: int, embedding_dim: int = 128):
-        """
-        Initialize classifier.
-
-        Args:
-            encoder: Encoder module (CNN, MLP, or MPS)
-            num_classes: Number of functional group classes
-            embedding_dim: Encoder output dimension
-        """
-        super().__init__()
-        self.encoder = encoder
-        self.classifier = nn.Linear(embedding_dim, num_classes)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass.
-
-        Args:
-            x: Input spectrum of shape (batch, input_length)
-
-        Returns:
-            Logits of shape (batch, num_classes)
-        """
-        embedding = self.encoder(x)
-        logits = self.classifier(embedding)
-        return logits
-
-
 def compute_f1_scores(
     predictions: np.ndarray,
     targets: np.ndarray,

@@ -56,19 +56,6 @@
 #   embedding: (batch_size, embedding_dim)
 # ============================================================
 
-"""
-Tensor Network (MPS/TT) encoder for IR spectra.
-
-Implements a Matrix Product State (MPS) / Tensor Train (TT) style encoder
-that processes the spectrum as a tensor network.
-
-Key concepts:
-- Input spectrum is split into S sites
-- Each site has a local feature map with physical dimension p
-- Sites are connected via bond dimensions D
-- The contracted network produces an embedding vector
-"""
-
 from __future__ import annotations
 
 import math
@@ -77,7 +64,7 @@ import torch
 import torch.nn as nn
 
 
-class LocalFeatureMap(nn.Module):  # type: ignore[misc]
+class LocalFeatureMap(nn.Module):
     """
     Local feature map for each site.
 
@@ -128,7 +115,7 @@ class LocalFeatureMap(nn.Module):  # type: ignore[misc]
         return self.mlp(x)
 
 
-class MPSEncoder(nn.Module):  # type: ignore[misc]
+class MPSEncoder(nn.Module):
     """
     MPS/TT-style encoder for 1D spectra.
 
@@ -259,7 +246,6 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
         """
         batch_size = x.shape[0]
 
-        # Split input into sites: (batch, num_sites, site_dim)
         x = x.view(batch_size, self.num_sites, self.site_dim)
 
         # Apply feature maps to each site
@@ -282,138 +268,5 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
             state = forward_state
 
         embedding = self.output_projection(state)
-
-        return embedding
-
-
-# ============================================================
-# MPS ENCODER SIMPLE PIPELINE
-#
-# Input:
-#   x: (batch, L)
-#
-# 1) Split into sites:
-#   x -> (batch, S, site_dim)
-#
-# 2) Shared feature map per site:
-#   phi_i = feature_map(x[:, i, :]) -> (batch, p)
-#
-# 3) Initialize hidden state from first site:
-#   hidden = W_left(phi_0) -> (batch, D)
-#
-# 4) Bulk transfer for i = 1..S-2:
-#   transferred = einsum("bd,pde->bpe", hidden, W_bulk)  -> (batch, p, D)
-#   hidden      = einsum("bp,bpd->bd", phi_i, transferred)-> (batch, D)
-#
-# 5) Last site output:
-#   phi_last = feature_map(last_site) -> (batch, p)
-#   combined = einsum("bd,bp->bdp", hidden, phi_last) -> (batch, D, p)
-#   flatten  -> (batch, D*p)
-#   embedding = W_right(combined) -> (batch, E)
-#
-# Output:
-#   embedding: (batch, embedding_dim)
-# ============================================================
-class MPSEncoderSimple(nn.Module):  # type: ignore[misc]
-    """
-    Simplified MPS encoder using matrix multiplications.
-
-    This version is more readable and uses explicit weight matrices
-    instead of tensor cores. Mathematically equivalent but clearer.
-    """
-
-    def __init__(
-        self,
-        input_length: int = 512,
-        num_sites: int = 64,
-        physical_dim: int = 4,
-        bond_dim: int = 16,
-        embedding_dim: int = 128,
-    ):
-        """
-        Initialize simplified MPS encoder.
-
-        Args:
-            input_length: Length of input spectrum
-            num_sites: Number of sites to split input into
-            physical_dim: Feature dimension at each site
-            bond_dim: Width of hidden state (bond dimension)
-            embedding_dim: Output embedding dimension
-        """
-        super().__init__()
-        self.input_length = input_length
-        self.num_sites = num_sites
-        self.physical_dim = physical_dim
-        self.bond_dim = bond_dim
-        self.embedding_dim = embedding_dim
-
-        assert input_length % num_sites == 0
-        self.site_dim = input_length // num_sites
-
-        # Shared local feature map
-        self.feature_map = nn.Sequential(
-            nn.Linear(self.site_dim, physical_dim * 2),
-            nn.ReLU(inplace=True),
-            nn.Linear(physical_dim * 2, physical_dim),
-        )
-
-        # MPS transfer matrices
-        # For each physical state p, we have a D x D transfer matrix
-        # T_i(p) of shape (physical_dim, bond_dim, bond_dim)
-        # Using a bilinear form: T(phi) = sum_p phi_p * T_p
-
-        # Left boundary: maps physical -> bond
-        self.W_left = nn.Linear(physical_dim, bond_dim)
-
-        # Bulk: bilinear transfer
-        # W_bulk: (physical_dim, bond_dim, bond_dim)
-        self.W_bulk = nn.Parameter(
-            torch.randn(physical_dim, bond_dim, bond_dim) / math.sqrt(physical_dim * bond_dim)
-        )
-
-        # Right boundary: maps bond -> embedding
-        self.W_right = nn.Linear(bond_dim * physical_dim, embedding_dim)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass.
-
-        Args:
-            x: Input tensor of shape (batch, input_length)
-
-        Returns:
-            Embedding tensor of shape (batch, embedding_dim)
-        """
-        batch_size = x.shape[0]
-
-        # Split into sites
-        x = x.view(batch_size, self.num_sites, self.site_dim)
-
-        # First site: initialize hidden state
-        phi_0 = self.feature_map(x[:, 0, :])  # (batch, physical_dim)
-        hidden = self.W_left(phi_0)  # (batch, bond_dim)
-
-        # Bulk sites: apply transfer operation
-        for i in range(1, self.num_sites - 1):
-            phi = self.feature_map(x[:, i, :])  # (batch, physical_dim)
-
-            # Bilinear transfer: hidden' = sum_p phi_p * (hidden @ W_bulk[p])
-            # W_bulk: (p, D, D)
-            # hidden: (batch, D)
-            # phi: (batch, p)
-
-            # Efficient implementation:
-            # (batch, D) @ (p, D, D) -> (batch, p, D)
-            # then (batch, p) . (batch, p, D) -> (batch, D)
-            transferred = torch.einsum("bd,pde->bpe", hidden, self.W_bulk)
-            hidden = torch.einsum("bp,bpd->bd", phi, transferred)
-
-        # Last site: produce output
-        phi_last = self.feature_map(x[:, -1, :])  # (batch, physical_dim)
-
-        # Combine hidden and phi_last for output
-        combined = torch.einsum("bd,bp->bdp", hidden, phi_last)  # (batch, D, p)
-        combined = combined.view(batch_size, -1)  # (batch, D * p)
-        embedding = self.W_right(combined)
 
         return embedding

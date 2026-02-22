@@ -31,11 +31,14 @@ from pathlib import Path
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-
-from spectroscopy_qml.data import IRFunctionalGroupDataset, create_data_splits
-from spectroscopy_qml.models import MLPEncoder, MPSEncoder, MPSEncoderSimple
-from spectroscopy_qml.training import (
-    FunctionalGroupClassifier,
+from utils.cnn_classifier import FunctionalGroupClassifier
+from utils.mlp_encoder import MLPEncoder
+from utils.mps_encoder import MPSEncoder
+from utils.preprocess_ir_data import (
+    IRFunctionalGroupDataset,
+    create_data_splits,
+)
+from utils.train import (
     TrainingConfig,
     TrainingMetrics,
     collect_predictions,
@@ -52,7 +55,7 @@ class ExperimentConfig:
     """Configuration for the full experiment."""
 
     # Data
-    data_dir: str = "data/raw"
+    data_dir: str = "../../../data/raw"
     max_chunks: int | None = None  # Limit chunks for testing
     target_length: int = 512
     normalization: str = "zscore"  # "zscore" or "minmax"
@@ -66,7 +69,7 @@ class ExperimentConfig:
     bond_dims: list[int] = None  # type: ignore[assignment]  # Set in __post_init__
 
     # CNN baseline source
-    benchmark_cnn_results_path: str = "benchmark/cnn/models/ir/results.pickle"
+    benchmark_cnn_results_path: str = "../../../benchmark/cnn/models/ir/results.pickle"
 
     # Training
     batch_size: int = 64
@@ -80,7 +83,8 @@ class ExperimentConfig:
     threshold_metric: str = "f1_micro"  # "f1_micro" or "f1_macro"
 
     # Output
-    output_dir: str = "results/tn_evaluation"
+    output_dir: str = "results"
+    models_dir: str = "models"
     seed: int = 42
 
     def __post_init__(self) -> None:
@@ -148,6 +152,7 @@ def run_single_experiment(
     num_classes: int,
     embedding_dim: int,
     training_config: TrainingConfig,
+    models_dir: str | Path,
     pos_weight: torch.Tensor | None = None,
     class_mask: torch.Tensor | None = None,
     threshold_metric: str = "f1_micro",
@@ -210,6 +215,20 @@ def run_single_experiment(
     print(f"  Test Loss: {test_loss:.4f}")
     print(f"  Test F1 Micro: {test_f1_micro:.4f}")
     print(f"  Test F1 Macro: {test_f1_macro:.4f}")
+
+    # Save trained model
+    models_dir = Path(models_dir)
+    models_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create filename-safe model name
+    safe_model_name = (
+        encoder_name.replace(" ", "_").replace("(", "").replace(")", "").replace("=", "")
+    )
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_path = models_dir / f"{safe_model_name}_{timestamp}.pt"
+
+    torch.save(model.state_dict(), model_path)
+    print(f"  Model saved to: {model_path}")
 
     # Get best val F1 macro
     best_val_f1_macro = metrics.val_f1_macro[metrics.best_epoch] if metrics.val_f1_macro else 0.0
@@ -334,6 +353,7 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
         num_classes=num_classes,
         embedding_dim=config.embedding_dim,
         training_config=baseline_training_config,
+        models_dir=config.models_dir,
         pos_weight=pos_weight,
         class_mask=class_mask,
         threshold_metric=config.threshold_metric,
@@ -358,6 +378,7 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
             num_classes=num_classes,
             embedding_dim=config.embedding_dim,
             training_config=mps_training_config,
+            models_dir=config.models_dir,
             pos_weight=pos_weight,
             class_mask=class_mask,
             threshold_metric=config.threshold_metric,
@@ -368,35 +389,6 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
             "bond_dim": bond_dim,
         }
         results.append(mps_result)
-
-    # ===== MPS Simple: for comparison =====
-    mps_simple_encoder = MPSEncoderSimple(
-        input_length=config.target_length,
-        num_sites=config.num_sites,
-        physical_dim=config.physical_dim,
-        bond_dim=16,
-        embedding_dim=config.embedding_dim,
-    )
-    mps_simple_result = run_single_experiment(
-        encoder_name="MPS Simple (D=16)",
-        encoder=mps_simple_encoder,
-        train_loader=train_loader,
-        val_loader=val_loader,
-        test_loader=test_loader,
-        num_classes=num_classes,
-        embedding_dim=config.embedding_dim,
-        training_config=mps_training_config,
-        pos_weight=pos_weight,
-        class_mask=class_mask,
-        threshold_metric=config.threshold_metric,
-    )
-    mps_simple_result.config = {
-        "num_sites": config.num_sites,
-        "physical_dim": config.physical_dim,
-        "bond_dim": 16,
-        "variant": "simple",
-    }
-    results.append(mps_simple_result)
 
     return results
 
@@ -457,14 +449,20 @@ def main() -> None:
     parser.add_argument(
         "--data_dir",
         type=str,
-        default="data/raw",
+        default="../../../data/raw",
         help="Path to data directory",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="results/tn_evaluation",
+        default="results",
         help="Output directory for results",
+    )
+    parser.add_argument(
+        "--models_dir",
+        type=str,
+        default="models",
+        help="Output directory for trained models",
     )
     parser.add_argument(
         "--max_chunks",
@@ -549,7 +547,7 @@ def main() -> None:
     parser.add_argument(
         "--benchmark_cnn_results_path",
         type=str,
-        default="benchmark/cnn/models/ir/results.pickle",
+        default="../../../benchmark/cnn/models/ir/results.pickle",
         help="Path to benchmark CNN results pickle",
     )
     parser.add_argument(
@@ -564,6 +562,7 @@ def main() -> None:
     config = ExperimentConfig(
         data_dir=args.data_dir,
         output_dir=args.output_dir,
+        models_dir=args.models_dir,
         max_chunks=args.max_chunks,
         target_length=args.target_length,
         num_sites=args.num_sites,

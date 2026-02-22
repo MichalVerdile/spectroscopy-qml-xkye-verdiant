@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 
-class MLPEncoder(nn.Module):  # type: ignore[misc]
+class MLPEncoder(nn.Module):
     """
     Simple MLP encoder for IR spectra.
 
