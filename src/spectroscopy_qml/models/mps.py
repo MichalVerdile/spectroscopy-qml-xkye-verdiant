@@ -3,9 +3,9 @@
 #
 # Notation:
 #   L = input_length (e.g., 512)
-#   S = num_sites    (e.g., 64)
-#   site_dim = L / S (e.g., 512/64 = 8 values per site)
-#   p = physical_dim (e.g., 4)
+#   S = num_sites    (current default: 32)
+#   site_dim = L / S (current default: 512/32 = 16 values per site)
+#   p = physical_dim (current default: 8)
 #   D = bond_dim     (e.g., 16)
 #   E = embedding_dim (e.g., 128)
 #
@@ -23,12 +23,12 @@
 #   Result:
 #     features = [phi_0, ..., phi_{S-1}]  each (batch, p)
 #
-# 3) Contract MPS cores left-to-right (sequential sweep)
+# 3) Contract MPS cores
 #   Cores:
 #     core_0: (1, p, D)              # left boundary
-#     core_i: (D, p, D)              # bulk (and last core in this implementation)
+#     core_i: (D, p, D)              # bulk
 #
-#   3a) Initialize with left boundary:
+#   3a) Forward sweep (left -> right):
 #       result = einsum("ipd,bp->bid", core_0, phi_0)  # (batch, 1, D)
 #       result = squeeze -> (batch, D)
 #
@@ -41,11 +41,15 @@
 #       Output:
 #         result: (batch, D_right)
 #
-#   Final contracted state:
-#     result: (batch, D)
+#   3c) Backward sweep (right -> left):
+#       same contraction on reversed features with a second core stack
+#       -> backward_state: (batch, D)
+#
+#   3d) Concatenate directional states:
+#       state = concat([forward_state, backward_state]) -> (batch, 2D)
 #
 # 4) Output projection to embedding space
-#   embedding = Linear(D -> E)
+#   embedding = LayerNorm(2D) + Linear(2D -> E)
 #   -> (batch, E)
 #
 # Output:
@@ -85,6 +89,7 @@ class LocalFeatureMap(nn.Module):  # type: ignore[misc]
         site_dim: int,
         physical_dim: int,
         hidden_dim: int | None = None,
+        dropout: float = 0.1,
     ):
         """
         Initialize local feature map.
@@ -102,9 +107,12 @@ class LocalFeatureMap(nn.Module):  # type: ignore[misc]
             hidden_dim = max(site_dim, physical_dim * 2)
 
         self.mlp = nn.Sequential(
+            nn.LayerNorm(site_dim),
             nn.Linear(site_dim, hidden_dim),
-            nn.ReLU(inplace=True),
+            nn.GELU(),
+            nn.Dropout(dropout),
             nn.Linear(hidden_dim, physical_dim),
+            nn.Tanh(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -152,6 +160,8 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
         shared_feature_map: bool = True,
         normalize_state: bool = True,
         state_eps: float = 1e-6,
+        bidirectional: bool = True,
+        feature_dropout: float = 0.1,
     ):
         """
         Initialize MPS encoder.
@@ -172,6 +182,7 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
         self.embedding_dim = embedding_dim
         self.normalize_state = normalize_state
         self.state_eps = state_eps
+        self.bidirectional = bidirectional
 
         # Compute site dimension (input values per site)
         assert (
@@ -181,62 +192,60 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
 
         # Local feature maps
         if shared_feature_map:
-            feature_map = LocalFeatureMap(self.site_dim, physical_dim)
+            feature_map = LocalFeatureMap(self.site_dim, physical_dim, dropout=feature_dropout)
             self.feature_maps = nn.ModuleList([feature_map] * num_sites)
         else:
             self.feature_maps = nn.ModuleList(
-                [LocalFeatureMap(self.site_dim, physical_dim) for _ in range(num_sites)]
+                [
+                    LocalFeatureMap(self.site_dim, physical_dim, dropout=feature_dropout)
+                    for _ in range(num_sites)
+                ]
             )
         self.shared_feature_map = shared_feature_map
 
-        # MPS cores
-        # Left boundary: (1, p, D)
-        # Bulk: (D, p, D)
-        # Right boundary: (D, p, 1)
-        self.cores = nn.ParameterList()
-
-        # Left boundary core
-        self.cores.append(
-            nn.Parameter(torch.randn(1, physical_dim, bond_dim) / math.sqrt(physical_dim))
-        )
-
-        # Bulk cores
-        for _ in range(num_sites - 2):
-            self.cores.append(
-                nn.Parameter(
-                    torch.randn(bond_dim, physical_dim, bond_dim)
-                    / math.sqrt(bond_dim * physical_dim)
-                )
+        self.cores_forward = self._build_core_stack(physical_dim, bond_dim)
+        if self.bidirectional:
+            self.cores_backward = self._build_core_stack(physical_dim, bond_dim)
+            self.output_projection = nn.Sequential(
+                nn.LayerNorm(2 * bond_dim),
+                nn.Linear(2 * bond_dim, embedding_dim),
+            )
+        else:
+            self.output_projection = nn.Sequential(
+                nn.LayerNorm(bond_dim),
+                nn.Linear(bond_dim, embedding_dim),
             )
 
-        # Right boundary core
-        self.cores.append(
-            nn.Parameter(
-                torch.randn(bond_dim, physical_dim, 1) / math.sqrt(bond_dim * physical_dim)
-            )
-        )
+    def _build_core_stack(self, physical_dim: int, bond_dim: int) -> nn.ParameterList:
+        """
+        Build one directional MPS core stack with stable initialization.
+        """
+        cores = nn.ParameterList()
+        left = torch.empty(1, physical_dim, bond_dim)
+        nn.init.xavier_uniform_(left)
+        cores.append(nn.Parameter(left))
 
-        # Output projection
-        # The contracted MPS outputs a scalar per sample, but we want embedding_dim
-        # Solution: Use multiple MPS "channels" and project
-        self.num_channels = embedding_dim
-        self.output_cores = nn.ParameterList()
+        for _ in range(self.num_sites - 1):
+            core = torch.empty(bond_dim, physical_dim, bond_dim)
+            nn.init.xavier_uniform_(core)
+            cores.append(nn.Parameter(core))
+        return cores
 
-        # Create separate output cores for each embedding channel
-        # Alternative: use a single MPS with bond_dim * embedding_dim and reshape
-        # Here we use the simpler approach: project from bond_dim at the end
+    def _contract_direction(
+        self, features: list[torch.Tensor], cores: nn.ParameterList
+    ) -> torch.Tensor:
+        """
+        Contract one MPS direction and return the hidden state (batch, bond_dim).
+        """
+        result = torch.einsum("ipd,bp->bid", cores[0], features[0]).squeeze(1)
+        if self.normalize_state:
+            result = result / (result.norm(dim=1, keepdim=True) + self.state_eps)
 
-        # Actually, let's use a different approach:
-        # Contract the MPS to get a (batch, bond_dim) vector and project
-        self._use_final_projection = True
-
-        # Override cores for final projection approach
-        # Right boundary now outputs bond_dim instead of 1
-        self.cores[-1] = nn.Parameter(
-            torch.randn(bond_dim, physical_dim, bond_dim) / math.sqrt(bond_dim * physical_dim)
-        )
-
-        self.output_projection = nn.Linear(bond_dim, embedding_dim)
+        for i in range(1, self.num_sites):
+            result = torch.einsum("bd,dpD,bp->bD", result, cores[i], features[i])
+            if self.normalize_state:
+                result = result / (result.norm(dim=1, keepdim=True) + self.state_eps)
+        return result
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -264,36 +273,15 @@ class MPSEncoder(nn.Module):  # type: ignore[misc]
                 phi = self.feature_maps[i](site_input)
             features.append(phi)
 
-        # Contract MPS from left to right
-        # Start with left boundary
-        # core_0: (1, p, D), phi_0: (batch, p)
-        # Result: (batch, 1, D) -> (batch, D)
-        core = self.cores[0]  # (1, p, D)
-        phi = features[0]  # (batch, p)
+        # Forward contraction
+        forward_state = self._contract_direction(features, self.cores_forward)
+        if self.bidirectional:
+            backward_state = self._contract_direction(list(reversed(features)), self.cores_backward)
+            state = torch.cat([forward_state, backward_state], dim=1)
+        else:
+            state = forward_state
 
-        # Einsum: 'ipd,bp->bid' then squeeze i
-        # (batch, 1, D) from (1, p, D) and (batch, p)
-        result = torch.einsum("ipd,bp->bid", core, phi)  # (batch, 1, D)
-        result = result.squeeze(1)  # (batch, D)
-        if self.normalize_state:
-            result = result / (result.norm(dim=1, keepdim=True) + self.state_eps)
-
-        # Contract bulk cores
-        for i in range(1, self.num_sites):
-            core = self.cores[i]  # (D, p, D) or (D, p, D) for last
-            phi = features[i]  # (batch, p)
-
-            # Einsum: 'bd,dpD,bp->bD'
-            # result: (batch, D_left)
-            # core: (D_left, p, D_right)
-            # phi: (batch, p)
-            # Output: (batch, D_right)
-            result = torch.einsum("bd,dpD,bp->bD", result, core, phi)
-            if self.normalize_state:
-                result = result / (result.norm(dim=1, keepdim=True) + self.state_eps)
-
-        # Project to embedding dimension
-        embedding = self.output_projection(result)
+        embedding = self.output_projection(state)
 
         return embedding
 
