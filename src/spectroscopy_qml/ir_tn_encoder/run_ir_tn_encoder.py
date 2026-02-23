@@ -276,24 +276,30 @@ def run_full_experiment(config: ExperimentConfig) -> list[ExperimentResult]:
     train_set, val_set, test_set = create_data_splits(dataset, seed=config.seed)
 
     # Data loaders
+    # Use multiple workers for parallel data loading to avoid CPU bottleneck
+    num_workers = 4 if config.batch_size >= 512 else 2
     train_loader = DataLoader(
         train_set,
         batch_size=config.batch_size,
         shuffle=True,
-        num_workers=0,
+        num_workers=num_workers,
         pin_memory=True,
+        persistent_workers=True if num_workers > 0 else False,
     )
     val_loader = DataLoader(
         val_set,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=0,
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=True if num_workers > 0 else False,
     )
     test_loader = DataLoader(
         test_set,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=0,
+        num_workers=num_workers,
+        persistent_workers=True if num_workers > 0 else False,
     )
 
     # Class weights
@@ -498,7 +504,7 @@ def main() -> None:
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=64,
+        default=8192,
         help="Batch size for training",
     )
     parser.add_argument(
@@ -510,13 +516,13 @@ def main() -> None:
     parser.add_argument(
         "--learning_rate",
         type=float,
-        default=1e-3,
+        default=0.011,
         help="Learning rate for baseline models",
     )
     parser.add_argument(
         "--mps_learning_rate",
         type=float,
-        default=3e-4,
+        default=0.011,
         help="Learning rate for MPS models",
     )
     parser.add_argument(

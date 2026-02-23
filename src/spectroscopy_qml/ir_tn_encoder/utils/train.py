@@ -426,14 +426,14 @@ def train_model(
                 best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
 
         # Logging
-        if (epoch + 1) % config.log_interval == 0 or epoch == 0:
-            print(
-                f"Epoch {epoch + 1:3d}/{config.num_epochs} | "
-                f"Train Loss: {train_loss:.4f} | "
-                f"Val Loss: {val_loss:.4f} | "
-                f"Train F1: {train_f1_micro:.4f}/{train_f1_macro:.4f} | "
-                f"Val F1: {val_f1_micro:.4f}/{val_f1_macro:.4f}"
-            )
+        lr = optimizer.param_groups[0]['lr']
+        is_best = "★" if val_f1_micro > metrics.best_val_f1_micro else " "
+        print(
+            f"Epoch {epoch + 1:3d}/{config.num_epochs} {is_best} | "
+            f"LR: {lr:.2e} | "
+            f"Train Loss: {train_loss:.4f} F1: {train_f1_micro:.4f}/{train_f1_macro:.4f} | "
+            f"Val Loss: {val_loss:.4f} F1: {val_f1_micro:.4f}/{val_f1_macro:.4f}"
+        )
 
         # Learning rate scheduling
         scheduler.step(val_f1_micro)
