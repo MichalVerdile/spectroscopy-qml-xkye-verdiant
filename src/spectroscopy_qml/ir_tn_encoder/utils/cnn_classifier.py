@@ -1,11 +1,13 @@
 """
-CNN-based classifier adapted from Jung et al. baseline.
+CNN-based classifier for encoder embeddings.
 
-This classifier uses the dense layer architecture from the Jung CNN baseline,
-designed to work with encoder embeddings rather than raw spectra.
+This classifier uses 1D convolutional layers followed by fully connected layers
+to classify functional groups from encoder embeddings.
 
-Reference:
-    Jung et al. (https://github.com/gj475/irchracterizationcnn)
+Architecture:
+- Takes encoder embeddings (1D vectors)
+- Applies 1D convolutions with batch normalization and pooling
+- Flattens and passes through FC layers for classification
 """
 
 from __future__ import annotations
@@ -16,24 +18,25 @@ import torch.nn as nn
 
 class CNNClassifier(nn.Module):
     """
-    CNN-based classifier using Jung et al. architecture.
+    CNN-based classifier for encoder embeddings.
 
-    Takes encoder embeddings and applies multi-layer dense network
-    with dropout for functional group classification.
+    Takes encoder embeddings and applies 1D convolutional layers
+    followed by fully connected layers for functional group classification.
 
-    Architecture (adapted from Jung baseline):
-    - Dense layer 1: embedding_dim → 4927 (relu, dropout)
-    - Dense layer 2: 4927 → 2785 (relu, dropout)
-    - Dense layer 3: 2785 → 1574 (relu, dropout)
-    - Output layer: 1574 → num_classes (sigmoid)
+    Architecture:
+    - Reshape embedding to (batch, 1, embedding_dim) for 1D convolutions
+    - Conv1D blocks with increasing channels and pooling
+    - Flatten and pass through FC layers
+    - Output layer for classification
     """
 
     def __init__(
         self,
         embedding_dim: int = 128,
         num_classes: int = 37,
-        dropout: float = 0.48599073736368,
-        hidden_dims: list[int] | None = None,
+        dropout: float = 0.3,
+        conv_channels: list[int] | None = None,
+        fc_dims: list[int] | None = None,
     ):
         """
         Initialize CNN classifier.
@@ -41,33 +44,56 @@ class CNNClassifier(nn.Module):
         Args:
             embedding_dim: Dimension of encoder output
             num_classes: Number of functional group classes
-            dropout: Dropout probability (default from Jung baseline)
-            hidden_dims: Hidden layer dimensions (default: [4927, 2785, 1574] from Jung)
+            dropout: Dropout probability
+            conv_channels: Number of channels for each conv layer (default: [32, 64, 128])
+            fc_dims: Fully connected layer dimensions (default: [256, 128])
         """
         super().__init__()
         self.embedding_dim = embedding_dim
         self.num_classes = num_classes
 
-        if hidden_dims is None:
-            hidden_dims = [4927, 2785, 1574]
+        if conv_channels is None:
+            conv_channels = [32, 64, 128]
+        if fc_dims is None:
+            fc_dims = [256, 128]
 
-        layers: list[nn.Module] = []
-        in_dim = embedding_dim
+        # Convolutional layers
+        conv_layers: list[nn.Module] = []
+        in_channels = 1  # Start with 1 channel (reshaped embedding)
+        current_length = embedding_dim
 
-        for hidden_dim in hidden_dims:
-            layers.extend(
-                [
-                    nn.Linear(in_dim, hidden_dim),
-                    nn.ReLU(),
-                    nn.Dropout(dropout),
-                ]
-            )
-            in_dim = hidden_dim
+        for out_channels in conv_channels:
+            conv_layers.extend([
+                nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1),
+                nn.BatchNorm1d(out_channels),
+                nn.ReLU(),
+                nn.MaxPool1d(kernel_size=2),
+                nn.Dropout(dropout),
+            ])
+            in_channels = out_channels
+            current_length = current_length // 2
+
+        self.conv_layers = nn.Sequential(*conv_layers)
+
+        # Calculate flattened size after conv layers
+        self.flatten_size = conv_channels[-1] * current_length
+
+        # Fully connected layers
+        fc_layers: list[nn.Module] = []
+        in_dim = self.flatten_size
+
+        for fc_dim in fc_dims:
+            fc_layers.extend([
+                nn.Linear(in_dim, fc_dim),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+            ])
+            in_dim = fc_dim
 
         # Output layer
-        layers.append(nn.Linear(in_dim, num_classes))
+        fc_layers.append(nn.Linear(in_dim, num_classes))
 
-        self.classifier = nn.Sequential(*layers)
+        self.fc_layers = nn.Sequential(*fc_layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -79,7 +105,19 @@ class CNNClassifier(nn.Module):
         Returns:
             Logits of shape (batch, num_classes)
         """
-        return self.classifier(x)
+        # Reshape to (batch, 1, embedding_dim) for 1D convolutions
+        x = x.unsqueeze(1)
+        
+        # Apply convolutional layers
+        x = self.conv_layers(x)
+        
+        # Flatten
+        x = x.view(x.size(0), -1)
+        
+        # Apply fully connected layers
+        logits = self.fc_layers(x)
+        
+        return logits
 
 
 class FunctionalGroupClassifier(nn.Module):
@@ -92,7 +130,9 @@ class FunctionalGroupClassifier(nn.Module):
         encoder: nn.Module,
         num_classes: int,
         embedding_dim: int = 128,
-        dropout: float = 0.48599073736368,
+        dropout: float = 0.3,
+        conv_channels: list[int] | None = None,
+        fc_dims: list[int] | None = None,
     ):
         """
         Initialize classifier.
@@ -102,6 +142,8 @@ class FunctionalGroupClassifier(nn.Module):
             num_classes: Number of functional group classes
             embedding_dim: Encoder output dimension
             dropout: Dropout probability for CNN classifier
+            conv_channels: Number of channels for each conv layer
+            fc_dims: Fully connected layer dimensions
         """
         super().__init__()
         self.encoder = encoder
@@ -109,6 +151,8 @@ class FunctionalGroupClassifier(nn.Module):
             embedding_dim=embedding_dim,
             num_classes=num_classes,
             dropout=dropout,
+            conv_channels=conv_channels,
+            fc_dims=fc_dims,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
