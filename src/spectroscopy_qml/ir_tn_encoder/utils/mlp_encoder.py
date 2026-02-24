@@ -27,7 +27,7 @@ class MLPEncoder(nn.Module):
         self.embedding_dim = embedding_dim
 
         if hidden_dims is None:
-            hidden_dims = [1024, 512, 256]
+            hidden_dims = [512, 256]
 
         layers: list[nn.Module] = []
 
