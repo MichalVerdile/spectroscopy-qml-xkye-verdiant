@@ -136,7 +136,7 @@ def resample_spectrum(
 
 def normalize_spectrum(
     spectrum: np.ndarray,
-    method: str = "zscore",  # "zscore" or "minmax"
+    method: Literal["minmax", "iqr"] = "minmax",
     eps: float = 1e-8,
 ) -> np.ndarray:
     """
@@ -144,7 +144,7 @@ def normalize_spectrum(
 
     Args:
         spectrum: 1D array of spectral intensities
-        method: Normalization method
+        method: Normalization method ("minmax" or "iqr")
         eps: Small constant for numerical stability
 
     Returns:
@@ -152,15 +152,17 @@ def normalize_spectrum(
     """
     spectrum = spectrum.astype(np.float32)
 
-    if method == "zscore":
-        mean = float(np.mean(spectrum))
-        std = float(np.std(spectrum))
-        result: np.ndarray = (spectrum - mean) / (std + eps)
-        return result
-    elif method == "minmax":
+    if method == "minmax":
         min_val = float(np.min(spectrum))
         max_val = float(np.max(spectrum))
         result = (spectrum - min_val) / (max_val - min_val + eps)
+        return result
+    elif method == "iqr":
+        q1 = float(np.percentile(spectrum, 25))
+        q3 = float(np.percentile(spectrum, 75))
+        median = float(np.median(spectrum))
+        iqr = q3 - q1
+        result = (spectrum - median) / (iqr + eps)
         return result
     else:
         raise ValueError(f"Unknown normalization method: {method}")
@@ -178,7 +180,7 @@ class IRFunctionalGroupDataset(Dataset):
         self,
         data_dir: str | Path,
         target_length: int = 512,
-        normalization: str = "zscore",  # "zscore" or "minmax"
+        normalization: Literal["minmax", "iqr"] = "minmax",
         functional_groups: dict[str, str] | None = None,
         max_chunks: int | None = None,
         cache_labels: bool = True,
@@ -189,7 +191,7 @@ class IRFunctionalGroupDataset(Dataset):
         Args:
             data_dir: Path to directory containing parquet files
             target_length: Resample spectra to this length
-            normalization: Normalization method ("zscore" or "minmax")
+            normalization: Normalization method ("minmax" or "iqr")
             functional_groups: Custom functional groups dict (defaults to FUNCTIONAL_GROUPS)
             max_chunks: Maximum number of parquet chunks to load (for testing)
             cache_labels: Whether to precompute and cache labels
