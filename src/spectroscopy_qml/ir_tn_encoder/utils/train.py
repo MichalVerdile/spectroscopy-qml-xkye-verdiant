@@ -163,34 +163,34 @@ def compute_f1_scores(
     return float(f1_micro), float(f1_macro)
 
 
-@torch.no_grad()  # type: ignore[misc]
 def collect_predictions(
     model: nn.Module,
-    dataloader: DataLoader,
+    dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     device: str,
     class_mask: torch.Tensor | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Collect probability predictions and targets for threshold tuning/evaluation.
     """
-    model.eval()
-    all_predictions: list[np.ndarray] = []
-    all_targets: list[np.ndarray] = []
+    with torch.no_grad():
+        model.eval()
+        all_predictions: list[np.ndarray] = []
+        all_targets: list[np.ndarray] = []
 
-    for batch_x, batch_y in dataloader:
-        batch_x = batch_x.to(device)
-        batch_y = batch_y.to(device)
+        for batch_x, batch_y in dataloader:
+            batch_x = batch_x.to(device)
+            batch_y = batch_y.to(device)
 
-        logits = model(batch_x)
-        if class_mask is not None:
-            logits = logits[:, class_mask]
-            batch_y = batch_y[:, class_mask]
+            logits = model(batch_x)
+            if class_mask is not None:
+                logits = logits[:, class_mask]
+                batch_y = batch_y[:, class_mask]
 
-        probs = torch.sigmoid(logits)
-        all_predictions.append(probs.cpu().numpy())
-        all_targets.append(batch_y.cpu().numpy())
+            probs = torch.sigmoid(logits)
+            all_predictions.append(probs.cpu().numpy())
+            all_targets.append(batch_y.cpu().numpy())
 
-    return np.concatenate(all_predictions, axis=0), np.concatenate(all_targets, axis=0)
+        return np.concatenate(all_predictions, axis=0), np.concatenate(all_targets, axis=0)
 
 
 def find_best_threshold(
@@ -220,7 +220,7 @@ def find_best_threshold(
 
 def train_epoch(
     model: nn.Module,
-    dataloader: DataLoader,
+    dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     optimizer: torch.optim.Optimizer,
     criterion: nn.Module,
     device: str,
@@ -270,15 +270,14 @@ def train_epoch(
     all_targets_arr = np.concatenate(all_targets, axis=0)
     f1_micro, f1_macro = compute_f1_scores(all_predictions_arr, all_targets_arr)
 
-    avg_loss = total_loss / len(dataloader.dataset)
+    avg_loss = total_loss / float(len(dataloader.dataset))
 
     return avg_loss, f1_micro, f1_macro
 
 
-@torch.no_grad()  # type: ignore[misc]
 def evaluate(
     model: nn.Module,
-    dataloader: DataLoader,
+    dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     criterion: nn.Module,
     device: str,
     class_mask: torch.Tensor | None = None,
@@ -290,47 +289,48 @@ def evaluate(
     Returns:
         Tuple of (average_loss, f1_micro, f1_macro)
     """
-    model.eval()
-    total_loss = 0.0
-    all_predictions: list[np.ndarray] = []
-    all_targets: list[np.ndarray] = []
+    with torch.no_grad():
+        model.eval()
+        total_loss = 0.0
+        all_predictions: list[np.ndarray] = []
+        all_targets: list[np.ndarray] = []
 
-    for batch_x, batch_y in dataloader:
-        batch_x = batch_x.to(device)
-        batch_y = batch_y.to(device)
+        for batch_x, batch_y in dataloader:
+            batch_x = batch_x.to(device)
+            batch_y = batch_y.to(device)
 
-        logits = model(batch_x)
-        if class_mask is not None:
-            logits_for_loss = logits[:, class_mask]
-            batch_y_for_loss = batch_y[:, class_mask]
-        else:
-            logits_for_loss = logits
-            batch_y_for_loss = batch_y
+            logits = model(batch_x)
+            if class_mask is not None:
+                logits_for_loss = logits[:, class_mask]
+                batch_y_for_loss = batch_y[:, class_mask]
+            else:
+                logits_for_loss = logits
+                batch_y_for_loss = batch_y
 
-        loss = criterion(logits_for_loss, batch_y_for_loss)
+            loss = criterion(logits_for_loss, batch_y_for_loss)
 
-        total_loss += loss.item() * batch_x.size(0)
+            total_loss += loss.item() * batch_x.size(0)
 
-        probs = torch.sigmoid(logits_for_loss)
-        all_predictions.append(probs.cpu().numpy())
-        all_targets.append(batch_y_for_loss.cpu().numpy())
+            probs = torch.sigmoid(logits_for_loss)
+            all_predictions.append(probs.cpu().numpy())
+            all_targets.append(batch_y_for_loss.cpu().numpy())
 
-    # Compute metrics
-    all_predictions_arr = np.concatenate(all_predictions, axis=0)
-    all_targets_arr = np.concatenate(all_targets, axis=0)
-    f1_micro, f1_macro = compute_f1_scores(
-        all_predictions_arr, all_targets_arr, threshold=threshold
-    )
+        # Compute metrics
+        all_predictions_arr = np.concatenate(all_predictions, axis=0)
+        all_targets_arr = np.concatenate(all_targets, axis=0)
+        f1_micro, f1_macro = compute_f1_scores(
+            all_predictions_arr, all_targets_arr, threshold=threshold
+        )
 
-    avg_loss = total_loss / len(dataloader.dataset)
+        avg_loss = total_loss / float(len(dataloader.dataset))
 
-    return avg_loss, f1_micro, f1_macro
+        return avg_loss, f1_micro, f1_macro
 
 
 def train_model(
     model: nn.Module,
-    train_loader: DataLoader,
-    val_loader: DataLoader,
+    train_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    val_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     config: TrainingConfig,
     pos_weight: torch.Tensor | None = None,
     class_mask: torch.Tensor | None = None,
@@ -360,6 +360,7 @@ def train_model(
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     # Optimizer
+    optimizer: torch.optim.Optimizer
     if config.optimizer == "adamw":
         optimizer = torch.optim.AdamW(
             model.parameters(),
@@ -426,7 +427,7 @@ def train_model(
                 best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
 
         # Logging
-        lr = optimizer.param_groups[0]['lr']
+        lr = optimizer.param_groups[0]["lr"]
         is_best = "★" if val_f1_micro > metrics.best_val_f1_micro else " "
         print(
             f"Epoch {epoch + 1:3d}/{config.num_epochs} {is_best} | "

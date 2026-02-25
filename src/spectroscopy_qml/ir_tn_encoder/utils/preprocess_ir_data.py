@@ -95,7 +95,7 @@ def extract_functional_groups(smiles: str, groups: dict[str, str] | None = None)
     is present in this molecule (True/False).
     """
     if mol is None:
-        return {name: False for name in groups}
+        return dict.fromkeys(groups, False)
 
     for name, smarts in groups.items():
         pattern = _get_compiled_pattern(name, smarts)
@@ -168,7 +168,7 @@ def normalize_spectrum(
         raise ValueError(f"Unknown normalization method: {method}")
 
 
-class IRFunctionalGroupDataset(Dataset):
+class IRFunctionalGroupDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     """
     PyTorch Dataset for IR spectra with functional group labels.
 
@@ -309,7 +309,11 @@ def create_data_splits(
     val_ratio: float = 0.1,
     test_ratio: float = 0.1,
     seed: int = 42,
-) -> tuple[torch.utils.data.Subset, torch.utils.data.Subset, torch.utils.data.Subset]:
+) -> tuple[
+    torch.utils.data.Subset[tuple[torch.Tensor, torch.Tensor]],
+    torch.utils.data.Subset[tuple[torch.Tensor, torch.Tensor]],
+    torch.utils.data.Subset[tuple[torch.Tensor, torch.Tensor]],
+]:
     """
     Create train/val/test splits.
 

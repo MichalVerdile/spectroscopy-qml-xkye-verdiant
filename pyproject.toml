@@ -105,6 +105,8 @@ module = [
     "sklearn.*",
     "seaborn.*",
     "tqdm.*",
+    "pandas.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true
 
@@ -128,6 +130,12 @@ module = [
     "spectroscopy_qml.ir_tn_encoder.evaluation.evaluate_ir_tn_encoder",
 ]
 disable_error_code = ["attr-defined", "arg-type"]
+
+[[tool.mypy.overrides]]
+module = [
+    "spectroscopy_qml.ir_tn_encoder.utils.train",
+]
+disable_error_code = ["arg-type"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

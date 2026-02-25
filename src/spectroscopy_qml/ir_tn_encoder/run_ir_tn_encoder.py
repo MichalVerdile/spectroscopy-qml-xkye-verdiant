@@ -27,18 +27,20 @@ import pickle
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from utils.cnn_classifier import FunctionalGroupClassifier
-from utils.mlp_encoder import MLPEncoder
-from utils.mps_encoder import MPSEncoder
-from utils.preprocess_ir_data import (
+
+from .utils.cnn_classifier import FunctionalGroupClassifier
+from .utils.mlp_encoder import MLPEncoder
+from .utils.mps_encoder import MPSEncoder
+from .utils.preprocess_ir_data import (
     IRFunctionalGroupDataset,
     create_data_splits,
 )
-from utils.train import (
+from .utils.train import (
     TrainingConfig,
     TrainingMetrics,
     collect_predictions,
@@ -58,7 +60,7 @@ class ExperimentConfig:
     data_dir: str = "../../../data/raw"
     max_chunks: int | None = None  # Limit chunks for testing
     target_length: int = 512
-    normalization: str = "minmax"  # "minmax" or "iqr"
+    normalization: Literal["minmax", "iqr"] = "minmax"
 
     # Model
     embedding_dim: int = 128
@@ -78,7 +80,7 @@ class ExperimentConfig:
     weight_decay: float = 1e-5
     num_epochs: int = 100
     patience: int = 15
-    grad_clip_norm: float = 1.0
+    grad_clip_norm: float | None = 1.0
     pos_weight_cap: float = 20.0
     threshold_metric: str = "f1_micro"  # "f1_micro" or "f1_macro"
 
@@ -146,9 +148,9 @@ def load_benchmark_cnn_result(results_path: str | Path) -> ExperimentResult:
 def run_single_experiment(
     encoder_name: str,
     encoder: torch.nn.Module,
-    train_loader: DataLoader,
-    val_loader: DataLoader,
-    test_loader: DataLoader,
+    train_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    val_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    test_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     num_classes: int,
     embedding_dim: int,
     training_config: TrainingConfig,
@@ -173,10 +175,10 @@ def run_single_experiment(
     )
 
     num_params = count_parameters(model)
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"Training: {encoder_name}")
     print(f"Parameters: {num_params:,}")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     # Train
     start_time = time.time()
@@ -587,7 +589,7 @@ def main() -> None:
         learning_rate=args.learning_rate,
         mps_learning_rate=args.mps_learning_rate,
         patience=args.patience,
-        grad_clip_norm=args.grad_clip_norm if args.grad_clip_norm > 0 else None,
+        grad_clip_norm=float(args.grad_clip_norm) if args.grad_clip_norm > 0 else None,
         pos_weight_cap=args.pos_weight_cap,
         threshold_metric=args.threshold_metric,
         benchmark_cnn_results_path=args.benchmark_cnn_results_path,

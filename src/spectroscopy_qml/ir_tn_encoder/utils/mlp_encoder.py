@@ -49,4 +49,5 @@ class MLPEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass: (batch, input_length) -> (batch, embedding_dim)."""
-        return self.layers(x)
+        result: torch.Tensor = self.layers(x)
+        return result
