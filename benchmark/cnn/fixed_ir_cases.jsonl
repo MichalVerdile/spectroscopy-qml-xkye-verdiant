@@ -1,0 +1,10 @@
+{"sample_id": "case_001", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 0, "smiles": "O=S(O)c1cc2c(cc1F)OC(c1ccc(F)cc1F)(c1ccc(F)cc1F)O2", "expected_groups": ["Arene", "Ether", "Haloalkane", "Sulfoxide"]}
+{"sample_id": "case_002", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 1, "smiles": "CN(C)Cc1cccc(C2Nc3cccc4c(=O)[nH]nc(c34)C2c2ccccc2)c1", "expected_groups": ["Alkane", "Amine", "Arene"]}
+{"sample_id": "case_003", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 2, "smiles": "O=C(N[C@@H](CO)c1nc2cc(Cl)ccc2[nH]1)c1ccc(C(=O)N2CC=CC2)c(Br)c1", "expected_groups": ["Alcohol", "Alkane", "Alkene", "Amide", "Arene", "Haloalkane"]}
+{"sample_id": "case_004", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 3, "smiles": "O=C(Cn1cc(I)cn1)N1CCCc2c1cnn2-c1ccc(F)cc1", "expected_groups": ["Alkane", "Amide", "Arene", "Haloalkane"]}
+{"sample_id": "case_005", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 4, "smiles": "Cc1ccc(-c2ccnc(Cl)c2)n1CC(=O)OCc1ccccc1", "expected_groups": ["Alkane", "Arene", "Ester", "Ether", "Haloalkane"]}
+{"sample_id": "case_006", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 5, "smiles": "CC[C@@H]([C@H](C)O)N1C(=O)[C@@](C)(CC(=O)OC)C[C@H](c2cccc(Cl)c2)[C@H]1c1ccc(Cl)cc1", "expected_groups": ["Alcohol", "Alkane", "Amide", "Arene", "Ester", "Ether", "Haloalkane"]}
+{"sample_id": "case_007", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 6, "smiles": "CC[C@@H]1COCCN1CC#CCCl", "expected_groups": ["Alkane", "Alkyne", "Amine", "Ether", "Haloalkane"]}
+{"sample_id": "case_008", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 7, "smiles": "CC(=NNC(=O)c1ccc(Br)cc1)N(C)C", "expected_groups": ["Alkane", "Amide", "Amine", "Arene", "Haloalkane", "Hydrazone"]}
+{"sample_id": "case_009", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 8, "smiles": "Cn1c(N)c(NC(=O)CC#N)c(=O)n(C)c1=O", "expected_groups": ["Alkane", "Amide", "Amine", "Nitrile"]}
+{"sample_id": "case_010", "parquet_file": "aligned_chunk_0.parquet", "row_idx": 9, "smiles": "O=C(O)c1ccc(N2CCCC2=O)s1", "expected_groups": ["Alcohol", "Alkane", "Amide", "Carboxylic acid", "Sulfide"]}
