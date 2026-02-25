@@ -63,13 +63,15 @@ class CNNClassifier(nn.Module):
         current_length = embedding_dim
 
         for out_channels in conv_channels:
-            conv_layers.extend([
-                nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1),
-                nn.BatchNorm1d(out_channels),
-                nn.ReLU(),
-                nn.MaxPool1d(kernel_size=2),
-                nn.Dropout(dropout),
-            ])
+            conv_layers.extend(
+                [
+                    nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1),
+                    nn.BatchNorm1d(out_channels),
+                    nn.GELU(),
+                    nn.MaxPool1d(kernel_size=2),
+                    nn.Dropout(dropout),
+                ]
+            )
             in_channels = out_channels
             current_length = current_length // 2
 
@@ -83,11 +85,13 @@ class CNNClassifier(nn.Module):
         in_dim = self.flatten_size
 
         for fc_dim in fc_dims:
-            fc_layers.extend([
-                nn.Linear(in_dim, fc_dim),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-            ])
+            fc_layers.extend(
+                [
+                    nn.Linear(in_dim, fc_dim),
+                    nn.GELU(),
+                    nn.Dropout(dropout),
+                ]
+            )
             in_dim = fc_dim
 
         # Output layer
@@ -107,16 +111,16 @@ class CNNClassifier(nn.Module):
         """
         # Reshape to (batch, 1, embedding_dim) for 1D convolutions
         x = x.unsqueeze(1)
-        
+
         # Apply convolutional layers
         x = self.conv_layers(x)
-        
+
         # Flatten
         x = x.view(x.size(0), -1)
-        
+
         # Apply fully connected layers
         logits = self.fc_layers(x)
-        
+
         return logits
 
 

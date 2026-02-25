@@ -12,10 +12,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+# Add project root to path
+project_root = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(project_root / "src"))
 
 import numpy as np
 import torch
@@ -24,7 +29,7 @@ from torch.utils.data import DataLoader
 
 from spectroscopy_qml.ir_tn_encoder.utils.cnn_classifier import FunctionalGroupClassifier
 from spectroscopy_qml.ir_tn_encoder.utils.mlp_encoder import MLPEncoder
-from spectroscopy_qml.ir_tn_encoder.utils.mps_encoder import MPSEncoder, MPSEncoderSimple
+from spectroscopy_qml.ir_tn_encoder.utils.mps_encoder import MPSEncoder
 from spectroscopy_qml.ir_tn_encoder.utils.preprocess_ir_data import (
     IRFunctionalGroupDataset,
     create_data_splits,
@@ -53,7 +58,7 @@ class EvaluationConfig:
     bond_dim: int = 16
 
     # Data
-    data_dir: str = "../../../../data/raw"
+    data_dir: str | None = None
     target_length: int = 512
     normalization: str = "zscore"
     max_chunks: int | None = None
@@ -63,13 +68,22 @@ class EvaluationConfig:
     threshold_metric: str = "f1_micro"  # "f1_micro" or "f1_macro"
 
     # Output
-    output_dir: str = "../results"
+    output_dir: str | None = None
     seed: int = 42
 
     # Hardware
     device: str = "auto"
 
     def __post_init__(self) -> None:
+        # Set default paths relative to script location
+        script_dir = Path(__file__).resolve().parent
+
+        if self.data_dir is None:
+            self.data_dir = str(script_dir.parent.parent.parent.parent / "data" / "raw")
+
+        if self.output_dir is None:
+            self.output_dir = str(script_dir.parent / "results")
+
         if self.device == "auto":
             if torch.cuda.is_available():
                 self.device = "cuda"
@@ -132,15 +146,6 @@ def load_model_from_checkpoint(
             embedding_dim=config.embedding_dim,
         )
         model_name = "MLP"
-    elif config.model_type == "mps_simple":
-        encoder = MPSEncoderSimple(
-            input_length=config.target_length,
-            num_sites=config.num_sites,
-            physical_dim=config.physical_dim,
-            bond_dim=config.bond_dim,
-            embedding_dim=config.embedding_dim,
-        )
-        model_name = f"MPS Simple (D={config.bond_dim})"
     else:  # mps
         encoder = MPSEncoder(
             input_length=config.target_length,
@@ -360,14 +365,14 @@ def main() -> None:
     parser.add_argument(
         "--data_dir",
         type=str,
-        default="../../../../data/raw",
-        help="Path to data directory",
+        default=None,
+        help="Path to data directory (default: auto-detect from script location)",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="../results",
-        help="Output directory for evaluation results",
+        default=None,
+        help="Output directory for evaluation results (default: auto-detect from script location)",
     )
     parser.add_argument(
         "--embedding_dim",
