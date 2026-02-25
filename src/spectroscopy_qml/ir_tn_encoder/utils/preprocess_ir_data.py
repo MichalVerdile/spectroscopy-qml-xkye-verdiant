@@ -95,7 +95,7 @@ def extract_functional_groups(smiles: str, groups: dict[str, str] | None = None)
     is present in this molecule (True/False).
     """
     if mol is None:
-        return {name: False for name in groups}
+        return dict.fromkeys(groups, False)
 
     for name, smarts in groups.items():
         pattern = _get_compiled_pattern(name, smarts)
