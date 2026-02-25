@@ -119,7 +119,7 @@ class CNNClassifier(nn.Module):
         x = x.view(x.size(0), -1)
 
         # Apply fully connected layers
-        logits = self.fc_layers(x)
+        logits: torch.Tensor = self.fc_layers(x)
 
         return logits
 
@@ -170,5 +170,5 @@ class FunctionalGroupClassifier(nn.Module):
             Logits of shape (batch, num_classes)
         """
         embedding = self.encoder(x)
-        logits = self.classifier(embedding)
+        logits: torch.Tensor = self.classifier(embedding)
         return logits
