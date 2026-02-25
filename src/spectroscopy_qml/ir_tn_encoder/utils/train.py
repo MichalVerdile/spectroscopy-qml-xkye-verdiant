@@ -426,7 +426,7 @@ def train_model(
                 best_model_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
 
         # Logging
-        lr = optimizer.param_groups[0]['lr']
+        lr = optimizer.param_groups[0]["lr"]
         is_best = "★" if val_f1_micro > metrics.best_val_f1_micro else " "
         print(
             f"Epoch {epoch + 1:3d}/{config.num_epochs} {is_best} | "
