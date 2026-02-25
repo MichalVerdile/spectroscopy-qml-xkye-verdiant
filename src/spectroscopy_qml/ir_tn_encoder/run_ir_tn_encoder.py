@@ -58,7 +58,7 @@ class ExperimentConfig:
     data_dir: str = "../../../data/raw"
     max_chunks: int | None = None  # Limit chunks for testing
     target_length: int = 512
-    normalization: str = "zscore"  # "zscore" or "minmax"
+    normalization: str = "minmax"  # "minmax" or "iqr"
 
     # Model
     embedding_dim: int = 128
@@ -483,6 +483,13 @@ def main() -> None:
         help="Resample spectra to this length",
     )
     parser.add_argument(
+        "--normalization",
+        type=str,
+        default="minmax",
+        choices=["minmax", "iqr"],
+        help="Spectrum normalization method",
+    )
+    parser.add_argument(
         "--num_sites",
         type=int,
         default=32,
@@ -571,6 +578,7 @@ def main() -> None:
         models_dir=args.models_dir,
         max_chunks=args.max_chunks,
         target_length=args.target_length,
+        normalization=args.normalization,
         num_sites=args.num_sites,
         physical_dim=args.physical_dim,
         bond_dims=args.bond_dims,
