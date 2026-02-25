@@ -173,10 +173,10 @@ def run_single_experiment(
     )
 
     num_params = count_parameters(model)
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"Training: {encoder_name}")
     print(f"Parameters: {num_params:,}")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     # Train
     start_time = time.time()
