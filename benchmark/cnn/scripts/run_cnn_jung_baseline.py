@@ -107,10 +107,11 @@ def get_functional_groups(smiles: str) -> dict:
     return func_groups
 
 
-def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
+def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weighted):
     """Trains final model with the best hyper-parameters."""
     # Input
     X_train = X_train.reshape(X_train.shape[0], 600, 1)
+    X_val = X_val.reshape(X_val.shape[0], 600, 1)
 
     # Shape of input data.
     input_shape = X_train.shape[1:]
@@ -199,6 +200,7 @@ def train_model(X_train, y_train, X_test, num_fgs, aug, num, weighted):
     model.fit(
         X_train,
         y_train,
+        validation_data=(X_val, y_val),
         epochs=42,
         batch_size=1024,
         verbose=1,
@@ -236,7 +238,7 @@ def make_msms_spectrum(spectrum):
 @click.option(
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
-@click.option("--seed", type=int, default=3245)
+@click.option("--seed", type=int, default=42)
 def main(analytical_data, base_out_path, columns, seed):
     # Parse columns to process
     columns_to_process = (
@@ -291,8 +293,13 @@ def main(analytical_data, base_out_path, columns, seed):
 
     print(f"Total samples loaded: {len(training_data)}")
 
-    # Split data once
-    train, test = train_test_split(training_data, test_size=0.1, random_state=seed)
+    # Split data: 80% train, 10% val, 10% test
+    train_val, test = train_test_split(training_data, test_size=0.1, random_state=seed)
+    train, val = train_test_split(
+        train_val, test_size=0.111, random_state=seed
+    )  # 0.111 of 0.9 ≈ 0.1
+
+    print(f"Split sizes: train={len(train)}, val={len(val)}, test={len(test)}")
 
     # Process each column
     for col_name in columns_to_process:
@@ -303,11 +310,13 @@ def main(analytical_data, base_out_path, columns, seed):
 
         X_train = np.stack(train[actual_col].to_list())
         y_train = np.stack(train["func_group"].to_list())
+        X_val = np.stack(val[actual_col].to_list())
+        y_val = np.stack(val["func_group"].to_list())
         X_test = np.stack(test[actual_col].to_list())
         y_test = np.stack(test["func_group"].to_list())
 
         # Train model
-        prediction = train_model(X_train, y_train, X_test, 37, "e", 0, 0)
+        prediction = train_model(X_train, y_train, X_val, y_val, X_test, 37, "e", 0, 0)
 
         f1 = f1_score(y_test, prediction, average="micro")
         print(f"F1 Score for {col_name}: {f1}")

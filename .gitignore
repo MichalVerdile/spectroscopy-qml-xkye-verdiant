@@ -55,7 +55,6 @@ dmypy.json
 
 # Model checkpoints (too large for git)
 *.pth
-*.pt
 *.ckpt
 *.h5
 *.hdf5
