@@ -112,7 +112,8 @@ class LocalFeatureMap(nn.Module):
         Returns:
             Features of shape (batch, physical_dim)
         """
-        return self.mlp(x)
+        result: torch.Tensor = self.mlp(x)
+        return result
 
 
 class MPSEncoder(nn.Module):
@@ -267,6 +268,6 @@ class MPSEncoder(nn.Module):
         else:
             state = forward_state
 
-        embedding = self.output_projection(state)
+        embedding: torch.Tensor = self.output_projection(state)
 
         return embedding

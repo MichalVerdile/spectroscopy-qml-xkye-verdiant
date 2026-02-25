@@ -125,7 +125,7 @@ def load_model_from_checkpoint(
     checkpoint_path: str | Path,
     config: EvaluationConfig,
     num_classes: int,
-) -> nn.Module:
+) -> tuple[nn.Module, str]:
     """
     Load a trained model from checkpoint.
 
@@ -135,11 +135,12 @@ def load_model_from_checkpoint(
         num_classes: Number of output classes
 
     Returns:
-        Loaded model
+        Loaded model and model name
     """
     checkpoint_path = Path(checkpoint_path)
 
     # Create encoder based on config
+    encoder: nn.Module
     if config.model_type == "mlp":
         encoder = MLPEncoder(
             input_length=config.target_length,
@@ -218,8 +219,8 @@ def compute_per_class_f1(
 
 def evaluate_model(
     model: nn.Module,
-    val_loader: DataLoader,
-    test_loader: DataLoader,
+    val_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    test_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     config: EvaluationConfig,
     class_mask: torch.Tensor | None = None,
     class_names: list[str] | None = None,
