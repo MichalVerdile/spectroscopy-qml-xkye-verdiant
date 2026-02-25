@@ -50,20 +50,26 @@ functional_groups = {
     "Acyl halide": Chem.MolFromSmarts("[CX3](=[OX1])[F,Cl,Br,I]"),
     "Alcohol": Chem.MolFromSmarts("[#6][OX2H]"),
     "Aldehyde": Chem.MolFromSmarts("[CX3H1](=O)[#6,H]"),
+    # Consider dropping "Alkane" (often always-on)
     "Alkane": Chem.MolFromSmarts("[CX4;H3,H2]"),
     "Alkene": Chem.MolFromSmarts("[CX3]=[CX3]"),
     "Alkyne": Chem.MolFromSmarts("[CX2]#[CX2]"),
-    "Amide": Chem.MolFromSmarts("[NX3][CX3](=[OX1])[#6]"),
+    # More general (includes formamides)
+    "Amide": Chem.MolFromSmarts("[NX3][CX3](=O)[#6,H]"),
     "Amine": Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]"),
-    "Arene": Chem.MolFromSmarts("[cX3]1[cX3][cX3][cX3][cX3][cX3]1"),
+    # Aromatic atom present (more general than benzene-only)
+    "Arene": Chem.MolFromSmarts("a"),
     "Azo compound": Chem.MolFromSmarts("[#6][NX2]=[NX2][#6]"),
-    "Carbamate": Chem.MolFromSmarts("[NX3][CX3](=[OX1])[OX2H0]"),
+    # Ensure O is substituted (carbamate motif)
+    "Carbamate": Chem.MolFromSmarts("[NX3][CX3](=O)[OX2H0][!#1]"),
     "Carboxylic acid": Chem.MolFromSmarts("[CX3](=O)[OX2H]"),
     "Enamine": Chem.MolFromSmarts("[NX3][CX3]=[CX3]"),
     "Enol": Chem.MolFromSmarts("[OX2H][#6X3]=[#6]"),
-    "Ester": Chem.MolFromSmarts("[#6][CX3](=O)[OX2H0][#6]"),
+    # More general (includes formates)
+    "Ester": Chem.MolFromSmarts("[CX3](=O)[OX2H0][#6]"),
     "Ether": Chem.MolFromSmarts("[OD2]([#6])[#6]"),
-    "Haloalkane": Chem.MolFromSmarts("[#6][F,Cl,Br,I]"),
+    # If you mean alkyl halide:
+    "Haloalkane": Chem.MolFromSmarts("[CX4][F,Cl,Br,I]"),
     "Hydrazine": Chem.MolFromSmarts("[NX3][NX3]"),
     "Hydrazone": Chem.MolFromSmarts("[NX3][NX2]=[#6]"),
     "Imide": Chem.MolFromSmarts("[CX3](=[OX1])[NX3][CX3](=[OX1])"),
@@ -71,15 +77,17 @@ functional_groups = {
     "Isocyanate": Chem.MolFromSmarts("[NX2]=[C]=[O]"),
     "Isothiocyanate": Chem.MolFromSmarts("[NX2]=[C]=[S]"),
     "Ketone": Chem.MolFromSmarts("[#6][CX3](=O)[#6]"),
-    "Nitrile": Chem.MolFromSmarts("[NX1]#[CX2]"),
-    "Phenol": Chem.MolFromSmarts("[OX2H][cX3]:[c]"),
+    # Fixed nitrile direction
+    "Nitrile": Chem.MolFromSmarts("[CX2]#[NX1]"),
+    "Phenol": Chem.MolFromSmarts("c[OX2H]"),
     "Phosphine": Chem.MolFromSmarts("[PX3]"),
-    "Sulfide": Chem.MolFromSmarts("[#16X2H0]"),
-    "Sulfonamide": Chem.MolFromSmarts("[#16X4]([NX3])(=[OX1])(=[OX1])[#6]"),
-    "Sulfonate": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[OX2H0]"),
-    "Sulfone": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[#6]"),
-    "Sulfonic acid": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[OX2H]"),
-    "Sulfoxide": Chem.MolFromSmarts("[#16X3]=[OX1]"),
+    # Thioether definition (optional; keep yours if you want broad sulfur)
+    "Sulfide": Chem.MolFromSmarts("[SX2]([#6])[#6]"),
+    "Sulfonamide": Chem.MolFromSmarts("[SX4](=O)(=O)[NX3]"),
+    "Sulfonate": Chem.MolFromSmarts("[SX4](=O)(=O)[OX2H0][!#1]"),
+    "Sulfone": Chem.MolFromSmarts("[SX4](=O)(=O)([!#1])[!#1]"),
+    "Sulfonic acid": Chem.MolFromSmarts("[SX4](=O)(=O)[OX2H]"),
+    "Sulfoxide": Chem.MolFromSmarts("[SX3](=O)"),
     "Thial": Chem.MolFromSmarts("[CX3H1](=S)[#6,H]"),
     "Thioamide": Chem.MolFromSmarts("[NX3][CX3]=[SX1]"),
     "Thiol": Chem.MolFromSmarts("[#16X2H]"),
@@ -212,7 +220,7 @@ def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weigh
     model.fit(**fit_kwargs)
 
     prediction = model.predict(X_test)
-    return (prediction > 0.5).astype(int)
+    return (prediction > 0.5).astype(int), model
 
 
 def interpolate_to_600(spec):
@@ -315,7 +323,7 @@ def main(analytical_data, base_out_path, columns, seed):
         y_test = np.stack(test["func_group"].to_list())
 
         # Train model
-        prediction = train_model(X_train, y_train, None, None, X_test, 37, "e", 0, 0)
+        prediction, model = train_model(X_train, y_train, None, None, X_test, 37, "e", 0, 0)
 
         f1 = f1_score(y_test, prediction, average="micro")
         print(f"F1 Score for {col_name}: {f1}")
@@ -327,6 +335,12 @@ def main(analytical_data, base_out_path, columns, seed):
             pickle.dump({"pred": prediction, "tgt": y_test}, file)
 
         print(f"Results saved to: {out_path / 'results.pickle'}")
+
+        # Save model
+        model_save_path = base_out_path / "results" / f"{output_dir}_model.keras"
+        model_save_path.parent.mkdir(parents=True, exist_ok=True)
+        model.save(str(model_save_path))
+        print(f"Model saved to: {model_save_path}")
 
 
 if __name__ == "__main__":
