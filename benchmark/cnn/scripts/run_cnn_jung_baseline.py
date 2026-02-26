@@ -7,6 +7,7 @@ from pathlib import Path
 import click
 import numpy as np
 import pandas as pd
+import keras
 from keras import backend as K
 from keras.layers import (
     Activation,
@@ -177,12 +178,15 @@ def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weigh
 
         def get_weighted_loss(weights):
             def weighted_loss(y_true, y_pred):
-                return K.mean(
+                # Keras 3.x compatibility: use keras.ops instead of K.mean/K.binary_crossentropy
+                import keras.ops as ops
+                bce = keras.losses.binary_crossentropy(y_true, y_pred)
+                weighted = (
                     (weights[:, 0] ** (1.0 - y_true))
-                    * (weights[:, 1] ** (y_true))
-                    * K.binary_crossentropy(y_true, y_pred),
-                    axis=-1,
+                    * (weights[:, 1] ** y_true)
+                    * bce
                 )
+                return ops.mean(weighted, axis=-1)
 
             return weighted_loss
 
@@ -311,10 +315,10 @@ def main(analytical_data, base_out_path, columns, seed):
     print(f"Split sizes: train={len(train)}, test={len(test)}")
 
     # Process each column
-    for col_name in columns_to_process:
+    for idx, col_name in enumerate(columns_to_process, 1):
         actual_col, output_dir = column_mapping[col_name]
         print(f"\n{'='*60}")
-        print(f"Training model for: {col_name} (column: {actual_col})")
+        print(f"[{idx}/{len(columns_to_process)}] Training model for: {col_name} (column: {actual_col})")
         print(f"{'='*60}")
 
         X_train = np.stack(train[actual_col].to_list())
@@ -331,16 +335,42 @@ def main(analytical_data, base_out_path, columns, seed):
         # Save results
         out_path = base_out_path / output_dir
         out_path.mkdir(parents=True, exist_ok=True)
-        with open(out_path / "results.pickle", "wb") as file:
-            pickle.dump({"pred": prediction, "tgt": y_test}, file)
+        
+        results_file = out_path / "results.pickle"
+        print(f"\nSaving results to: {results_file}")
+        try:
+            with open(results_file, "wb") as file:
+                pickle.dump({"pred": prediction, "tgt": y_test, "f1_score": f1}, file)
+            print(f"✓ Results saved successfully")
+        except Exception as e:
+            print(f"✗ ERROR saving results: {e}")
+            import traceback
+            traceback.print_exc()
 
-        print(f"Results saved to: {out_path / 'results.pickle'}")
-
-        # Save model
-        model_save_path = base_out_path / "results" / f"{output_dir}_model.keras"
-        model_save_path.parent.mkdir(parents=True, exist_ok=True)
-        model.save(str(model_save_path))
-        print(f"Model saved to: {model_save_path}")
+        # Save model (try .keras format first, fallback to .h5)
+        model_save_path = out_path / f"{output_dir}_model.keras"
+        print(f"\nSaving model to: {model_save_path}")
+        try:
+            model.save(str(model_save_path))
+            print(f"✓ Model saved successfully (Keras format)")
+        except Exception as e:
+            print(f"⚠ Failed to save as .keras format: {e}")
+            print(f"Trying .h5 format...")
+            try:
+                model_save_path_h5 = out_path / f"{output_dir}_model.h5"
+                model.save(str(model_save_path_h5))
+                print(f"✓ Model saved successfully (H5 format) to: {model_save_path_h5}")
+            except Exception as e2:
+                print(f"✗ ERROR: Failed to save model in any format: {e2}")
+                import traceback
+                traceback.print_exc()
+    
+    print(f"\n{'='*60}")
+    print("TRAINING COMPLETED")
+    print(f"{'='*60}")
+    print(f"Total models trained: {len(columns_to_process)}")
+    print(f"Output directory: {base_out_path}")
+    print("Check the logs above for any errors during saving.")
 
 
 if __name__ == "__main__":
