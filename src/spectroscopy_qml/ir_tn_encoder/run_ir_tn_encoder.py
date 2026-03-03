@@ -60,7 +60,7 @@ class ExperimentConfig:
     data_dir: str = "../../../data/raw"
     max_chunks: int | None = None  # Limit chunks for testing
     target_length: int = 512
-    normalization: Literal["minmax", "iqr"] = "minmax"
+    normalization: Literal["zscore"] = "zscore"
 
     # Model
     embedding_dim: int = 128
@@ -487,8 +487,8 @@ def main() -> None:
     parser.add_argument(
         "--normalization",
         type=str,
-        default="minmax",
-        choices=["minmax", "iqr"],
+        default="zscore",
+        choices=["zscore"],
         help="Spectrum normalization method",
     )
     parser.add_argument(
