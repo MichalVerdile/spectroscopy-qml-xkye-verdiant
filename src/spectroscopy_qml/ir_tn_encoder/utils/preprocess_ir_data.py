@@ -171,7 +171,7 @@ class IRFunctionalGroupDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __init__(
         self,
         data_dir: str | Path,
-        target_length: int = 512,
+        target_length: int = 600,
         normalization: Literal["zscore"] = "zscore",
         functional_groups: dict[str, str] | None = None,
         max_chunks: int | None = None,

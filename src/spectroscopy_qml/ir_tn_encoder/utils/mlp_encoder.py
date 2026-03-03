@@ -17,7 +17,7 @@ class MLPEncoder(nn.Module):
 
     def __init__(
         self,
-        input_length: int = 512,
+        input_length: int = 600,
         embedding_dim: int = 128,
         hidden_dims: list[int] | None = None,
         dropout: float = 0.15,

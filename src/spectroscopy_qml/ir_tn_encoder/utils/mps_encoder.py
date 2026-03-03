@@ -2,9 +2,9 @@
 # MPS / TT ENCODER PIPELINE (IR Spectrum -> Embedding)
 #
 # Notation:
-#   L = input_length (e.g., 512)
-#   S = num_sites    (current default: 32)
-#   site_dim = L / S (current default: 512/32 = 16 values per site)
+#   L = input_length (e.g., 600)
+#   S = num_sites    (current default: 30)
+#   site_dim = L / S (current default: 600/30 = 20 values per site)
 #   p = physical_dim (current default: 8)
 #   D = bond_dim     (e.g., 16)
 #   E = embedding_dim (e.g., 128)

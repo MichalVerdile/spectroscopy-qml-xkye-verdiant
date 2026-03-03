@@ -53,13 +53,13 @@ class EvaluationConfig:
 
     # Model architecture
     embedding_dim: int = 128
-    num_sites: int = 32
+    num_sites: int = 30
     physical_dim: int = 8
     bond_dim: int = 16
 
     # Data
     data_dir: str | None = None
-    target_length: int = 512
+    target_length: int = 600
     normalization: str = "zscore"
     max_chunks: int | None = None
     batch_size: int = 64
@@ -384,7 +384,7 @@ def main() -> None:
     parser.add_argument(
         "--num_sites",
         type=int,
-        default=32,
+        default=30,
         help="Number of sites for MPS encoder",
     )
     parser.add_argument(
@@ -402,7 +402,7 @@ def main() -> None:
     parser.add_argument(
         "--target_length",
         type=int,
-        default=512,
+        default=600,
         help="Resample spectra to this length",
     )
     parser.add_argument(
