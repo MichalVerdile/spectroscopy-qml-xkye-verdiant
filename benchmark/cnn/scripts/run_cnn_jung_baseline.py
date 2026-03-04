@@ -7,7 +7,6 @@ from pathlib import Path
 import click
 import numpy as np
 import pandas as pd
-import keras
 from keras import backend as K
 from keras.layers import (
     Activation,
@@ -24,7 +23,7 @@ from keras.optimizers import Adam
 from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
 from sklearn.metrics import f1_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -39,38 +38,32 @@ if gpus:
         # Enable memory growth to prevent TensorFlow from allocating all VRAM at once
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
-        print(f"✓ GPU(s) detected: {len(gpus)} device(s)")
+        print(f"GPU(s) detected: {len(gpus)} device(s)")
         print(f"  {[gpu.name for gpu in gpus]}")
     except RuntimeError as e:
         print(f"GPU configuration error: {e}")
 else:
-    print("⚠ No GPU detected - running on CPU")
+    print("No GPU detected - running on CPU")
 
 functional_groups = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
     "Acyl halide": Chem.MolFromSmarts("[CX3](=[OX1])[F,Cl,Br,I]"),
     "Alcohol": Chem.MolFromSmarts("[#6][OX2H]"),
     "Aldehyde": Chem.MolFromSmarts("[CX3H1](=O)[#6,H]"),
-    # Consider dropping "Alkane" (often always-on)
     "Alkane": Chem.MolFromSmarts("[CX4;H3,H2]"),
     "Alkene": Chem.MolFromSmarts("[CX3]=[CX3]"),
     "Alkyne": Chem.MolFromSmarts("[CX2]#[CX2]"),
-    # More general (includes formamides)
-    "Amide": Chem.MolFromSmarts("[NX3][CX3](=O)[#6,H]"),
+    "Amide": Chem.MolFromSmarts("[NX3][CX3](=[OX1])[#6]"),
     "Amine": Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]"),
-    # Aromatic atom present (more general than benzene-only)
-    "Arene": Chem.MolFromSmarts("a"),
+    "Arene": Chem.MolFromSmarts("[cX3]1[cX3][cX3][cX3][cX3][cX3]1"),
     "Azo compound": Chem.MolFromSmarts("[#6][NX2]=[NX2][#6]"),
-    # Ensure O is substituted (carbamate motif)
-    "Carbamate": Chem.MolFromSmarts("[NX3][CX3](=O)[OX2H0][!#1]"),
+    "Carbamate": Chem.MolFromSmarts("[NX3][CX3](=[OX1])[OX2H0]"),
     "Carboxylic acid": Chem.MolFromSmarts("[CX3](=O)[OX2H]"),
     "Enamine": Chem.MolFromSmarts("[NX3][CX3]=[CX3]"),
     "Enol": Chem.MolFromSmarts("[OX2H][#6X3]=[#6]"),
-    # More general (includes formates)
-    "Ester": Chem.MolFromSmarts("[CX3](=O)[OX2H0][#6]"),
+    "Ester": Chem.MolFromSmarts("[#6][CX3](=O)[OX2H0][#6]"),
     "Ether": Chem.MolFromSmarts("[OD2]([#6])[#6]"),
-    # If you mean alkyl halide:
-    "Haloalkane": Chem.MolFromSmarts("[CX4][F,Cl,Br,I]"),
+    "Haloalkane": Chem.MolFromSmarts("[#6][F,Cl,Br,I]"),
     "Hydrazine": Chem.MolFromSmarts("[NX3][NX3]"),
     "Hydrazone": Chem.MolFromSmarts("[NX3][NX2]=[#6]"),
     "Imide": Chem.MolFromSmarts("[CX3](=[OX1])[NX3][CX3](=[OX1])"),
@@ -78,17 +71,15 @@ functional_groups = {
     "Isocyanate": Chem.MolFromSmarts("[NX2]=[C]=[O]"),
     "Isothiocyanate": Chem.MolFromSmarts("[NX2]=[C]=[S]"),
     "Ketone": Chem.MolFromSmarts("[#6][CX3](=O)[#6]"),
-    # Fixed nitrile direction
-    "Nitrile": Chem.MolFromSmarts("[CX2]#[NX1]"),
-    "Phenol": Chem.MolFromSmarts("c[OX2H]"),
+    "Nitrile": Chem.MolFromSmarts("[NX1]#[CX2]"),
+    "Phenol": Chem.MolFromSmarts("[OX2H][cX3]:[c]"),
     "Phosphine": Chem.MolFromSmarts("[PX3]"),
-    # Thioether definition (optional; keep yours if you want broad sulfur)
-    "Sulfide": Chem.MolFromSmarts("[SX2]([#6])[#6]"),
-    "Sulfonamide": Chem.MolFromSmarts("[SX4](=O)(=O)[NX3]"),
-    "Sulfonate": Chem.MolFromSmarts("[SX4](=O)(=O)[OX2H0][!#1]"),
-    "Sulfone": Chem.MolFromSmarts("[SX4](=O)(=O)([!#1])[!#1]"),
-    "Sulfonic acid": Chem.MolFromSmarts("[SX4](=O)(=O)[OX2H]"),
-    "Sulfoxide": Chem.MolFromSmarts("[SX3](=O)"),
+    "Sulfide": Chem.MolFromSmarts("[#16X2H0]"),
+    "Sulfonamide": Chem.MolFromSmarts("[#16X4]([NX3])(=[OX1])(=[OX1])[#6]"),
+    "Sulfonate": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[OX2H0]"),
+    "Sulfone": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[#6]"),
+    "Sulfonic acid": Chem.MolFromSmarts("[#16X4](=[OX1])(=[OX1])([#6])[OX2H]"),
+    "Sulfoxide": Chem.MolFromSmarts("[#16X3]=[OX1]"),
     "Thial": Chem.MolFromSmarts("[CX3H1](=S)[#6,H]"),
     "Thioamide": Chem.MolFromSmarts("[NX3][CX3]=[SX1]"),
     "Thiol": Chem.MolFromSmarts("[#16X2H]"),
@@ -178,15 +169,12 @@ def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weigh
 
         def get_weighted_loss(weights):
             def weighted_loss(y_true, y_pred):
-                # Keras 3.x compatibility: use keras.ops instead of K.mean/K.binary_crossentropy
-                import keras.ops as ops
-                bce = keras.losses.binary_crossentropy(y_true, y_pred)
-                weighted = (
+                return K.mean(
                     (weights[:, 0] ** (1.0 - y_true))
-                    * (weights[:, 1] ** y_true)
-                    * bce
+                    * (weights[:, 1] ** (y_true))
+                    * K.binary_crossentropy(y_true, y_pred),
+                    axis=-1,
                 )
-                return ops.mean(weighted, axis=-1)
 
             return weighted_loss
 
@@ -255,7 +243,8 @@ def make_msms_spectrum(spectrum):
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
 @click.option("--seed", type=int, default=42)
-def main(analytical_data, base_out_path, columns, seed):
+@click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
+def main(analytical_data, base_out_path, columns, seed, n_folds):
     # Parse columns to process
     columns_to_process = (
         columns.split(",")
@@ -309,68 +298,114 @@ def main(analytical_data, base_out_path, columns, seed):
 
     print(f"Total samples loaded: {len(training_data)}")
 
-    # Split data: 80% train, 20% test
-    train, test = train_test_split(training_data, test_size=0.2, random_state=seed)
-
-    print(f"Split sizes: train={len(train)}, test={len(test)}")
-
     # Process each column
-    for idx, col_name in enumerate(columns_to_process, 1):
+    for col_name in columns_to_process:
         actual_col, output_dir = column_mapping[col_name]
         print(f"\n{'='*60}")
-        print(f"[{idx}/{len(columns_to_process)}] Training model for: {col_name} (column: {actual_col})")
+        print(f"Training model for: {col_name} (column: {actual_col})")
         print(f"{'='*60}")
 
-        X_train = np.stack(train[actual_col].to_list())
-        y_train = np.stack(train["func_group"].to_list())
-        X_test = np.stack(test[actual_col].to_list())
-        y_test = np.stack(test["func_group"].to_list())
+        # Prepare data
+        X_data = np.stack(training_data[actual_col].to_list())
+        y_data = np.stack(training_data["func_group"].to_list())
 
-        # Train model
-        prediction, model = train_model(X_train, y_train, None, None, X_test, 37, "e", 0, 0)
+        # First split: 80% train, 20% test
+        X_train_full, X_test, y_train_full, y_test = train_test_split(
+            X_data, y_data, test_size=0.2, random_state=seed, shuffle=True
+        )
+        
+        print(f"Initial split: Train={len(X_train_full)} (80%), Test={len(X_test)} (20%)")
+        print(f"Performing {n_folds}-fold CV on training set...")
 
-        f1 = f1_score(y_test, prediction, average="micro")
-        print(f"F1 Score for {col_name}: {f1}")
+        # K-Fold Cross Validation
+        kfold = KFold(n_splits=n_folds, shuffle=True, random_state=seed)
+        fold_f1_scores = []
+        all_predictions = []
+        all_targets = []
+        fold_models = []
+
+        for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), 1):
+            print(f"\n--- Fold {fold_idx}/{n_folds} ---")
+            
+            # Split data for this fold
+            X_train, X_val = X_train_full[train_idx], X_train_full[val_idx]
+            y_train, y_val = y_train_full[train_idx], y_train_full[val_idx]
+            
+            print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
+            
+            # Train model for this fold
+            prediction, model = train_model(X_train, y_train, X_val, y_val, X_val, 37, "e", 0, 0)
+            
+            # Calculate F1 score for this fold
+            fold_f1 = f1_score(y_val, prediction, average="micro")
+            fold_f1_scores.append(fold_f1)
+            print(f"Fold {fold_idx} F1 Score: {fold_f1:.4f}")
+            
+            # Store predictions and targets
+            all_predictions.append(prediction)
+            all_targets.append(y_val)
+            fold_models.append(model)
+        
+        # Calculate and display cross-validation results
+        mean_f1 = np.mean(fold_f1_scores)
+        std_f1 = np.std(fold_f1_scores)
+        print(f"\n{'='*60}")
+        print(f"Cross-Validation Results for {col_name}:")
+        print(f"Mean CV F1 Score: {mean_f1:.4f} ± {std_f1:.4f}")
+        print(f"Individual Fold Scores: {[f'{score:.4f}' for score in fold_f1_scores]}")
+        print(f"{'='*60}")
+        
+        # Select best model and evaluate on held-out test set
+        best_fold_idx = np.argmax(fold_f1_scores)
+        best_model = fold_models[best_fold_idx]
+        print(f"\nBest model: Fold {best_fold_idx + 1} (CV F1: {fold_f1_scores[best_fold_idx]:.4f})")
+        
+        # Evaluate on held-out test set
+        print(f"\nEvaluating on test set ({len(X_test)} samples)...")
+        X_test_reshaped = X_test.reshape(X_test.shape[0], 600, 1)
+        test_predictions = best_model.predict(X_test_reshaped)
+        test_predictions_binary = (test_predictions > 0.5).astype(int)
+        test_f1 = f1_score(y_test, test_predictions_binary, average="micro")
+        
+        print(f"\n{'='*60}")
+        print(f"FINAL TEST RESULTS for {col_name}:")
+        print(f"Test F1 Score: {test_f1:.4f}")
+        print(f"{'='*60}")
 
         # Save results
         out_path = base_out_path / output_dir
         out_path.mkdir(parents=True, exist_ok=True)
         
-        results_file = out_path / "results.pickle"
-        print(f"\nSaving results to: {results_file}")
-        try:
-            with open(results_file, "wb") as file:
-                pickle.dump({"pred": prediction, "tgt": y_test, "f1_score": f1}, file)
-            print(f"✓ Results saved successfully")
-        except Exception as e:
-            print(f"✗ ERROR saving results: {e}")
-            import traceback
-            traceback.print_exc()
-
-        # Save model (try .keras format first, fallback to .h5)
-        model_save_path = out_path / f"{output_dir}_model.keras"
-        print(f"\nSaving model to: {model_save_path}")
-        try:
-            model.save(str(model_save_path))
-            print(f"✓ Model saved successfully (Keras format)")
-        except Exception as e:
-            print(f"⚠ Failed to save as .keras format: {e}")
-            print(f"Trying .h5 format...")
-            try:
-                model_save_path_h5 = out_path / f"{output_dir}_model.h5"
-                model.save(str(model_save_path_h5))
-                print(f"✓ Model saved successfully (H5 format) to: {model_save_path_h5}")
-            except Exception as e2:
-                print(f"✗ ERROR: Failed to save model in any format: {e2}")
-                import traceback
-                traceback.print_exc()
-    
-    print(f"\n{'='*60}")
-    print("TRAINING COMPLETED")
-    print(f"{'='*60}")
-    print(f"Total models trained: {len(columns_to_process)}")
-    print(f"Output directory: {base_out_path}")
-    print("Check the logs above for any errors during saving.")
+        # Save cross-validation and test results
+        cv_results = {
+            "fold_scores": fold_f1_scores,
+            "mean_cv_f1": mean_f1,
+            "std_cv_f1": std_f1,
+            "best_fold_idx": best_fold_idx,
+            "test_f1": test_f1,
+            "test_predictions": test_predictions_binary,
+            "test_targets": y_test,
+            "all_cv_predictions": all_predictions,
+            "all_cv_targets": all_targets,
+            "n_folds": n_folds,
+            "train_size": len(X_train_full),
+            "test_size": len(X_test),
+        }
+        with open(out_path / "cv_results.pickle", "wb") as file:
+            pickle.dump(cv_results, file)
+        print(f"\nCross-validation and test results saved to: {out_path / 'cv_results.pickle'}")
+        
+        # Save the best model
+        model_save_path = base_out_path / "results" / f"{output_dir}_model.keras"
+        model_save_path.parent.mkdir(parents=True, exist_ok=True)
+        best_model.save(str(model_save_path))
+        print(f"Best model (Fold {best_fold_idx + 1}, Test F1: {test_f1:.4f}) saved to: {model_save_path}")
+        
+        # Save all fold models
+        for fold_idx, model in enumerate(fold_models, 1):
+            fold_model_path = out_path / f"model_fold_{fold_idx}.keras"
+            model.save(str(fold_model_path))
+        print(f"All fold models saved to: {out_path}")
 
 
 if __name__ == "__main__":

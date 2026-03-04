@@ -16,9 +16,9 @@ python ./benchmark/cnn/scripts/run_cnn_jung_baseline.py \
 # Check if training succeeded (use PIPESTATUS to get python exit code, not tee)
 TRAIN_EXIT=${PIPESTATUS[0]}
 if [ $TRAIN_EXIT -eq 0 ]; then
-    echo "✓ Training completed successfully"
+    echo "Training completed successfully"
 else
-    echo "✗ Training failed with exit code $TRAIN_EXIT"
+    echo "Training failed with exit code $TRAIN_EXIT"
     echo "  Check ./benchmark/cnn/logs/training.log for details"
     exit 1
 fi
@@ -32,9 +32,9 @@ python ./benchmark/cnn/scripts/evaluate_results.py \
 
 EVAL_EXIT=${PIPESTATUS[0]}
 if [ $EVAL_EXIT -eq 0 ]; then
-    echo "✓ Evaluation completed successfully"
+    echo "Evaluation completed successfully"
 else
-    echo "✗ Evaluation failed with exit code $EVAL_EXIT"
+    echo "Evaluation failed with exit code $EVAL_EXIT"
     echo "  Check ./benchmark/cnn/logs/evaluation.log for details"
     exit 1
 fi
