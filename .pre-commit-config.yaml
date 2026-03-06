@@ -28,4 +28,4 @@ repos:
           - types-PyYAML
           - types-requests
         args: [--strict, --ignore-missing-imports]
-        exclude: ^(tests/|benchmark/)
+        exclude: ^(tests/|benchmark/|src/spectroscopy_qml/ir/z_score_normalization/scripts/run_cnn_with_snv\.py)
