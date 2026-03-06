@@ -1,5 +1,5 @@
 ================================================================================
-CNN Model Evaluation Summary
+CNN Model Evaluation Summary - ORIGINAL
 ================================================================================
 
 Model: cnmr
@@ -41,4 +41,3 @@ Model: pos_msms
   Hamming Accuracy:    0.9231
   Precision (macro):   0.4235
   Recall (macro):      0.1101
-

@@ -16,15 +16,32 @@ def load_results(model_dir):
     results = {}
 
     pickle_files = list(Path(model_dir).glob("*.pickle"))
+    print(f"  Found {len(pickle_files)} pickle file(s) in {model_dir}")
 
     for pickle_file in pickle_files:
         try:
             with open(pickle_file, "rb") as f:
                 data = pickle.load(f)
+                print(f"  Loaded {pickle_file.name}: type={type(data)}")
 
-                if isinstance(data, dict) and "pred" in data and "tgt" in data:
-                    results["predictions"] = data["pred"]
-                    results["targets"] = data["tgt"]
+                if isinstance(data, dict):
+                    print(f"    Keys: {list(data.keys())}")
+                    # Handle original format: 'pred' and 'tgt'
+                    if "pred" in data and "tgt" in data:
+                        results["predictions"] = data["pred"]
+                        results["targets"] = data["tgt"]
+                        print("    ✓ Found pred and tgt (original format)")
+                    # Handle k-fold format: 'test_predictions' and 'test_targets'
+                    elif "test_predictions" in data and "test_targets" in data:
+                        results["predictions"] = data["test_predictions"]
+                        results["targets"] = data["test_targets"]
+                        print("    ✓ Found test_predictions and test_targets (k-fold format)")
+                    else:
+                        print(
+                            "    ✗ Missing required keys (need 'pred'/'tgt' or 'test_predictions'/'test_targets')"
+                        )
+                else:
+                    print("    ✗ Data is not a dictionary")
         except Exception as e:
             print(f"Warning: Could not load {pickle_file.name}: {e}")
 
@@ -69,7 +86,7 @@ def print_summary(model_name, metrics):
     print(f"  Recall (macro):      {metrics['recall_macro']:.4f}")
 
 
-def plot_metrics_comparison(results_dict, output_dir):
+def plot_metrics_comparison(results_dict, output_dir, model_type):
     model_names = []
     f1_micros = []
     f1_macros = []
@@ -131,8 +148,9 @@ def plot_metrics_comparison(results_dict, output_dir):
         axes[1, 1].text(i, v + 0.02, f"{v:.3f}", ha="center", va="bottom", fontsize=9)
 
     plt.tight_layout()
-    plt.savefig(output_dir / "metrics_comparison.png", dpi=300, bbox_inches="tight")
-    print(f"Saved metrics comparison to {output_dir / 'metrics_comparison.png'}")
+    output_plot = output_dir / f"metrics_comparison_{model_type}.png"
+    plt.savefig(output_plot, dpi=300, bbox_inches="tight")
+    print(f"Saved metrics comparison to {output_plot}")
     plt.close()
 
 
@@ -150,6 +168,13 @@ def main():
         default="./benchmark/cnn/results",
         help="Directory to save evaluation results",
     )
+    parser.add_argument(
+        "--model_type",
+        type=str,
+        choices=["k_fold", "original"],
+        required=True,
+        help="Type of model to evaluate: 'k_fold' or 'original'",
+    )
 
     args = parser.parse_args()
 
@@ -158,30 +183,35 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("\n" + "=" * 80)
-    print("CNN Model Evaluation Summary")
+    print(f"CNN Model Evaluation Summary - {args.model_type.upper()}")
     print("=" * 80)
 
     results_dict = {}
     for model_path in sorted(models_dir.glob("*")):
         if model_path.is_dir():
             model_name = model_path.name
-            results = load_results(model_path)
-            pred = np.array(results["predictions"])
-            tgt = np.array(results["targets"])
-
-            print(
-                model_name,
-                pred.shape,
-                tgt.shape,
-                pred.dtype,
-                "pred min/max:",
-                pred.min(),
-                pred.max(),
-                "unique pred (sample):",
-                np.unique(pred)[:10],
-            )
+            # Look for results in the specified model_type subdirectory
+            model_results_path = model_path / args.model_type
+            if not model_results_path.exists():
+                print(f"Warning: {model_results_path} does not exist, skipping {model_name}")
+                continue
+            results = load_results(model_results_path)
 
             if "predictions" in results and "targets" in results:
+                pred = np.array(results["predictions"])
+                tgt = np.array(results["targets"])
+
+                print(
+                    model_name,
+                    pred.shape,
+                    tgt.shape,
+                    pred.dtype,
+                    "pred min/max:",
+                    pred.min(),
+                    pred.max(),
+                    "unique pred (sample):",
+                    np.unique(pred)[:10],
+                )
                 metrics, pred, tgt = calculate_metrics(results["predictions"], results["targets"])
 
                 results_dict[model_name] = {
@@ -191,6 +221,8 @@ def main():
                 }
 
                 print_summary(model_name, metrics)
+            else:
+                print(f"Warning: No valid predictions/targets found in {model_results_path}")
 
     if not results_dict:
         print("\nNo model results found in", models_dir)
@@ -201,12 +233,12 @@ def main():
     print("Generating Visualizations")
     print("=" * 80 + "\n")
 
-    plot_metrics_comparison(results_dict, output_dir)
+    plot_metrics_comparison(results_dict, output_dir, args.model_type)
 
-    summary_file = output_dir / "summary.txt"
+    summary_file = output_dir / f"summary_{args.model_type}.txt"
     with open(summary_file, "w") as f:
         f.write("=" * 80 + "\n")
-        f.write("CNN Model Evaluation Summary\n")
+        f.write(f"CNN Model Evaluation Summary - {args.model_type.upper()}\n")
         f.write("=" * 80 + "\n\n")
 
         for model_name, data in results_dict.items():
