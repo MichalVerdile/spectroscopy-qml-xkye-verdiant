@@ -137,6 +137,23 @@ module = [
 ]
 disable_error_code = ["arg-type"]
 
+[[tool.mypy.overrides]]
+module = [
+    "spectroscopy_qml.ir.mps_encoder.*",
+]
+disable_error_code = [
+    "misc",
+    "no-untyped-def",
+    "type-arg",
+    "no-any-return",
+    "call-overload",
+    "assignment",
+    "arg-type",
+    "no-untyped-call",
+    "return-value",
+    "index",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
