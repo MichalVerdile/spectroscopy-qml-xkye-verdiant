@@ -201,7 +201,7 @@ def main(model_path, data_dir, output_dir):
 
     # Load model
     print(f"\nLoading model from: {model_path}")
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
 
     model = MPSFunctionalGroupClassifier(
         input_dim=MODEL_CONFIG.input_dim,

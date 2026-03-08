@@ -8,9 +8,9 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parents[4]
-sys.path.insert(0, str(project_root))
+# Add src directory to path so spectroscopy_qml can be imported
+src_dir = Path(__file__).parents[3]
+sys.path.insert(0, str(src_dir))
 
 
 def main():

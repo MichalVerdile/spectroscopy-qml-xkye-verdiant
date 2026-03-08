@@ -222,6 +222,8 @@ def prepare_dataloaders(
     val_ratio: float = 0.1,
     test_ratio: float = 0.1,
     random_seed: int = 42,
+    num_workers: int = 0,
+    pin_memory: bool = False,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Create train, validation, and test dataloaders.
@@ -234,6 +236,8 @@ def prepare_dataloaders(
         val_ratio: Fraction of data for validation
         test_ratio: Fraction of data for testing
         random_seed: Random seed for reproducibility
+        num_workers: Number of worker processes for data loading (0 = single process)
+        pin_memory: Pin memory for faster GPU transfer
 
     Returns:
         Tuple of (train_loader, val_loader, test_loader)
@@ -261,9 +265,30 @@ def prepare_dataloaders(
     val_dataset = IRSpectraDataset(X_val, y_val)
     test_dataset = IRSpectraDataset(X_test, y_test)
 
-    # Create dataloaders
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    # Create dataloaders with optimization settings
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        persistent_workers=True if num_workers > 0 else False,
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        persistent_workers=True if num_workers > 0 else False,
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        persistent_workers=True if num_workers > 0 else False,
+    )
 
     return train_loader, val_loader, test_loader

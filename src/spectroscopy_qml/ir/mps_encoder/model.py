@@ -136,7 +136,7 @@ class MPSEncoder(nn.Module):
         # features[:, 0]: (batch_size, physical_dim)
         # forward_cores[0]: (1, physical_dim, bond_dim)
         # Result: (batch_size, bond_dim)
-        state = torch.einsum("bp,ipb->bi", features[:, 0], self.forward_cores[0])
+        state = torch.einsum("bp,ipj->bj", features[:, 0], self.forward_cores[0])
 
         # Normalize
         state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)
@@ -170,7 +170,7 @@ class MPSEncoder(nn.Module):
         features_rev = torch.flip(features, dims=[1])
 
         # Initialize state with first core
-        state = torch.einsum("bp,ipb->bi", features_rev[:, 0], self.backward_cores[0])
+        state = torch.einsum("bp,ipj->bj", features_rev[:, 0], self.backward_cores[0])
 
         # Normalize
         state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)

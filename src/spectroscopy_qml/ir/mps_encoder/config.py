@@ -12,31 +12,38 @@ class ModelConfig:
 
     input_dim: int = 1800
     num_sites: int = 36
-    physical_dim: int = 8
-    bond_dim: int = 16
+    physical_dim: int = 12
+    bond_dim: int = 64
     num_classes: int = 37
-    dropout_rate: float = 0.2
+    dropout_rate: float = 0.1
 
 
 @dataclass
 class DataConfig:
     """Data preprocessing configuration."""
 
-    apply_snv: bool = False  # Apply Standard Normal Variate normalization
-    target_length: int = 1800  # Target spectrum length after interpolation
-    max_files: int | None = None  # Maximum number of files to load (for testing)
+    apply_snv: bool = True
+    target_length: int = 1800
+    max_files: int | None = None
 
 
 @dataclass
 class TrainingConfig:
     """Training hyperparameters."""
 
-    batch_size: int = 64
-    num_epochs: int = 100
+    batch_size: int = 256
+    num_epochs: int = 200
     learning_rate: float = 1e-3
-    weight_decay: float = 1e-5
-    patience: int = 15  # Early stopping patience
-    min_delta: float = 1e-4  # Minimum change for early stopping
+    weight_decay: float = 1e-6
+    patience: int = 20
+    min_delta: float = 1e-4
+
+    # Data loading optimization
+    num_workers: int = 4
+    pin_memory: bool = True
+
+    # Mixed precision training for speed
+    use_amp: bool = True
 
     # Learning rate scheduler
     lr_scheduler_factor: float = 0.5
