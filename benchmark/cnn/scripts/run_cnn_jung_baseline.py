@@ -242,7 +242,7 @@ def make_msms_spectrum(spectrum):
 @click.option(
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
-@click.option("--seed", type=int, default=42)
+@click.option("--seed", type=int, default=3245)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
 @click.option(
     "--use_kfold/--no_kfold", default=True, help="Use K-Fold cross-validation (default: True)"
