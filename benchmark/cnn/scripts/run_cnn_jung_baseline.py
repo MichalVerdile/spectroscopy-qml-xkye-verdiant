@@ -264,46 +264,51 @@ def main(analytical_data, base_out_path, columns, seed, n_folds, use_kfold):
         "neg_msms": ("msms_negative_40ev", "neg_msms"),
     }
 
-    # Get all actual column names needed
-    actual_columns = set(["smiles"])
-    for col in columns_to_process:
-        actual_col, _ = column_mapping[col]
-        actual_columns.add(actual_col)
-
-    print(f"Loading data for columns: {columns_to_process}")
-    print(f"Reading columns from parquet: {actual_columns}")
-    training_data = None
-
-    for i, parquet_file in enumerate(analytical_data.glob("*.parquet")):
-        data = pd.read_parquet(parquet_file, columns=list(actual_columns))
-
-        # Process MSMS columns if present
-        if "msms_positive_40ev" in data.columns:
-            data["msms_positive_40ev"] = data["msms_positive_40ev"].map(make_msms_spectrum)
-        if "msms_negative_40ev" in data.columns:
-            data["msms_negative_40ev"] = data["msms_negative_40ev"].map(make_msms_spectrum)
-
-        # Compute functional groups once
-        data["func_group"] = data.smiles.map(get_functional_groups)
-
-        # Interpolate all spectrum columns
-        for col in actual_columns:
-            if col != "smiles" and col in data.columns:
-                data[col] = data[col].map(interpolate_to_600)
-
-        if training_data is None:
-            training_data = data
-        else:
-            training_data = pd.concat((training_data, data))
-        del data
-
-        print(f"Loaded parquet file {i+1}")
-
-    print(f"Total samples loaded: {len(training_data)}")
-
-    # Process each column
+    # Process each column SEPARATELY to save memory and time
     for col_name in columns_to_process:
         actual_col, output_dir = column_mapping[col_name]
+
+        print(f"\n{'='*60}")
+        print(f"Loading data for: {col_name}")
+        print(f"{'='*60}")
+
+        # Only load the columns we need for THIS spectrum type
+        columns_to_load = ["smiles", actual_col]
+
+        training_data = None
+        parquet_files = list(analytical_data.glob("*.parquet"))
+        print(f"Found {len(parquet_files)} parquet files")
+
+        for i, parquet_file in enumerate(parquet_files):
+            print(
+                f"Loading file {i+1}/{len(parquet_files)}: {parquet_file.name}...",
+                end=" ",
+                flush=True,
+            )
+
+            # Load only necessary columns
+            data = pd.read_parquet(parquet_file, columns=columns_to_load)
+            print(f"[{len(data)} samples]")
+
+            # Process MSMS columns if present
+            if actual_col == "msms_positive_40ev" or actual_col == "msms_negative_40ev":
+                data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
+
+            # Compute functional groups
+            data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
+
+            # Interpolate spectrum
+            data[actual_col] = [interpolate_to_600(s) for s in data[actual_col]]
+
+            # Concatenate data
+            if training_data is None:
+                training_data = data
+            else:
+                training_data = pd.concat((training_data, data))
+
+            del data
+
+        print(f"Total samples loaded: {len(training_data)}")
         print(f"\n{'='*60}")
         print(f"Training model for: {col_name} (column: {actual_col})")
         print(f"{'='*60}")
