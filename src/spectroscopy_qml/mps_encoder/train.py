@@ -587,7 +587,9 @@ def train_model():
     print("Final Evaluation on Test Set")
     print("=" * 80)
 
-    # Load best model (weights_only=False needed for PyTorch 2.6+ compatibility with custom classes)
+    # Load best model
+    # Note: weights_only=False is required because checkpoint contains numpy arrays
+    # and dataclass objects (MODEL_CONFIG). Only load checkpoints from trusted sources.
     checkpoint = torch.load(PATH_CONFIG.best_model_path, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
 

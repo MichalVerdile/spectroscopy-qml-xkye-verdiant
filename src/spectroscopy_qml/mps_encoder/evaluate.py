@@ -212,6 +212,8 @@ def main(model_path, data_dir, output_dir):
         print("Using device: CPU")
 
     # Load model
+    # Note: weights_only=False is required because checkpoint contains numpy arrays
+    # and dataclass objects. Only load checkpoints from trusted sources.
     print(f"\nLoading model from: {model_path}")
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
 

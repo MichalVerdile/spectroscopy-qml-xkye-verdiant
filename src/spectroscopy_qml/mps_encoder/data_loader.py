@@ -216,9 +216,13 @@ def cluster_by_tanimoto(
     smiles_list: list[str],
     n_clusters: int | None = None,
     distance_threshold: float = 0.3,
-    max_samples: int = 10000,
+    max_samples: int = 5000,
 ) -> np.ndarray | None:
     """Cluster molecules by Tanimoto similarity using hierarchical clustering.
+
+    Note: This uses O(n²) memory for the distance matrix. With max_samples=5000,
+    this allocates ~100MB (5000×5000×4 bytes). Adjust max_samples based on
+    available memory.
 
     Args:
         smiles_list: List of SMILES strings
@@ -269,7 +273,7 @@ def apply_grouped_quantile_normalization(
     smiles_list: list[str],
     distance_threshold: float = 0.3,
     min_group_size: int = 5,
-    max_samples_for_grouping: int = 10000,
+    max_samples_for_grouping: int = 5000,
 ) -> np.ndarray:
     """Apply quantile normalization within Tanimoto-similarity groups.
 
@@ -380,7 +384,7 @@ def apply_grouped_pqn_normalization(
     distance_threshold: float = 0.3,
     min_group_size: int = 5,
     eps: float = 1e-8,
-    max_samples_for_grouping: int = 10000,
+    max_samples_for_grouping: int = 5000,
 ) -> np.ndarray:
     """Apply PQN normalization within Tanimoto-similarity groups.
 

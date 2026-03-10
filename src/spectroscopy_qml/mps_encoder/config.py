@@ -35,6 +35,10 @@ class DataConfig:
     target_length: int = 1800
     max_files: int | None = 1
 
+    # Tanimoto clustering settings for grouped normalization (NMR/MSMS)
+    # O(n²) memory: 5000 samples ≈ 100MB, 10000 ≈ 400MB
+    max_samples_for_grouping: int = 5000
+
 
 @dataclass
 class TrainingConfig:
