@@ -97,7 +97,14 @@ Examples:
         try:
             from spectroscopy_qml.mps_encoder import MODEL_CONFIG, MPSFunctionalGroupClassifier
 
-            model = MPSFunctionalGroupClassifier()
+            model = MPSFunctionalGroupClassifier(
+                input_dim=MODEL_CONFIG.input_dim,
+                num_sites=MODEL_CONFIG.num_sites,
+                physical_dim=MODEL_CONFIG.physical_dim,
+                bond_dim=MODEL_CONFIG.bond_dim,
+                num_classes=MODEL_CONFIG.num_classes,
+                dropout_rate=MODEL_CONFIG.dropout_rate,
+            )
             params = model.get_num_parameters()
             print("\n✓ Model loaded successfully")
             print(f"  Total parameters: {params:,}")

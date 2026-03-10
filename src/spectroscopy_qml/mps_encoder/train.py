@@ -3,7 +3,6 @@ Training script for MPS Functional Group Classifier.
 """
 
 import csv
-import os
 import time
 from pathlib import Path
 

@@ -198,7 +198,7 @@ def main(model_path, data_dir, output_dir):
     model_path = model_path or Path(PATH_CONFIG.best_model_path)
     data_dir = data_dir or Path(PATH_CONFIG.data_dir)
     if not data_dir.exists():
-        project_root = Path(__file__).parents[4]
+        project_root = Path(__file__).parents[3]
         data_dir = project_root / "data" / "raw"
     output_dir = output_dir or Path(PATH_CONFIG.results_dir)
     output_dir.mkdir(parents=True, exist_ok=True)

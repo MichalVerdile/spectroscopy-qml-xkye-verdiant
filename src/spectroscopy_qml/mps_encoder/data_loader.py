@@ -701,7 +701,7 @@ def load_msms_data(
             spectra_column=input_column,
             target_length=target_length,
             max_files=max_files,
-            sample_transform=make_msms_spectrum,
+            sample_transform=lambda s: make_msms_spectrum(s, max_mz=target_length),
             batch_transform=None,
             return_smiles=True,
         )
@@ -717,7 +717,7 @@ def load_msms_data(
             spectra_column=input_column,
             target_length=target_length,
             max_files=max_files,
-            sample_transform=make_msms_spectrum,
+            sample_transform=lambda s: make_msms_spectrum(s, max_mz=target_length),
             batch_transform=apply_pqn_normalization,
         )
         norm_method = "Standard PQN"
@@ -728,7 +728,7 @@ def load_msms_data(
             spectra_column=input_column,
             target_length=target_length,
             max_files=max_files,
-            sample_transform=make_msms_spectrum,
+            sample_transform=lambda s: make_msms_spectrum(s, max_mz=target_length),
         )
         norm_method = None
 
