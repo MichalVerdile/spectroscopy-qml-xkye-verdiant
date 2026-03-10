@@ -11,11 +11,11 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 1800
-    num_sites: int = 36
-    physical_dim: int = 12
-    bond_dim: int = 64
+    num_sites: int = 9
+    physical_dim: int = 150
+    bond_dim: int = 128
     num_classes: int = 37
-    dropout_rate: float = 0.1
+    dropout_rate: float = 0.05
 
 
 @dataclass
@@ -24,7 +24,7 @@ class DataConfig:
 
     apply_snv: bool = True
     target_length: int = 1800
-    max_files: int | None = None
+    max_files: int | None = 1
 
 
 @dataclass
