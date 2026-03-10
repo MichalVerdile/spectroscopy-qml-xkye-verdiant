@@ -2,15 +2,13 @@
 Quick start script for MPS Functional Group Classifier.
 
 This script provides a simple interface to train and evaluate the model.
+
+Usage:
+    Install the package first: pip install -e .
+    Or set PYTHONPATH: export PYTHONPATH=src
 """
 
 import argparse
-import sys
-from pathlib import Path
-
-# Add src directory to path so spectroscopy_qml can be imported
-src_dir = Path(__file__).parents[3]
-sys.path.insert(0, str(src_dir))
 
 
 def main():

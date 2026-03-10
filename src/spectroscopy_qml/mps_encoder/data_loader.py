@@ -216,17 +216,28 @@ def cluster_by_tanimoto(
     smiles_list: list[str],
     n_clusters: int | None = None,
     distance_threshold: float = 0.3,
-) -> np.ndarray:
+    max_samples: int = 10000,
+) -> np.ndarray | None:
     """Cluster molecules by Tanimoto similarity using hierarchical clustering.
 
     Args:
         smiles_list: List of SMILES strings
         n_clusters: Number of clusters (if None, uses distance_threshold)
         distance_threshold: Tanimoto distance threshold for clustering
+        max_samples: Maximum samples for clustering (O(n²) memory/time).
+                     Returns None if exceeded, caller should fall back.
 
     Returns:
-        Array of cluster labels
+        Array of cluster labels, or None if max_samples exceeded
     """
+    n = len(smiles_list)
+    if n > max_samples:
+        print(
+            f"Warning: {n} samples exceeds max_samples={max_samples} for Tanimoto clustering. "
+            f"Falling back to non-grouped normalization."
+        )
+        return None
+
     fingerprints = compute_fingerprints(smiles_list)
     dist_matrix = compute_tanimoto_distance_matrix(fingerprints)
 
@@ -241,11 +252,24 @@ def cluster_by_tanimoto(
     return labels
 
 
+def _build_small_cluster_mask(cluster_labels: np.ndarray, min_group_size: int) -> np.ndarray:
+    """Build boolean mask for samples in clusters smaller than min_group_size.
+
+    Uses np.bincount for O(n) complexity instead of repeated sum comparisons.
+    """
+    # Count samples per cluster in O(n)
+    cluster_sizes = np.bincount(cluster_labels)
+    # Create mask: True if cluster size < min_group_size
+    small_cluster_ids = np.where(cluster_sizes < min_group_size)[0]
+    return np.isin(cluster_labels, small_cluster_ids)
+
+
 def apply_grouped_quantile_normalization(
     spectra: np.ndarray,
     smiles_list: list[str],
     distance_threshold: float = 0.3,
     min_group_size: int = 5,
+    max_samples_for_grouping: int = 10000,
 ) -> np.ndarray:
     """Apply quantile normalization within Tanimoto-similarity groups.
 
@@ -259,6 +283,8 @@ def apply_grouped_quantile_normalization(
         distance_threshold: Tanimoto distance threshold for grouping
         min_group_size: Minimum samples for group-wise normalization;
                         smaller groups use global normalization
+        max_samples_for_grouping: Maximum samples for Tanimoto clustering.
+                                  Falls back to global normalization if exceeded.
 
     Returns:
         Normalized spectra array
@@ -271,18 +297,27 @@ def apply_grouped_quantile_normalization(
 
     # Cluster molecules by Tanimoto similarity
     print(f"Clustering {len(smiles_list)} molecules by Tanimoto similarity...")
-    cluster_labels = cluster_by_tanimoto(smiles_list, distance_threshold=distance_threshold)
+    cluster_labels = cluster_by_tanimoto(
+        smiles_list,
+        distance_threshold=distance_threshold,
+        max_samples=max_samples_for_grouping,
+    )
+
+    # Fall back to global normalization if clustering not possible
+    if cluster_labels is None:
+        print("Applying global quantile normalization (no grouping)")
+        return apply_quantile_normalization(spectra)
+
     n_clusters = len(set(cluster_labels))
     print(f"Found {n_clusters} clusters")
 
     # Apply quantile normalization within each cluster
     normalized = np.zeros_like(spectra)
-    cluster_sizes = []
+    cluster_sizes = np.bincount(cluster_labels)
 
-    for cluster_id in set(cluster_labels):
+    for cluster_id in range(len(cluster_sizes)):
         mask = cluster_labels == cluster_id
-        cluster_size = mask.sum()
-        cluster_sizes.append(cluster_size)
+        cluster_size = cluster_sizes[cluster_id]
 
         if cluster_size >= min_group_size:
             # Apply quantile normalization to this cluster
@@ -292,20 +327,14 @@ def apply_grouped_quantile_normalization(
             # Small cluster: just copy (will be normalized globally at end)
             normalized[mask] = spectra[mask]
 
-    # For very small clusters, apply global normalization
-    small_cluster_mask = np.array(
-        [
-            cluster_labels[i]
-            in {c for c in set(cluster_labels) if (cluster_labels == c).sum() < min_group_size}
-            for i in range(len(cluster_labels))
-        ]
-    )
+    # For very small clusters, apply global normalization (O(n) mask construction)
+    small_cluster_mask = _build_small_cluster_mask(cluster_labels, min_group_size)
 
     if small_cluster_mask.sum() > 0:
         normalized[small_cluster_mask] = apply_quantile_normalization(spectra[small_cluster_mask])
 
     print(
-        f"Cluster sizes: min={min(cluster_sizes)}, max={max(cluster_sizes)}, "
+        f"Cluster sizes: min={cluster_sizes.min()}, max={cluster_sizes.max()}, "
         f"median={np.median(cluster_sizes):.0f}"
     )
 
@@ -351,6 +380,7 @@ def apply_grouped_pqn_normalization(
     distance_threshold: float = 0.3,
     min_group_size: int = 5,
     eps: float = 1e-8,
+    max_samples_for_grouping: int = 10000,
 ) -> np.ndarray:
     """Apply PQN normalization within Tanimoto-similarity groups.
 
@@ -366,6 +396,8 @@ def apply_grouped_pqn_normalization(
         min_group_size: Minimum samples for group-wise normalization;
                         smaller groups use global normalization
         eps: Small value for numerical stability
+        max_samples_for_grouping: Maximum samples for Tanimoto clustering.
+                                  Falls back to global normalization if exceeded.
 
     Returns:
         Normalized spectra array
@@ -378,18 +410,27 @@ def apply_grouped_pqn_normalization(
 
     # Cluster molecules by Tanimoto similarity
     print(f"Clustering {len(smiles_list)} molecules by Tanimoto similarity...")
-    cluster_labels = cluster_by_tanimoto(smiles_list, distance_threshold=distance_threshold)
+    cluster_labels = cluster_by_tanimoto(
+        smiles_list,
+        distance_threshold=distance_threshold,
+        max_samples=max_samples_for_grouping,
+    )
+
+    # Fall back to global normalization if clustering not possible
+    if cluster_labels is None:
+        print("Applying global PQN normalization (no grouping)")
+        return apply_pqn_normalization(spectra, eps=eps)
+
     n_clusters = len(set(cluster_labels))
     print(f"Found {n_clusters} clusters")
 
     # Apply PQN normalization within each cluster
     normalized = np.zeros_like(spectra)
-    cluster_sizes = []
+    cluster_sizes = np.bincount(cluster_labels)
 
-    for cluster_id in set(cluster_labels):
+    for cluster_id in range(len(cluster_sizes)):
         mask = cluster_labels == cluster_id
-        cluster_size = mask.sum()
-        cluster_sizes.append(cluster_size)
+        cluster_size = cluster_sizes[cluster_id]
 
         if cluster_size >= min_group_size:
             # Apply PQN normalization to this cluster
@@ -399,14 +440,8 @@ def apply_grouped_pqn_normalization(
             # Small cluster: just copy (will be normalized globally at end)
             normalized[mask] = spectra[mask]
 
-    # For very small clusters, apply global PQN normalization
-    small_cluster_mask = np.array(
-        [
-            cluster_labels[i]
-            in {c for c in set(cluster_labels) if (cluster_labels == c).sum() < min_group_size}
-            for i in range(len(cluster_labels))
-        ]
-    )
+    # For very small clusters, apply global PQN normalization (O(n) mask construction)
+    small_cluster_mask = _build_small_cluster_mask(cluster_labels, min_group_size)
 
     if small_cluster_mask.sum() > 0:
         normalized[small_cluster_mask] = apply_pqn_normalization(
@@ -414,7 +449,7 @@ def apply_grouped_pqn_normalization(
         )
 
     print(
-        f"Cluster sizes: min={min(cluster_sizes)}, max={max(cluster_sizes)}, "
+        f"Cluster sizes: min={cluster_sizes.min()}, max={cluster_sizes.max()}, "
         f"median={np.median(cluster_sizes):.0f}"
     )
 

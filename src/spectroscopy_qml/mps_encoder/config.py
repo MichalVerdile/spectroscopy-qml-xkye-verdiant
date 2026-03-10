@@ -2,7 +2,12 @@
 Configuration for MPS Functional Group Classifier training and evaluation.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
+
+# Derive paths relative to this config file
+_MODULE_DIR = Path(__file__).parent.resolve()
+_PROJECT_ROOT = _MODULE_DIR.parents[2]  # spectroscopy-qml-xkye-verdiant/
 
 
 @dataclass
@@ -68,19 +73,23 @@ class TrainingConfig:
 class PathConfig:
     """File paths for data and outputs."""
 
-    # Data paths
-    data_dir: str = "data/raw"
+    # Data paths (relative to project root)
+    data_dir: str = field(default_factory=lambda: str(_PROJECT_ROOT / "data" / "raw"))
 
-    # Output paths
-    model_dir: str = "src/spectroscopy_qml/mps_encoder/models"
-    results_dir: str = "src/spectroscopy_qml/mps_encoder/results"
+    # Output paths (relative to module directory)
+    model_dir: str = field(default_factory=lambda: str(_MODULE_DIR / "models"))
+    results_dir: str = field(default_factory=lambda: str(_MODULE_DIR / "results"))
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/mps_encoder/models/mps_model_best.pt"
+    best_model_path: str = field(
+        default_factory=lambda: str(_MODULE_DIR / "models" / "mps_model_best.pt")
+    )
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/mps_encoder/results/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/mps_encoder/results/training_log.csv"
+    summary_path: str = field(default_factory=lambda: str(_MODULE_DIR / "results" / "summary.txt"))
+    training_log_path: str = field(
+        default_factory=lambda: str(_MODULE_DIR / "results" / "training_log.csv")
+    )
 
 
 # Global configurations
