@@ -5,7 +5,7 @@ Handles:
 - Loading IR spectra from parquet files => (benchmark/data/raw/ (aligned_chunk_*.parquet))
 - Extracting functional group labels from SMILES using RDKit
 - Resampling to fixed grid
-- Intensity normalization (z-score or min-max)
+- Intensity normalization (z-score)
 """
 
 from __future__ import annotations
@@ -136,7 +136,7 @@ def resample_spectrum(
 
 def normalize_spectrum(
     spectrum: np.ndarray,
-    method: Literal["minmax", "iqr"] = "minmax",
+    method: Literal["zscore"] = "zscore",
     eps: float = 1e-8,
 ) -> np.ndarray:
     """
@@ -144,7 +144,7 @@ def normalize_spectrum(
 
     Args:
         spectrum: 1D array of spectral intensities
-        method: Normalization method ("minmax" or "iqr")
+        method: Normalization method ("zscore")
         eps: Small constant for numerical stability
 
     Returns:
@@ -152,20 +152,12 @@ def normalize_spectrum(
     """
     spectrum = spectrum.astype(np.float32)
 
-    if method == "minmax":
-        min_val = float(np.min(spectrum))
-        max_val = float(np.max(spectrum))
-        result = (spectrum - min_val) / (max_val - min_val + eps)
-        return result
-    elif method == "iqr":
-        q1 = float(np.percentile(spectrum, 25))
-        q3 = float(np.percentile(spectrum, 75))
-        median = float(np.median(spectrum))
-        iqr = q3 - q1
-        result = (spectrum - median) / (iqr + eps)
-        return result
-    else:
+    if method != "zscore":
         raise ValueError(f"Unknown normalization method: {method}")
+    mean = float(np.mean(spectrum))
+    std = float(np.std(spectrum))
+    result = (spectrum - mean) / (std + eps)
+    return result
 
 
 class IRFunctionalGroupDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
@@ -179,8 +171,8 @@ class IRFunctionalGroupDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __init__(
         self,
         data_dir: str | Path,
-        target_length: int = 512,
-        normalization: Literal["minmax", "iqr"] = "minmax",
+        target_length: int = 600,
+        normalization: Literal["zscore"] = "zscore",
         functional_groups: dict[str, str] | None = None,
         max_chunks: int | None = None,
         cache_labels: bool = True,
@@ -191,7 +183,7 @@ class IRFunctionalGroupDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         Args:
             data_dir: Path to directory containing parquet files
             target_length: Resample spectra to this length
-            normalization: Normalization method ("minmax" or "iqr")
+            normalization: Normalization method ("zscore")
             functional_groups: Custom functional groups dict (defaults to FUNCTIONAL_GROUPS)
             max_chunks: Maximum number of parquet chunks to load (for testing)
             cache_labels: Whether to precompute and cache labels

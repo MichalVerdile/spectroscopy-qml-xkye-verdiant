@@ -59,14 +59,14 @@ class ExperimentConfig:
     # Data
     data_dir: str = "../../../data/raw"
     max_chunks: int | None = None  # Limit chunks for testing
-    target_length: int = 512
-    normalization: Literal["minmax", "iqr"] = "minmax"
+    target_length: int = 600
+    normalization: Literal["zscore"] = "zscore"
 
     # Model
     embedding_dim: int = 128
 
     # MPS specific
-    num_sites: int = 32
+    num_sites: int = 30
     physical_dim: int = 8
     bond_dims: list[int] = None  # type: ignore[assignment]  # Set in __post_init__
 
@@ -481,20 +481,20 @@ def main() -> None:
     parser.add_argument(
         "--target_length",
         type=int,
-        default=512,
+        default=600,
         help="Resample spectra to this length",
     )
     parser.add_argument(
         "--normalization",
         type=str,
-        default="minmax",
-        choices=["minmax", "iqr"],
+        default="zscore",
+        choices=["zscore"],
         help="Spectrum normalization method",
     )
     parser.add_argument(
         "--num_sites",
         type=int,
-        default=32,
+        default=30,
         help="Number of sites for MPS encoder",
     )
     parser.add_argument(
