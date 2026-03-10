@@ -97,7 +97,7 @@ Examples:
 
         # Check model
         try:
-            from spectroscopy_qml.ir.mps_encoder import MPSFunctionalGroupClassifier
+            from spectroscopy_qml.mps_encoder import MODEL_CONFIG, MPSFunctionalGroupClassifier
 
             model = MPSFunctionalGroupClassifier()
             params = model.get_num_parameters()
@@ -105,7 +105,7 @@ Examples:
             print(f"  Total parameters: {params:,}")
 
             # Test forward pass
-            test_input = torch.randn(2, 1800)
+            test_input = torch.randn(2, MODEL_CONFIG.input_dim)
             output = model(test_input)
             print(f"  Test forward pass: {test_input.shape} → {output.shape}")
             print("✓ All checks passed!")
@@ -123,7 +123,7 @@ Examples:
         print("=" * 80 + "\n")
 
         try:
-            from spectroscopy_qml.ir.mps_encoder.train import train_model
+            from spectroscopy_qml.mps_encoder.train import train_model
 
             train_model()
         except Exception as e:
@@ -143,7 +143,7 @@ Examples:
             # Call evaluate with default args
             import click
 
-            from spectroscopy_qml.ir.mps_encoder.evaluate import main as evaluate_main
+            from spectroscopy_qml.mps_encoder.evaluate import main as evaluate_main
 
             ctx = click.Context(evaluate_main)
             ctx.invoke(evaluate_main)

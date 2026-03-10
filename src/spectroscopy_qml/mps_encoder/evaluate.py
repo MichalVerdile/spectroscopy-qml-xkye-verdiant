@@ -17,18 +17,18 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from spectroscopy_qml.ir.mps_encoder.config import (
+from spectroscopy_qml.mps_encoder.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder.data_loader import (
+from spectroscopy_qml.mps_encoder.data_loader import (
     FUNCTIONAL_GROUPS,
-    load_ir_data,
+    load_spectra_data,
     prepare_dataloaders,
 )
-from spectroscopy_qml.ir.mps_encoder.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
 def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
@@ -219,12 +219,22 @@ def main(model_path, data_dir, output_dir):
 
     # Load data
     print(f"\nLoading data from: {data_dir}")
-    X, y = load_ir_data(
-        data_dir,
+    X, y = load_spectra_data(
+        data_dir=data_dir,
+        modality=DATA_CONFIG.modality,
+        input_column=DATA_CONFIG.input_column,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
+        normalization_method=DATA_CONFIG.normalization_method,
         apply_snv=DATA_CONFIG.apply_snv,
     )
+
+    if X.shape[1] != MODEL_CONFIG.input_dim:
+        raise ValueError(
+            f"Loaded spectra dimension ({X.shape[1]}) does not match MODEL_CONFIG.input_dim "
+            f"({MODEL_CONFIG.input_dim}). Update ModelConfig.input_dim and ensure divisibility "
+            f"by num_sites ({MODEL_CONFIG.num_sites})."
+        )
 
     # Prepare dataloaders
     train_loader, val_loader, test_loader = prepare_dataloaders(

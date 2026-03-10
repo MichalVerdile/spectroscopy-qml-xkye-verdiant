@@ -14,14 +14,14 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from spectroscopy_qml.ir.mps_encoder.config import (
+from spectroscopy_qml.mps_encoder.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder.data_loader import load_ir_data, prepare_dataloaders
-from spectroscopy_qml.ir.mps_encoder.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.mps_encoder.data_loader import load_spectra_data, prepare_dataloaders
+from spectroscopy_qml.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
 class EarlyStopping:
@@ -333,12 +333,22 @@ def train_model():
         data_dir = project_root / "data" / "raw"
         print(f"Processed data not found, using raw data from: {data_dir}")
 
-    X, y = load_ir_data(
-        data_dir,
+    X, y = load_spectra_data(
+        data_dir=data_dir,
+        modality=DATA_CONFIG.modality,
+        input_column=DATA_CONFIG.input_column,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
+        normalization_method=DATA_CONFIG.normalization_method,
         apply_snv=DATA_CONFIG.apply_snv,
     )
+
+    if X.shape[1] != MODEL_CONFIG.input_dim:
+        raise ValueError(
+            f"Loaded spectra dimension ({X.shape[1]}) does not match MODEL_CONFIG.input_dim "
+            f"({MODEL_CONFIG.input_dim}). Update ModelConfig.input_dim and ensure divisibility "
+            f"by num_sites ({MODEL_CONFIG.num_sites})."
+        )
 
     # Prepare dataloaders
     train_loader, val_loader, test_loader = prepare_dataloaders(

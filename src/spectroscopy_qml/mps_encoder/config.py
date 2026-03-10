@@ -3,7 +3,6 @@ Configuration for MPS Functional Group Classifier training and evaluation.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -22,6 +21,11 @@ class ModelConfig:
 class DataConfig:
     """Data preprocessing configuration."""
 
+    modality: str = "ir"  # "ir", "nmr", "msms"
+    input_column: str | None = None
+    normalization_method: str | None = None  # "snv", "quantile", "pqn", "none"
+
+    # Legacy IR flag kept for backward compatibility
     apply_snv: bool = True
     target_length: int = 1800
     max_files: int | None = 1
@@ -68,15 +72,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/ir/mps_encoder/models"
-    results_dir: str = "src/spectroscopy_qml/ir/mps_encoder/results"
+    model_dir: str = "src/spectroscopy_qml/mps_encoder/models"
+    results_dir: str = "src/spectroscopy_qml/mps_encoder/results"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/ir/mps_encoder/models/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/mps_encoder/models/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/ir/mps_encoder/results/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/ir/mps_encoder/results/training_log.csv"
+    summary_path: str = "src/spectroscopy_qml/mps_encoder/results/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/mps_encoder/results/training_log.csv"
 
 
 # Global configurations
