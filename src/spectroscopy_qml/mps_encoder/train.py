@@ -265,8 +265,8 @@ def validate(
             spectra = spectra.to(device)
             labels = labels.to(device)
 
-            # Mixed precision inference
-            if use_amp:
+            # Mixed precision inference (only on CUDA)
+            if use_amp and device.type == "cuda":
                 with torch.amp.autocast("cuda"):
                     logits = model(spectra)
                     loss = criterion(logits, labels)

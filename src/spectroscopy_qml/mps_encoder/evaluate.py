@@ -31,7 +31,12 @@ from spectroscopy_qml.mps_encoder.data_loader import (
 from spectroscopy_qml.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
-def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
+def evaluate_model(
+    model: nn.Module,
+    dataloader,
+    device: torch.device,
+    thresholds: np.ndarray | None = None,
+) -> dict:
     """
     Evaluate model on a dataset.
 
@@ -39,6 +44,7 @@ def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
         model: Trained model
         dataloader: DataLoader for evaluation
         device: Device to run evaluation on
+        thresholds: Per-class thresholds for prediction (if None, use 0.5 for all)
 
     Returns:
         Dictionary containing predictions, labels, and metrics
@@ -48,6 +54,12 @@ def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
     all_preds = []
     all_probs = []
 
+    # Convert thresholds to tensor if provided
+    if thresholds is not None:
+        thr = torch.as_tensor(thresholds, device=device, dtype=torch.float32)
+    else:
+        thr = torch.tensor(0.5, device=device)
+
     with torch.no_grad():
         for spectra, labels in dataloader:
             spectra = spectra.to(device)
@@ -56,7 +68,7 @@ def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
             # Forward pass
             logits = model(spectra)
             probs = torch.sigmoid(logits)
-            preds = (probs > 0.5).float()
+            preds = (probs > thr).float()
 
             all_labels.append(labels.cpu().numpy())
             all_preds.append(preds.cpu().numpy())
@@ -214,6 +226,13 @@ def main(model_path, data_dir, output_dir):
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
 
+    # Load per-class thresholds if available
+    thresholds = checkpoint.get("thresholds")
+    if thresholds is not None:
+        print("Using tuned thresholds from checkpoint")
+    else:
+        print("No thresholds in checkpoint, using default 0.5")
+
     print(f"Model loaded (trained for {checkpoint['epoch']} epochs)")
     print(f"Validation loss: {checkpoint['val_loss']:.4f}")
 
@@ -255,7 +274,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Test Set")
     print("=" * 80)
 
-    test_results = evaluate_model(model, test_loader, device)
+    test_results = evaluate_model(model, test_loader, device, thresholds=thresholds)
 
     # Save detailed results
     eval_output_path = output_dir / "evaluation_results.txt"
@@ -269,7 +288,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Validation Set")
     print("=" * 80)
 
-    val_results = evaluate_model(model, val_loader, device)
+    val_results = evaluate_model(model, val_loader, device, thresholds=thresholds)
 
     val_output_path = output_dir / "validation_results.txt"
     with open(val_output_path, "w") as f:
