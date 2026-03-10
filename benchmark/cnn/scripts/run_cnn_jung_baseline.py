@@ -23,7 +23,7 @@ from keras.optimizers import Adam
 from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
 from sklearn.metrics import f1_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, train_test_split
 
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -38,12 +38,12 @@ if gpus:
         # Enable memory growth to prevent TensorFlow from allocating all VRAM at once
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
-        print(f"✓ GPU(s) detected: {len(gpus)} device(s)")
+        print(f"GPU(s) detected: {len(gpus)} device(s)")
         print(f"  {[gpu.name for gpu in gpus]}")
     except RuntimeError as e:
         print(f"GPU configuration error: {e}")
 else:
-    print("⚠ No GPU detected - running on CPU")
+    print("No GPU detected - running on CPU")
 
 functional_groups = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
@@ -111,7 +111,8 @@ def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weigh
     """Trains final model with the best hyper-parameters."""
     # Input
     X_train = X_train.reshape(X_train.shape[0], 600, 1)
-    X_val = X_val.reshape(X_val.shape[0], 600, 1)
+    if X_val is not None:
+        X_val = X_val.reshape(X_val.shape[0], 600, 1)
 
     # Shape of input data.
     input_shape = X_train.shape[1:]
@@ -197,18 +198,21 @@ def train_model(X_train, y_train, X_val, y_val, X_test, num_fgs, aug, num, weigh
 
     lrs = LearningRateScheduler(custom_learning_rate_schedular)
 
-    model.fit(
-        X_train,
-        y_train,
-        validation_data=(X_val, y_val),
-        epochs=42,
-        batch_size=1024,
-        verbose=1,
-        callbacks=[lrs],
-    )
+    fit_kwargs = {
+        "x": X_train,
+        "y": y_train,
+        "epochs": 42,
+        "batch_size": 1024,
+        "verbose": 1,
+        "callbacks": [lrs],
+    }
+    if X_val is not None and y_val is not None:
+        fit_kwargs["validation_data"] = (X_val, y_val)
+
+    model.fit(**fit_kwargs)
 
     prediction = model.predict(X_test)
-    return (prediction > 0.5).astype(int)
+    return (prediction > 0.5).astype(int), model
 
 
 def interpolate_to_600(spec):
@@ -239,7 +243,8 @@ def make_msms_spectrum(spectrum):
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
 @click.option("--seed", type=int, default=42)
-def main(analytical_data, base_out_path, columns, seed):
+@click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
+def main(analytical_data, base_out_path, columns, seed, n_folds):
     # Parse columns to process
     columns_to_process = (
         columns.split(",")
@@ -293,14 +298,6 @@ def main(analytical_data, base_out_path, columns, seed):
 
     print(f"Total samples loaded: {len(training_data)}")
 
-    # Split data: 80% train, 10% val, 10% test
-    train_val, test = train_test_split(training_data, test_size=0.1, random_state=seed)
-    train, val = train_test_split(
-        train_val, test_size=0.111, random_state=seed
-    )  # 0.111 of 0.9 ≈ 0.1
-
-    print(f"Split sizes: train={len(train)}, val={len(val)}, test={len(test)}")
-
     # Process each column
     for col_name in columns_to_process:
         actual_col, output_dir = column_mapping[col_name]
@@ -308,26 +305,111 @@ def main(analytical_data, base_out_path, columns, seed):
         print(f"Training model for: {col_name} (column: {actual_col})")
         print(f"{'='*60}")
 
-        X_train = np.stack(train[actual_col].to_list())
-        y_train = np.stack(train["func_group"].to_list())
-        X_val = np.stack(val[actual_col].to_list())
-        y_val = np.stack(val["func_group"].to_list())
-        X_test = np.stack(test[actual_col].to_list())
-        y_test = np.stack(test["func_group"].to_list())
+        # Prepare data
+        X_data = np.stack(training_data[actual_col].to_list())
+        y_data = np.stack(training_data["func_group"].to_list())
 
-        # Train model
-        prediction = train_model(X_train, y_train, X_val, y_val, X_test, 37, "e", 0, 0)
+        # First split: 80% train, 20% test
+        X_train_full, X_test, y_train_full, y_test = train_test_split(
+            X_data, y_data, test_size=0.2, random_state=seed, shuffle=True
+        )
 
-        f1 = f1_score(y_test, prediction, average="micro")
-        print(f"F1 Score for {col_name}: {f1}")
+        print(f"Initial split: Train={len(X_train_full)} (80%), Test={len(X_test)} (20%)")
+        print(f"Performing {n_folds}-fold CV on training set...")
+
+        # K-Fold Cross Validation
+        kfold = KFold(n_splits=n_folds, shuffle=True, random_state=seed)
+        fold_f1_scores = []
+        all_predictions = []
+        all_targets = []
+        fold_models = []
+
+        for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), 1):
+            print(f"\n--- Fold {fold_idx}/{n_folds} ---")
+
+            # Split data for this fold
+            X_train, X_val = X_train_full[train_idx], X_train_full[val_idx]
+            y_train, y_val = y_train_full[train_idx], y_train_full[val_idx]
+
+            print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
+
+            # Train model for this fold
+            prediction, model = train_model(X_train, y_train, X_val, y_val, X_val, 37, "e", 0, 0)
+
+            # Calculate F1 score for this fold
+            fold_f1 = f1_score(y_val, prediction, average="micro")
+            fold_f1_scores.append(fold_f1)
+            print(f"Fold {fold_idx} F1 Score: {fold_f1:.4f}")
+
+            # Store predictions and targets
+            all_predictions.append(prediction)
+            all_targets.append(y_val)
+            fold_models.append(model)
+
+        # Calculate and display cross-validation results
+        mean_f1 = np.mean(fold_f1_scores)
+        std_f1 = np.std(fold_f1_scores)
+        print(f"\n{'='*60}")
+        print(f"Cross-Validation Results for {col_name}:")
+        print(f"Mean CV F1 Score: {mean_f1:.4f} ± {std_f1:.4f}")
+        print(f"Individual Fold Scores: {[f'{score:.4f}' for score in fold_f1_scores]}")
+        print(f"{'='*60}")
+
+        # Select best model and evaluate on held-out test set
+        best_fold_idx = np.argmax(fold_f1_scores)
+        best_model = fold_models[best_fold_idx]
+        print(
+            f"\nBest model: Fold {best_fold_idx + 1} (CV F1: {fold_f1_scores[best_fold_idx]:.4f})"
+        )
+
+        # Evaluate on held-out test set
+        print(f"\nEvaluating on test set ({len(X_test)} samples)...")
+        X_test_reshaped = X_test.reshape(X_test.shape[0], 600, 1)
+        test_predictions = best_model.predict(X_test_reshaped)
+        test_predictions_binary = (test_predictions > 0.5).astype(int)
+        test_f1 = f1_score(y_test, test_predictions_binary, average="micro")
+
+        print(f"\n{'='*60}")
+        print(f"FINAL TEST RESULTS for {col_name}:")
+        print(f"Test F1 Score: {test_f1:.4f}")
+        print(f"{'='*60}")
 
         # Save results
         out_path = base_out_path / output_dir
         out_path.mkdir(parents=True, exist_ok=True)
-        with open(out_path / "results.pickle", "wb") as file:
-            pickle.dump({"pred": prediction, "tgt": y_test}, file)
 
-        print(f"Results saved to: {out_path / 'results.pickle'}")
+        # Save cross-validation and test results
+        cv_results = {
+            "fold_scores": fold_f1_scores,
+            "mean_cv_f1": mean_f1,
+            "std_cv_f1": std_f1,
+            "best_fold_idx": best_fold_idx,
+            "test_f1": test_f1,
+            "test_predictions": test_predictions_binary,
+            "test_targets": y_test,
+            "all_cv_predictions": all_predictions,
+            "all_cv_targets": all_targets,
+            "n_folds": n_folds,
+            "train_size": len(X_train_full),
+            "test_size": len(X_test),
+        }
+        with open(out_path / "cv_results.pickle", "wb") as file:
+            pickle.dump(cv_results, file)
+        print(f"\nCross-validation and test results saved to: {out_path / 'cv_results.pickle'}")
+
+        # Save the best model
+        model_save_path = base_out_path / "results" / f"{output_dir}_model.keras"
+        model_save_path.parent.mkdir(parents=True, exist_ok=True)
+        best_model.save(str(model_save_path))
+        print(
+            f"Best model (Fold {best_fold_idx + 1}, Test F1: {test_f1:.4f}) saved to: {model_save_path}"
+        )
+
+        # Save all fold models
+        for fold_idx, model in enumerate(fold_models, 1):
+            fold_model_path = out_path / f"model_fold_{fold_idx}.keras"
+            model.save(str(fold_model_path))
+        print(f"All fold models saved to: {out_path}")
 
 
 if __name__ == "__main__":
