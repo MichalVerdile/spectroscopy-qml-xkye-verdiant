@@ -100,15 +100,15 @@ follow_imports = "normal"
 ignore_missing_imports = false
 
 [[tool.mypy.overrides]]
-module = "src.spectroscopy_qml.ir.snv_normalization.scripts.run_cnn_with_snv"
+module = "spectroscopy_qml.ir.snv_normalization.scripts.run_cnn_with_snv"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = "src.spectroscopy_qml.ir.mps_encoder.data_loader"
+module = "spectroscopy_qml.ir.mps_encoder.data_loader"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = "src.spectroscopy_qml.ir.mps_encoder.train"
+module = "spectroscopy_qml.ir.mps_encoder.train"
 ignore_errors = true
 
 [[tool.mypy.overrides]]
