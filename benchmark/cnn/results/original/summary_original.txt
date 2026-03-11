@@ -3,41 +3,42 @@ CNN Model Evaluation Summary - ORIGINAL
 ================================================================================
 
 Model: cnmr
-  F1 Score (micro):    0.5970
-  F1 Score (macro):    0.1920
-  Subset Accuracy:     0.0021
-  Hamming Accuracy:    0.8768
-  Precision (macro):   0.3390
-  Recall (macro):      0.2559
+  F1 Score (micro):    0.5766
+  F1 Score (macro):    0.1502
+  Subset Accuracy:     0.0028
+  Hamming Accuracy:    0.8904
+  Precision (macro):   0.4279
+  Recall (macro):      0.1780
 
 Model: hnmr
-  F1 Score (micro):    0.8038
-  F1 Score (macro):    0.4550
-  Subset Accuracy:     0.2299
-  Hamming Accuracy:    0.9524
-  Precision (macro):   0.7412
-  Recall (macro):      0.3755
+  F1 Score (micro):    0.8238
+  F1 Score (macro):    0.4707
+  Subset Accuracy:     0.2658
+  Hamming Accuracy:    0.9567
+  Precision (macro):   0.7490
+  Recall (macro):      0.4000
 
 Model: ir
-  F1 Score (micro):    0.8990
-  F1 Score (macro):    0.6905
-  Subset Accuracy:     0.4329
-  Hamming Accuracy:    0.9746
-  Precision (macro):   0.8510
-  Recall (macro):      0.6289
+  F1 Score (micro):    0.8940
+  F1 Score (macro):    0.6812
+  Subset Accuracy:     0.4124
+  Hamming Accuracy:    0.9734
+  Precision (macro):   0.8289
+  Recall (macro):      0.6200
 
 Model: neg_msms
-  F1 Score (micro):    0.6456
-  F1 Score (macro):    0.1318
-  Subset Accuracy:     0.0367
+  F1 Score (micro):    0.6451
+  F1 Score (macro):    0.1309
+  Subset Accuracy:     0.0359
   Hamming Accuracy:    0.9215
-  Precision (macro):   0.4625
-  Recall (macro):      0.1181
+  Precision (macro):   0.4629
+  Recall (macro):      0.1176
 
 Model: pos_msms
-  F1 Score (micro):    0.6428
-  F1 Score (macro):    0.1247
-  Subset Accuracy:     0.0340
-  Hamming Accuracy:    0.9231
-  Precision (macro):   0.4235
-  Recall (macro):      0.1101
+  F1 Score (micro):    0.6406
+  F1 Score (macro):    0.1258
+  Subset Accuracy:     0.0334
+  Hamming Accuracy:    0.9226
+  Precision (macro):   0.4062
+  Recall (macro):      0.1104
+
