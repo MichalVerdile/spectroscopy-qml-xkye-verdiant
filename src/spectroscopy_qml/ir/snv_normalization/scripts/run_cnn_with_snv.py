@@ -1,4 +1,5 @@
 # Adapted from Guwon Jung: https://github.com/gj475/irchracterizationcnn
+# Modified to include SNV (Standard Normal Variate) normalization
 
 import os
 import pickle
@@ -84,6 +85,27 @@ functional_groups = {
     "Thioamide": Chem.MolFromSmarts("[NX3][CX3]=[SX1]"),
     "Thiol": Chem.MolFromSmarts("[#16X2H]"),
 }
+
+
+def apply_snv(spectrum):
+    """
+    Apply Standard Normal Variate (SNV) normalization to a spectrum.
+    SNV centers each spectrum by its mean and scales by its standard deviation.
+
+    Args:
+        spectrum: numpy array representing a single spectrum
+
+    Returns:
+        SNV-normalized spectrum
+    """
+    mean = np.mean(spectrum)
+    std = np.std(spectrum)
+
+    # Avoid division by zero
+    if std == 0:
+        return spectrum - mean
+
+    return (spectrum - mean) / std
 
 
 def match_group(mol: Chem.Mol, func_group) -> int:
@@ -242,12 +264,9 @@ def make_msms_spectrum(spectrum):
 @click.option(
     "--columns", type=str, required=False, help="Comma-separated list of columns to process"
 )
-@click.option("--seed", type=int, default=3245)
+@click.option("--seed", type=int, default=42)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
-@click.option(
-    "--use_kfold/--no_kfold", default=True, help="Use K-Fold cross-validation (default: True)"
-)
-def main(analytical_data, base_out_path, columns, seed, n_folds, use_kfold):
+def main(analytical_data, base_out_path, columns, seed, n_folds):
     # Parse columns to process
     columns_to_process = (
         columns.split(",")
@@ -264,53 +283,52 @@ def main(analytical_data, base_out_path, columns, seed, n_folds, use_kfold):
         "neg_msms": ("msms_negative_40ev", "neg_msms"),
     }
 
-    # Process each column SEPARATELY to save memory and time
+    # Get all actual column names needed
+    actual_columns = set(["smiles"])
+    for col in columns_to_process:
+        actual_col, _ = column_mapping[col]
+        actual_columns.add(actual_col)
+
+    print(f"Loading data for columns: {columns_to_process}")
+    print(f"Reading columns from parquet: {actual_columns}")
+    training_data = None
+
+    for i, parquet_file in enumerate(analytical_data.glob("*.parquet")):
+        data = pd.read_parquet(parquet_file, columns=list(actual_columns))
+
+        # Process MSMS columns if present
+        if "msms_positive_40ev" in data.columns:
+            data["msms_positive_40ev"] = data["msms_positive_40ev"].map(make_msms_spectrum)
+        if "msms_negative_40ev" in data.columns:
+            data["msms_negative_40ev"] = data["msms_negative_40ev"].map(make_msms_spectrum)
+
+        # Compute functional groups once
+        data["func_group"] = data.smiles.map(get_functional_groups)
+
+        # Interpolate all spectrum columns, then apply SNV normalization
+        for col in actual_columns:
+            if col != "smiles" and col in data.columns:
+                data[col] = data[col].map(interpolate_to_600)
+                # Apply SNV normalization after interpolation
+                data[col] = data[col].map(apply_snv)
+                print(f"Applied SNV normalization to {col}")
+
+        if training_data is None:
+            training_data = data
+        else:
+            training_data = pd.concat((training_data, data))
+        del data
+
+        print(f"Loaded parquet file {i+1}")
+
+    print(f"Total samples loaded: {len(training_data)}")
+
+    # Process each column
     for col_name in columns_to_process:
         actual_col, output_dir = column_mapping[col_name]
-
-        print(f"\n{'='*60}")
-        print(f"Loading data for: {col_name}")
-        print(f"{'='*60}")
-
-        # Only load the columns we need for THIS spectrum type
-        columns_to_load = ["smiles", actual_col]
-
-        training_data = None
-        parquet_files = list(analytical_data.glob("*.parquet"))
-        print(f"Found {len(parquet_files)} parquet files")
-
-        for i, parquet_file in enumerate(parquet_files):
-            print(
-                f"Loading file {i+1}/{len(parquet_files)}: {parquet_file.name}...",
-                end=" ",
-                flush=True,
-            )
-
-            # Load only necessary columns
-            data = pd.read_parquet(parquet_file, columns=columns_to_load)
-            print(f"[{len(data)} samples]")
-
-            # Process MSMS columns if present
-            if actual_col == "msms_positive_40ev" or actual_col == "msms_negative_40ev":
-                data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
-
-            # Compute functional groups
-            data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
-
-            # Interpolate spectrum
-            data[actual_col] = [interpolate_to_600(s) for s in data[actual_col]]
-
-            # Concatenate data
-            if training_data is None:
-                training_data = data
-            else:
-                training_data = pd.concat((training_data, data))
-
-            del data
-
-        print(f"Total samples loaded: {len(training_data)}")
         print(f"\n{'='*60}")
         print(f"Training model for: {col_name} (column: {actual_col})")
+        print(f"Output directory: {output_dir}_snv")
         print(f"{'='*60}")
 
         # Prepare data
@@ -323,141 +341,135 @@ def main(analytical_data, base_out_path, columns, seed, n_folds, use_kfold):
         )
 
         print(f"Initial split: Train={len(X_train_full)} (80%), Test={len(X_test)} (20%)")
+        print(f"Performing {n_folds}-fold CV on training set...")
 
-        if use_kfold:
-            # ============ K-FOLD CROSS VALIDATION ============
-            print(f"Performing {n_folds}-fold CV on training set...")
+        # K-Fold Cross Validation
+        kfold = KFold(n_splits=n_folds, shuffle=True, random_state=seed)
+        fold_f1_scores = []
+        all_predictions = []
+        all_targets = []
+        fold_models = []
 
-            kfold = KFold(n_splits=n_folds, shuffle=True, random_state=seed)
-            fold_f1_scores = []
-            all_predictions = []
-            all_targets = []
-            fold_models = []
+        for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), 1):
+            print(f"\n--- Fold {fold_idx}/{n_folds} ---")
 
-            for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), 1):
-                print(f"\n--- Fold {fold_idx}/{n_folds} ---")
-
-                # Split data for this fold
-                X_train, X_val = X_train_full[train_idx], X_train_full[val_idx]
-                y_train, y_val = y_train_full[train_idx], y_train_full[val_idx]
-
-                print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
-
-                # Train model for this fold
-                prediction, model = train_model(
-                    X_train, y_train, X_val, y_val, X_val, 37, "e", 0, 0
-                )
-
-                # Calculate F1 score for this fold
-                fold_f1 = f1_score(y_val, prediction, average="micro")
-                fold_f1_scores.append(fold_f1)
-                print(f"Fold {fold_idx} F1 Score: {fold_f1:.4f}")
-
-                # Store predictions and targets
-                all_predictions.append(prediction)
-                all_targets.append(y_val)
-                fold_models.append(model)
-
-            # Calculate and display cross-validation results
-            mean_f1 = np.mean(fold_f1_scores)
-            std_f1 = np.std(fold_f1_scores)
-            print(f"\n{'='*60}")
-            print(f"Cross-Validation Results for {col_name}:")
-            print(f"Mean CV F1 Score: {mean_f1:.4f} ± {std_f1:.4f}")
-            print(f"Individual Fold Scores: {[f'{score:.4f}' for score in fold_f1_scores]}")
-            print(f"{'='*60}")
-
-            # Select best model and evaluate on held-out test set
-            best_fold_idx = np.argmax(fold_f1_scores)
-            best_model = fold_models[best_fold_idx]
-            print(
-                f"\nBest model: Fold {best_fold_idx + 1} (CV F1: {fold_f1_scores[best_fold_idx]:.4f})"
-            )
-
-            # Evaluate on held-out test set
-            print(f"\nEvaluating on test set ({len(X_test)} samples)...")
-            X_test_reshaped = X_test.reshape(X_test.shape[0], 600, 1)
-            test_predictions = best_model.predict(X_test_reshaped)
-            test_predictions_binary = (test_predictions > 0.5).astype(int)
-            test_f1 = f1_score(y_test, test_predictions_binary, average="micro")
-
-            print(f"\n{'='*60}")
-            print(f"FINAL TEST RESULTS for {col_name}:")
-            print(f"Test F1 Score: {test_f1:.4f}")
-            print(f"{'='*60}")
-
-            # Save results
-            out_path = base_out_path / output_dir / "k_fold"
-            out_path.mkdir(parents=True, exist_ok=True)
-
-            # Save cross-validation and test results
-            cv_results = {
-                "fold_scores": fold_f1_scores,
-                "mean_cv_f1": mean_f1,
-                "std_cv_f1": std_f1,
-                "best_fold_idx": best_fold_idx,
-                "test_f1": test_f1,
-                "test_predictions": test_predictions_binary,
-                "test_targets": y_test,
-                "all_cv_predictions": all_predictions,
-                "all_cv_targets": all_targets,
-                "n_folds": n_folds,
-                "train_size": len(X_train_full),
-                "test_size": len(X_test),
-                "seed": seed,
-            }
-            with open(out_path / "results.pickle", "wb") as file:
-                pickle.dump(cv_results, file)
-            print(f"\nResults saved to: {out_path / 'results.pickle'}")
-
-            # Save the best model
-            best_model.save(str(out_path / f"{output_dir}_model.keras"))
-            print(f"Best model saved to: {out_path}")
-
-        else:
-            # ============ ORIGINAL TRAINING (NO K-FOLD) ============
-            print("Training without K-Fold (original mode)...")
-
-            # Split train into train/val (80/20 of train set = 64/16 of total)
-            X_train, X_val, y_train, y_val = train_test_split(
-                X_train_full, y_train_full, test_size=0.2, random_state=seed, shuffle=True
-            )
+            # Split data for this fold
+            X_train, X_val = X_train_full[train_idx], X_train_full[val_idx]
+            y_train, y_val = y_train_full[train_idx], y_train_full[val_idx]
 
             print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
 
-            # Train single model
-            test_predictions_binary, model = train_model(
-                X_train, y_train, X_val, y_val, X_test, 37, "e", 0, 0
-            )
+            # Train model for this fold
+            prediction, model = train_model(X_train, y_train, X_val, y_val, X_val, 37, "e", 0, 0)
 
-            # Calculate F1 score on test set
-            test_f1 = f1_score(y_test, test_predictions_binary, average="micro")
+            # Calculate F1 score for this fold
+            fold_f1 = f1_score(y_val, prediction, average="micro")
+            fold_f1_scores.append(fold_f1)
+            print(f"Fold {fold_idx} F1 Score: {fold_f1:.4f}")
 
-            print(f"\n{'='*60}")
-            print(f"FINAL TEST RESULTS for {col_name}:")
-            print(f"Test F1 Score: {test_f1:.4f}")
-            print(f"{'='*60}")
+            # Store predictions and targets
+            all_predictions.append(prediction)
+            all_targets.append(y_val)
+            fold_models.append(model)
 
-            # Save results
-            out_path = base_out_path / output_dir / "original"
-            out_path.mkdir(parents=True, exist_ok=True)
+        # Calculate and display cross-validation results
+        mean_f1 = np.mean(fold_f1_scores)
+        std_f1 = np.std(fold_f1_scores)
+        print(f"\n{'='*60}")
+        print(f"Cross-Validation Results for {col_name} (with SNV):")
+        print(f"Mean CV F1 Score: {mean_f1:.4f} ± {std_f1:.4f}")
+        print(f"Individual Fold Scores: {[f'{score:.4f}' for score in fold_f1_scores]}")
+        print(f"{'='*60}")
 
-            results = {
-                "test_f1": test_f1,
-                "pred": test_predictions_binary,
-                "tgt": y_test,
-                "train_size": len(X_train),
-                "val_size": len(X_val),
-                "test_size": len(X_test),
-                "seed": seed,
-            }
-            with open(out_path / "results.pickle", "wb") as file:
-                pickle.dump(results, file)
-            print(f"\nResults saved to: {out_path / 'results.pickle'}")
+        # Select best model and evaluate on held-out test set
+        best_fold_idx = np.argmax(fold_f1_scores)
+        best_model = fold_models[best_fold_idx]
+        print(
+            f"\nBest model: Fold {best_fold_idx + 1} (CV F1: {fold_f1_scores[best_fold_idx]:.4f})"
+        )
 
-            # Save model
-            model.save(str(out_path / f"{output_dir}_model.keras"))
-            print(f"Model saved to: {out_path}")
+        # Evaluate on held-out test set
+        print(f"\nEvaluating on test set ({len(X_test)} samples)...")
+        X_test_reshaped = X_test.reshape(X_test.shape[0], 600, 1)
+        test_predictions = best_model.predict(X_test_reshaped)
+        test_predictions_binary = (test_predictions > 0.5).astype(int)
+        test_f1 = f1_score(y_test, test_predictions_binary, average="micro")
+
+        print(f"\n{'='*60}")
+        print(f"FINAL TEST RESULTS for {col_name} (with SNV):")
+        print(f"Test F1 Score: {test_f1:.4f}")
+        print(f"{'='*60}")
+
+        # Define output paths
+        model_dir = base_out_path / "model"
+        results_dir = base_out_path / "results"
+        model_dir.mkdir(parents=True, exist_ok=True)
+        results_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save cross-validation and test results
+        cv_results = {
+            "fold_scores": fold_f1_scores,
+            "mean_cv_f1": mean_f1,
+            "std_cv_f1": std_f1,
+            "best_fold_idx": best_fold_idx,
+            "test_f1": test_f1,
+            "test_predictions": test_predictions_binary,
+            "test_targets": y_test,
+            "all_cv_predictions": all_predictions,
+            "all_cv_targets": all_targets,
+            "n_folds": n_folds,
+            "train_size": len(X_train_full),
+            "test_size": len(X_test),
+            "normalization": "SNV",
+        }
+        results_pickle_path = model_dir / f"{output_dir}_cv_results.pickle"
+        with open(results_pickle_path, "wb") as file:
+            pickle.dump(cv_results, file)
+        print(f"\nCross-validation and test results saved to: {results_pickle_path}")
+
+        # Save the best model
+        model_save_path = model_dir / f"{output_dir}_snv_model.keras"
+        best_model.save(str(model_save_path))
+        print(
+            f"Best model (Fold {best_fold_idx + 1}, Test F1: {test_f1:.4f}) saved to: {model_save_path}"
+        )
+
+        # Save all fold models
+        for fold_idx, model in enumerate(fold_models, 1):
+            fold_model_path = model_dir / f"{output_dir}_model_fold_{fold_idx}.keras"
+            model.save(str(fold_model_path))
+        print(f"All fold models saved to: {model_dir}")
+
+        # Generate and save summary.txt
+        summary_path = results_dir / "summary.txt"
+        with open(summary_path, "w") as f:
+            f.write(f"CNN Model with SNV Normalization - {col_name.upper()}\n")
+            f.write(f"{'='*60}\n\n")
+            f.write("Model Configuration:\n")
+            f.write("  - Normalization: SNV (Standard Normal Variate)\n")
+            f.write(f"  - Spectrum Type: {col_name}\n")
+            f.write("  - Input Shape: (600, 1)\n")
+            f.write("  - Number of Functional Groups: 37\n\n")
+            f.write("Dataset Split:\n")
+            f.write(f"  - Training samples: {len(X_train_full)} (80%)\n")
+            f.write(f"  - Test samples: {len(X_test)} (20%)\n")
+            f.write(f"  - Cross-validation folds: {n_folds}\n")
+            f.write(f"  - Random seed: {seed}\n\n")
+            f.write("Cross-Validation Results:\n")
+            f.write(f"  - Mean CV F1 Score: {mean_f1:.4f} ± {std_f1:.4f}\n")
+            f.write("  - Individual Fold Scores:\n")
+            for idx, score in enumerate(fold_f1_scores, 1):
+                marker = " (best)" if idx - 1 == best_fold_idx else ""
+                f.write(f"    Fold {idx}: {score:.4f}{marker}\n")
+            f.write("\nFinal Test Results:\n")
+            f.write(f"  - Test F1 Score: {test_f1:.4f}\n")
+            f.write(f"  - Best Model: Fold {best_fold_idx + 1}\n\n")
+            f.write("Output Files:\n")
+            f.write(f"  - Best Model: {model_save_path.name}\n")
+            f.write(f"  - Results Pickle: {results_pickle_path.name}\n")
+            f.write(f"  - Model Directory: {model_dir}\n")
+            f.write(f"  - Results Directory: {results_dir}\n")
+        print(f"\nSummary saved to: {summary_path}")
 
 
 if __name__ == "__main__":

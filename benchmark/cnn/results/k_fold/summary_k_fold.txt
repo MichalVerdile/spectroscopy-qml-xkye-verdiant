@@ -1,0 +1,44 @@
+================================================================================
+CNN Model Evaluation Summary - K_FOLD
+================================================================================
+
+Model: cnmr
+  F1 Score (micro):    0.6460
+  F1 Score (macro):    0.1734
+  Subset Accuracy:     0.0298
+  Hamming Accuracy:    0.9188
+  Precision (macro):   0.5430
+  Recall (macro):      0.1530
+
+Model: hnmr
+  F1 Score (micro):    0.8199
+  F1 Score (macro):    0.4560
+  Subset Accuracy:     0.2590
+  Hamming Accuracy:    0.9558
+  Precision (macro):   0.7005
+  Recall (macro):      0.3878
+
+Model: ir
+  F1 Score (micro):    0.8935
+  F1 Score (macro):    0.6736
+  Subset Accuracy:     0.4118
+  Hamming Accuracy:    0.9733
+  Precision (macro):   0.8135
+  Recall (macro):      0.6136
+
+Model: neg_msms
+  F1 Score (micro):    0.6452
+  F1 Score (macro):    0.1295
+  Subset Accuracy:     0.0357
+  Hamming Accuracy:    0.9216
+  Precision (macro):   0.4815
+  Recall (macro):      0.1167
+
+Model: pos_msms
+  F1 Score (micro):    0.6416
+  F1 Score (macro):    0.1250
+  Subset Accuracy:     0.0330
+  Hamming Accuracy:    0.9229
+  Precision (macro):   0.3996
+  Recall (macro):      0.1100
+
