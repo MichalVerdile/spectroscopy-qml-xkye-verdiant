@@ -1,0 +1,18 @@
+layer_name,layer_type,output_shape,neurons,params
+input_layer_2,InputLayer,"(None, 600, 1)",600,0
+conv1d_4,Conv1D,"(None, 600, 31)",18600,372
+batch_normalization_4,BatchNormalization,"(None, 600, 31)",18600,124
+activation_4,Activation,"(None, 600, 31)",18600,0
+max_pooling1d_4,MaxPooling1D,"(None, 300, 31)",9300,0
+conv1d_5,Conv1D,"(None, 300, 62)",18600,21204
+batch_normalization_5,BatchNormalization,"(None, 300, 62)",18600,248
+activation_5,Activation,"(None, 300, 62)",18600,0
+max_pooling1d_5,MaxPooling1D,"(None, 150, 62)",9300,0
+flatten_2,Flatten,"(None, 9300)",9300,0
+dense_8,Dense,"(None, 4927)",4927,45826027
+dropout_6,Dropout,"(None, 4927)",4927,0
+dense_9,Dense,"(None, 2785)",2785,13724480
+dropout_7,Dropout,"(None, 2785)",2785,0
+dense_10,Dense,"(None, 1574)",1574,4385164
+dropout_8,Dropout,"(None, 1574)",1574,0
+dense_11,Dense,"(None, 37)",37,58275
