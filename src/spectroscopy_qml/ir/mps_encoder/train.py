@@ -3,6 +3,7 @@ Training script for MPS Functional Group Classifier.
 """
 
 import csv
+import os
 import time
 from pathlib import Path
 
@@ -13,14 +14,14 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from spectroscopy_qml.mps_encoder.config import (
+from spectroscopy_qml.ir.mps_encoder.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.mps_encoder.data_loader import load_spectra_data, prepare_dataloaders
-from spectroscopy_qml.mps_encoder.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.ir.mps_encoder.data_loader import load_ir_data, prepare_dataloaders
+from spectroscopy_qml.ir.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
 class EarlyStopping:
@@ -264,8 +265,8 @@ def validate(
             spectra = spectra.to(device)
             labels = labels.to(device)
 
-            # Mixed precision inference (only on CUDA)
-            if use_amp and device.type == "cuda":
+            # Mixed precision inference
+            if use_amp:
                 with torch.amp.autocast("cuda"):
                     logits = model(spectra)
                     loss = criterion(logits, labels)
@@ -332,22 +333,12 @@ def train_model():
         data_dir = project_root / "data" / "raw"
         print(f"Processed data not found, using raw data from: {data_dir}")
 
-    X, y = load_spectra_data(
-        data_dir=data_dir,
-        modality=DATA_CONFIG.modality,
-        input_column=DATA_CONFIG.input_column,
+    X, y = load_ir_data(
+        data_dir,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
-        normalization_method=DATA_CONFIG.normalization_method,
         apply_snv=DATA_CONFIG.apply_snv,
     )
-
-    if X.shape[1] != MODEL_CONFIG.input_dim:
-        raise ValueError(
-            f"Loaded spectra dimension ({X.shape[1]}) does not match MODEL_CONFIG.input_dim "
-            f"({MODEL_CONFIG.input_dim}). Update ModelConfig.input_dim and ensure divisibility "
-            f"by num_sites ({MODEL_CONFIG.num_sites})."
-        )
 
     # Prepare dataloaders
     train_loader, val_loader, test_loader = prepare_dataloaders(
@@ -450,6 +441,10 @@ def train_model():
 
     best_val_f1 = 0.0  # Track best validation micro F1
     best_thresholds = np.full(MODEL_CONFIG.num_classes, 0.5)  # Initialize with 0.5
+    best_model_state = None  # Store best model state for saving at end
+    best_val_loss = float("inf")  # Store best validation loss
+    best_val_metrics = None  # Store best validation metrics
+    best_epoch = 0  # Track best epoch
     training_log = []
 
     # Create CSV log file
@@ -555,24 +550,15 @@ def train_model():
                 ]
             )
 
-        # Save best model based on validation micro F1 (not loss)
+        # Track best model based on validation micro F1 (not loss)
         if val_metrics["f1_micro"] > best_val_f1:
             best_val_f1 = val_metrics["f1_micro"]
             best_thresholds = tuned_thresholds  # Update best thresholds
-
-            torch.save(
-                {
-                    "epoch": epoch + 1,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "val_loss": val_loss,
-                    "val_metrics": val_metrics,
-                    "thresholds": tuned_thresholds,  # Save tuned thresholds
-                    "config": MODEL_CONFIG,
-                },
-                PATH_CONFIG.best_model_path,
-            )
-            print(f"  ✓ Best model saved (val_f1_micro: {val_metrics['f1_micro']:.4f})")
+            best_model_state = model.state_dict().copy()  # Store best model state
+            best_val_loss = val_loss
+            best_val_metrics = val_metrics.copy()
+            best_epoch = epoch + 1
+            print(f"  ✓ New best model found (val_f1_micro: {val_metrics['f1_micro']:.4f})")
 
         # Early stopping check - monitor validation micro F1
         if early_stopping(val_metrics["f1_micro"]):
@@ -582,14 +568,33 @@ def train_model():
     total_time = time.time() - start_time
     print(f"\nTraining completed in {total_time/60:.1f} minutes")
 
+    # Save best model at the end
+    print("\n" + "=" * 80)
+    print("Saving Best Model")
+    print("=" * 80)
+
+    torch.save(
+        {
+            "epoch": best_epoch,
+            "model_state_dict": best_model_state,
+            "optimizer_state_dict": optimizer.state_dict(),
+            "val_loss": best_val_loss,
+            "val_metrics": best_val_metrics,
+            "thresholds": best_thresholds,  # Save tuned thresholds
+            "config": MODEL_CONFIG,
+        },
+        PATH_CONFIG.best_model_path,
+    )
+    print(f"✓ Best model saved from epoch {best_epoch}")
+    print(f"  Validation F1 Micro: {best_val_metrics['f1_micro']:.4f}")
+    print(f"  Validation F1 Macro: {best_val_metrics['f1_macro']:.4f}")
+
     # Evaluate on test set
     print("\n" + "=" * 80)
     print("Final Evaluation on Test Set")
     print("=" * 80)
 
-    # Load best model
-    # Note: weights_only=False is required because checkpoint contains numpy arrays
-    # and dataclass objects (MODEL_CONFIG). Only load checkpoints from trusted sources.
+    # Load best model (weights_only=False needed for PyTorch 2.6+ compatibility with custom classes)
     checkpoint = torch.load(PATH_CONFIG.best_model_path, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
 

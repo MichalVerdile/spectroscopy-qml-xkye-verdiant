@@ -2,13 +2,15 @@
 Quick start script for MPS Functional Group Classifier.
 
 This script provides a simple interface to train and evaluate the model.
-
-Usage:
-    Install the package first: pip install -e .
-    Or set PYTHONPATH: export PYTHONPATH=src
 """
 
 import argparse
+import sys
+from pathlib import Path
+
+# Add src directory to path so spectroscopy_qml can be imported
+src_dir = Path(__file__).parents[3]
+sys.path.insert(0, str(src_dir))
 
 
 def main():
@@ -95,22 +97,15 @@ Examples:
 
         # Check model
         try:
-            from spectroscopy_qml.mps_encoder import MODEL_CONFIG, MPSFunctionalGroupClassifier
+            from spectroscopy_qml.ir.mps_encoder import MPSFunctionalGroupClassifier
 
-            model = MPSFunctionalGroupClassifier(
-                input_dim=MODEL_CONFIG.input_dim,
-                num_sites=MODEL_CONFIG.num_sites,
-                physical_dim=MODEL_CONFIG.physical_dim,
-                bond_dim=MODEL_CONFIG.bond_dim,
-                num_classes=MODEL_CONFIG.num_classes,
-                dropout_rate=MODEL_CONFIG.dropout_rate,
-            )
+            model = MPSFunctionalGroupClassifier()
             params = model.get_num_parameters()
             print("\n✓ Model loaded successfully")
             print(f"  Total parameters: {params:,}")
 
             # Test forward pass
-            test_input = torch.randn(2, MODEL_CONFIG.input_dim)
+            test_input = torch.randn(2, 1800)
             output = model(test_input)
             print(f"  Test forward pass: {test_input.shape} → {output.shape}")
             print("✓ All checks passed!")
@@ -128,7 +123,7 @@ Examples:
         print("=" * 80 + "\n")
 
         try:
-            from spectroscopy_qml.mps_encoder.train import train_model
+            from spectroscopy_qml.ir.mps_encoder.train import train_model
 
             train_model()
         except Exception as e:
@@ -148,7 +143,7 @@ Examples:
             # Call evaluate with default args
             import click
 
-            from spectroscopy_qml.mps_encoder.evaluate import main as evaluate_main
+            from spectroscopy_qml.ir.mps_encoder.evaluate import main as evaluate_main
 
             ctx = click.Context(evaluate_main)
             ctx.invoke(evaluate_main)

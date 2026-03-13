@@ -17,26 +17,21 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from spectroscopy_qml.mps_encoder.config import (
+from spectroscopy_qml.ir.mps_encoder.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.mps_encoder.data_loader import (
+from spectroscopy_qml.ir.mps_encoder.data_loader import (
     FUNCTIONAL_GROUPS,
-    load_spectra_data,
+    load_ir_data,
     prepare_dataloaders,
 )
-from spectroscopy_qml.mps_encoder.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.ir.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
-def evaluate_model(
-    model: nn.Module,
-    dataloader,
-    device: torch.device,
-    thresholds: np.ndarray | None = None,
-) -> dict:
+def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
     """
     Evaluate model on a dataset.
 
@@ -44,7 +39,6 @@ def evaluate_model(
         model: Trained model
         dataloader: DataLoader for evaluation
         device: Device to run evaluation on
-        thresholds: Per-class thresholds for prediction (if None, use 0.5 for all)
 
     Returns:
         Dictionary containing predictions, labels, and metrics
@@ -54,12 +48,6 @@ def evaluate_model(
     all_preds = []
     all_probs = []
 
-    # Convert thresholds to tensor if provided
-    if thresholds is not None:
-        thr = torch.as_tensor(thresholds, device=device, dtype=torch.float32)
-    else:
-        thr = torch.tensor(0.5, device=device)
-
     with torch.no_grad():
         for spectra, labels in dataloader:
             spectra = spectra.to(device)
@@ -68,7 +56,7 @@ def evaluate_model(
             # Forward pass
             logits = model(spectra)
             probs = torch.sigmoid(logits)
-            preds = (probs > thr).float()
+            preds = (probs > 0.5).float()
 
             all_labels.append(labels.cpu().numpy())
             all_preds.append(preds.cpu().numpy())
@@ -198,7 +186,7 @@ def main(model_path, data_dir, output_dir):
     model_path = model_path or Path(PATH_CONFIG.best_model_path)
     data_dir = data_dir or Path(PATH_CONFIG.data_dir)
     if not data_dir.exists():
-        project_root = Path(__file__).parents[3]
+        project_root = Path(__file__).parents[4]
         data_dir = project_root / "data" / "raw"
     output_dir = output_dir or Path(PATH_CONFIG.results_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -212,8 +200,6 @@ def main(model_path, data_dir, output_dir):
         print("Using device: CPU")
 
     # Load model
-    # Note: weights_only=False is required because checkpoint contains numpy arrays
-    # and dataclass objects. Only load checkpoints from trusted sources.
     print(f"\nLoading model from: {model_path}")
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
 
@@ -228,34 +214,17 @@ def main(model_path, data_dir, output_dir):
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
 
-    # Load per-class thresholds if available
-    thresholds = checkpoint.get("thresholds")
-    if thresholds is not None:
-        print("Using tuned thresholds from checkpoint")
-    else:
-        print("No thresholds in checkpoint, using default 0.5")
-
     print(f"Model loaded (trained for {checkpoint['epoch']} epochs)")
     print(f"Validation loss: {checkpoint['val_loss']:.4f}")
 
     # Load data
     print(f"\nLoading data from: {data_dir}")
-    X, y = load_spectra_data(
-        data_dir=data_dir,
-        modality=DATA_CONFIG.modality,
-        input_column=DATA_CONFIG.input_column,
+    X, y = load_ir_data(
+        data_dir,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
-        normalization_method=DATA_CONFIG.normalization_method,
         apply_snv=DATA_CONFIG.apply_snv,
     )
-
-    if X.shape[1] != MODEL_CONFIG.input_dim:
-        raise ValueError(
-            f"Loaded spectra dimension ({X.shape[1]}) does not match MODEL_CONFIG.input_dim "
-            f"({MODEL_CONFIG.input_dim}). Update ModelConfig.input_dim and ensure divisibility "
-            f"by num_sites ({MODEL_CONFIG.num_sites})."
-        )
 
     # Prepare dataloaders
     train_loader, val_loader, test_loader = prepare_dataloaders(
@@ -276,7 +245,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Test Set")
     print("=" * 80)
 
-    test_results = evaluate_model(model, test_loader, device, thresholds=thresholds)
+    test_results = evaluate_model(model, test_loader, device)
 
     # Save detailed results
     eval_output_path = output_dir / "evaluation_results.txt"
@@ -290,7 +259,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Validation Set")
     print("=" * 80)
 
-    val_results = evaluate_model(model, val_loader, device, thresholds=thresholds)
+    val_results = evaluate_model(model, val_loader, device)
 
     val_output_path = output_dir / "validation_results.txt"
     with open(val_output_path, "w") as f:

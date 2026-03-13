@@ -1,9 +1,9 @@
 """
-Data loading and preprocessing utilities for spectroscopy data.
+Data loading and preprocessing utilities for IR spectra.
 """
 
-from collections.abc import Callable
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -55,24 +55,6 @@ FUNCTIONAL_GROUPS = {
 }
 
 
-class SpectraDataset(Dataset):
-    """PyTorch Dataset for spectroscopy tensors and labels."""
-
-    def __init__(self, spectra: np.ndarray, labels: np.ndarray):
-        self.spectra = torch.FloatTensor(spectra)
-        self.labels = torch.FloatTensor(labels)
-
-    def __len__(self) -> int:
-        return len(self.spectra)
-
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.spectra[idx], self.labels[idx]
-
-
-# Backward-compatible alias
-IRSpectraDataset = SpectraDataset
-
-
 def match_group(mol: Chem.Mol, func_group) -> int:
     """Check if molecule contains functional group."""
     if type(func_group) is Chem.Mol:
@@ -91,135 +73,136 @@ def get_functional_groups(smiles: str) -> list | None:
         return None
 
     func_groups = []
-    for _, smarts in FUNCTIONAL_GROUPS.items():
+    for func_group_name, smarts in FUNCTIONAL_GROUPS.items():
         func_groups.append(match_group(mol, smarts))
 
     return func_groups
 
 
 def interpolate_spectrum(spectrum: np.ndarray, target_length: int = 1800) -> np.ndarray:
-    """Interpolate spectrum to target length."""
+    """
+    Interpolate spectrum to target length.
+
+    Args:
+        spectrum: Input spectrum array
+        target_length: Desired output length
+
+    Returns:
+        Interpolated spectrum of specified length
+    """
     if len(spectrum) == target_length:
         return spectrum
 
-    old_x = np.arange(len(spectrum), dtype=np.float32)
-    new_x = np.linspace(0, len(spectrum) - 1, target_length, dtype=np.float32)
+    old_x = np.arange(len(spectrum))
+    new_x = np.linspace(0, len(spectrum) - 1, target_length)
+
     interp_func = interp1d(old_x, spectrum, kind="linear")
-    return interp_func(new_x)
+    new_spectrum = interp_func(new_x)
+
+    return new_spectrum
 
 
 def apply_snv_normalization(spectrum: np.ndarray, eps: float = 1e-8) -> np.ndarray:
-    """Apply Standard Normal Variate normalization to one spectrum."""
+    """
+    Apply Standard Normal Variate (SNV) normalization to a spectrum.
+
+    SNV removes scatter effects by normalizing each spectrum to zero mean
+    and unit variance. This is a common preprocessing technique for
+    spectroscopic data.
+
+    Args:
+        spectrum: Input spectrum array
+        eps: Small value to prevent division by zero (default: 1e-8)
+
+    Returns:
+        SNV-normalized spectrum
+    """
     mean = np.mean(spectrum)
     std = np.std(spectrum)
 
+    # Prevent division by zero
     if std < eps:
         return spectrum - mean
 
     return (spectrum - mean) / std
 
 
-def _load_ir_spectra(
-    data_dir: Path,
-    target_length: int,
-    max_files: int | None,
-    batch_transform: Callable[[np.ndarray], np.ndarray] | None = None,
+class IRSpectraDataset(Dataset):
+    """PyTorch Dataset for IR spectra."""
+
+    def __init__(self, spectra: np.ndarray, labels: np.ndarray):
+        """
+        Args:
+            spectra: Array of shape (n_samples, spectrum_length)
+            labels: Array of shape (n_samples, num_classes)
+        """
+        self.spectra = torch.FloatTensor(spectra)
+        self.labels = torch.FloatTensor(labels)
+
+    def __len__(self) -> int:
+        return len(self.spectra)
+
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.spectra[idx], self.labels[idx]
+
+
+def load_ir_data(
+    data_dir: Path, target_length: int = 1800, max_files: int | None = None, apply_snv: bool = False
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Load IR spectra from parquet files.
+    """
+    Load IR spectra data from parquet files.
 
     Args:
         data_dir: Directory containing parquet files
-        target_length: Target length for interpolation
-        max_files: Maximum number of files to load
-        batch_transform: Transform applied to batch of spectra (per file)
+        target_length: Target length for spectrum interpolation
+        max_files: Maximum number of files to load (for testing)
+        apply_snv: Whether to apply SNV normalization (default: False)
 
     Returns:
-        (X, y) tuple of spectra and labels
+        Tuple of (spectra, labels) as numpy arrays
     """
+    print(f"Loading IR spectra from {data_dir}")
+
     data_dir = Path(data_dir)
     parquet_files = sorted(data_dir.glob("*.parquet"))
 
     if max_files:
         parquet_files = parquet_files[:max_files]
 
-    if not parquet_files:
-        raise ValueError(f"No parquet files found in {data_dir}")
-
-    all_spectra: list[np.ndarray] = []
-    all_labels: list[np.ndarray] = []
+    all_spectra = []
+    all_labels = []
 
     for i, parquet_file in enumerate(parquet_files):
+        # Load only necessary columns
         df = pd.read_parquet(parquet_file, columns=["ir_spectra", "smiles"])
+
+        # Extract functional groups
         df["func_groups"] = df["smiles"].map(get_functional_groups)
 
+        # Filter out invalid entries
         df = df[df["func_groups"].notna()]
         df = df[df["ir_spectra"].notna()]
 
-        processed_spectra: list[np.ndarray] = []
-        labels: list[list[int]] = []
+        # Interpolate spectra
+        spectra = np.stack(
+            [interpolate_spectrum(spec, target_length) for spec in df["ir_spectra"].values]
+        )
 
-        for raw_spec, label in zip(df["ir_spectra"].values, df["func_groups"].values):
-            spec = np.asarray(raw_spec, dtype=np.float32)
-            if spec.ndim != 1:
-                continue
+        # Apply SNV normalization if requested
+        if apply_snv:
+            spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
 
-            spec = interpolate_spectrum(spec, target_length)
-            processed_spectra.append(spec)
-            labels.append(label)
-
-        if not processed_spectra:
-            continue
-
-        spectra = np.stack(processed_spectra).astype(np.float32)
-        if batch_transform is not None:
-            spectra = batch_transform(spectra)
-
-        label_array = np.stack(labels).astype(np.float32)
+        labels = np.stack(df["func_groups"].values)
 
         all_spectra.append(spectra)
-        all_labels.append(label_array)
+        all_labels.append(labels)
 
         if (i + 1) % 10 == 0:
             print(f"Loaded {i + 1}/{len(parquet_files)} files")
 
-    if not all_spectra:
-        raise ValueError(f"No valid IR spectra loaded from directory {data_dir}")
-
+    # Concatenate all data
     X = np.vstack(all_spectra)
     y = np.vstack(all_labels)
-
-    return X, y
-
-
-def load_ir_data(
-    data_dir: Path,
-    target_length: int = 1800,
-    max_files: int | None = None,
-    apply_snv: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Load IR spectra with optional SNV normalization.
-
-    Args:
-        data_dir: Directory with parquet files
-        target_length: Target spectrum length after interpolation
-        max_files: Maximum number of files to load
-        apply_snv: Whether to apply SNV normalization
-
-    Returns:
-        (X, y) tuple of spectra and labels
-    """
-    print(f"Loading IR spectra from {data_dir}")
-
-    batch_transform = None
-    if apply_snv:
-        batch_transform = lambda arr: np.stack([apply_snv_normalization(spec) for spec in arr])
-
-    X, y = _load_ir_spectra(
-        data_dir=data_dir,
-        target_length=target_length,
-        max_files=max_files,
-        batch_transform=batch_transform,
-    )
 
     print(f"Total samples loaded: {len(X)}")
     print(f"Spectra shape: {X.shape}")
@@ -242,13 +225,31 @@ def prepare_dataloaders(
     num_workers: int = 0,
     pin_memory: bool = False,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
-    """Create train/validation/test dataloaders."""
+    """
+    Create train, validation, and test dataloaders.
+
+    Args:
+        X: Spectra array
+        y: Labels array
+        batch_size: Batch size for dataloaders
+        train_ratio: Fraction of data for training
+        val_ratio: Fraction of data for validation
+        test_ratio: Fraction of data for testing
+        random_seed: Random seed for reproducibility
+        num_workers: Number of worker processes for data loading (0 = single process)
+        pin_memory: Pin memory for faster GPU transfer
+
+    Returns:
+        Tuple of (train_loader, val_loader, test_loader)
+    """
     assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, "Ratios must sum to 1.0"
 
+    # First split: separate test set
     X_temp, X_test, y_temp, y_test = train_test_split(
         X, y, test_size=test_ratio, random_state=random_seed, shuffle=True
     )
 
+    # Second split: separate train and validation
     val_size = val_ratio / (train_ratio + val_ratio)
     X_train, X_val, y_train, y_val = train_test_split(
         X_temp, y_temp, test_size=val_size, random_state=random_seed, shuffle=True
@@ -259,10 +260,12 @@ def prepare_dataloaders(
     print(f"  Val:   {len(X_val)} samples ({val_ratio:.1%})")
     print(f"  Test:  {len(X_test)} samples ({test_ratio:.1%})")
 
-    train_dataset = SpectraDataset(X_train, y_train)
-    val_dataset = SpectraDataset(X_val, y_val)
-    test_dataset = SpectraDataset(X_test, y_test)
+    # Create datasets
+    train_dataset = IRSpectraDataset(X_train, y_train)
+    val_dataset = IRSpectraDataset(X_val, y_val)
+    test_dataset = IRSpectraDataset(X_test, y_test)
 
+    # Create dataloaders with optimization settings
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,

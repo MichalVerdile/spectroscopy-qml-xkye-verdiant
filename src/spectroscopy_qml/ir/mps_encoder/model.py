@@ -1,8 +1,8 @@
 """
-MPS/Tensor Network Classifier for Spectroscopy.
+Pure MPS/Tensor Network Classifier for IR Spectra.
 
 This module implements a multi-label classifier based on Matrix Product States (MPS)
-for predicting functional groups from spectroscopic data (IR, NMR, MS/MS).
+for predicting functional groups from IR spectroscopy data.
 """
 
 import torch
