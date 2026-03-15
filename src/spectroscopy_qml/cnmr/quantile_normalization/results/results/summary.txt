@@ -1,0 +1,42 @@
+CNN Model with Quantile Normalization - C_NMR_SPECTRA
+============================================================
+
+Model Configuration:
+  - Normalization: Quantile
+  - Grouping: Coarse Buckets + Butina (threshold-based)
+  - Spectrum Type: c_nmr_spectra
+  - Input Shape: (600, 1)
+  - Number of Functional Groups: 37
+
+Grouping Parameters:
+  - Fingerprint Radius: 2
+  - Fingerprint Bits: 2048
+  - Tanimoto Threshold: 0.6
+  - Min Cluster Size for QN: 20
+  - Min Bucket Size: 2
+  - Max Bucket Size: 5000
+
+Dataset Split:
+  - Training samples: 635522 (80%)
+  - Test samples: 158881 (20%)
+  - Cross-validation folds: 5
+  - Random seed: 3245
+
+Cross-Validation Results:
+  - Mean CV F1 Score: 0.6003 ± 0.0405
+  - Individual Fold Scores:
+    Fold 1: 0.5734
+    Fold 2: 0.5973
+    Fold 3: 0.6755 (best)
+    Fold 4: 0.5581
+    Fold 5: 0.5971
+
+Final Test Results:
+  - Test F1 Score: 0.6758
+  - Best Model: Fold 3
+
+Output Files:
+  - Best Model: cnmr_qn_model.keras
+  - Results Pickle: cnmr_cv_results.pickle
+  - Model Directory: src/spectroscopy_qml/cnmr/quantile_normalization/results/model
+  - Results Directory: src/spectroscopy_qml/cnmr/quantile_normalization/results/results

@@ -3,6 +3,8 @@
 
 import os
 import pickle
+import hashlib
+from collections import defaultdict
 from pathlib import Path
 
 import click
@@ -23,8 +25,9 @@ from keras.models import Model
 from keras.optimizers import Adam
 from rdkit import Chem, DataStructs, RDLogger
 from rdkit.Chem import AllChem
+from rdkit.Chem.Scaffolds import MurckoScaffold
+from rdkit.ML.Cluster import Butina
 from scipy.interpolate import interp1d
-from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
 
@@ -99,70 +102,242 @@ def compute_morgan_fingerprint(smiles: str, radius: int = 2, n_bits: int = 2048)
         n_bits: Number of bits in fingerprint
 
     Returns:
-        Morgan fingerprint or None if molecule is invalid
+        Tuple of (rdkit Mol, Morgan fingerprint) or (None, None) if invalid
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
-        return None
-    return AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits)
+        return None, None
+    return mol, AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits)
 
 
-def compute_tanimoto_distance_matrix(fingerprints):
+def compute_morgan_fingerprints(smiles_list, radius: int = 2, n_bits: int = 2048):
     """
-    Compute pairwise Tanimoto distance matrix from fingerprints.
-    Distance = 1 - Tanimoto similarity.
-
-    Args:
-        fingerprints: List of fingerprint objects
-
-    Returns:
-        Distance matrix as numpy array
-    """
-    n = len(fingerprints)
-    distance_matrix = np.zeros((n, n), dtype=np.float32)
-
-    for i in range(n):
-        for j in range(i + 1, n):
-            if fingerprints[i] is not None and fingerprints[j] is not None:
-                similarity = DataStructs.TanimotoSimilarity(fingerprints[i], fingerprints[j])
-                distance = 1.0 - similarity
-            else:
-                distance = 1.0  # Max distance for invalid molecules
-            distance_matrix[i, j] = distance
-            distance_matrix[j, i] = distance
-
-    return distance_matrix
-
-
-def group_by_tanimoto_similarity(smiles_list, n_clusters: int = 50):
-    """
-    Group molecules by Tanimoto similarity using agglomerative clustering.
+    Compute Morgan fingerprints for all molecules with caching.
 
     Args:
         smiles_list: List of SMILES strings
-        n_clusters: Number of clusters to form
+        radius: Morgan fingerprint radius
+        n_bits: Number of bits in fingerprint
+
+    Returns:
+        Tuple of (molecules, fingerprints, invalid_count)
+    """
+    molecules = [None] * len(smiles_list)
+    fingerprints = [None] * len(smiles_list)
+    fp_cache = {}
+    invalid_count = 0
+
+    for i, smiles in enumerate(smiles_list):
+        if smiles in fp_cache:
+            mol, fp = fp_cache[smiles]
+        else:
+            mol, fp = compute_morgan_fingerprint(smiles, radius=radius, n_bits=n_bits)
+            fp_cache[smiles] = (mol, fp)
+
+        molecules[i] = mol
+        fingerprints[i] = fp
+        if fp is None:
+            invalid_count += 1
+
+    return molecules, fingerprints, invalid_count
+
+
+def get_fingerprint_prefix_hash(fp, max_on_bits: int = 16):
+    """
+    Return a compact hash-like key from the first active fingerprint bits.
+    """
+    on_bits = list(fp.GetOnBits())
+    if not on_bits:
+        return "empty"
+    prefix = ",".join(str(b) for b in on_bits[:max_on_bits])
+    return prefix
+
+
+def get_coarse_bucket_id(mol, fp):
+    """
+    Stage-1 coarse bucket id.
+
+    Prefer Murcko scaffold and fall back to a sparse fingerprint prefix hash.
+    """
+    if mol is None or fp is None:
+        return "invalid"
+
+    scaffold = MurckoScaffold.MurckoScaffoldSmiles(mol=mol)
+    if scaffold:
+        return f"scaf:{scaffold}"
+
+    return f"fp:{get_fingerprint_prefix_hash(fp)}"
+
+
+def split_large_bucket(indices, fingerprints, max_bucket_size: int):
+    """
+    Split oversized coarse buckets into deterministic sub-buckets.
+    """
+    if max_bucket_size is None or len(indices) <= max_bucket_size:
+        return [indices]
+
+    n_sub = int(np.ceil(len(indices) / max_bucket_size))
+    grouped = defaultdict(list)
+    for idx in indices:
+        fp = fingerprints[idx]
+        prefix = get_fingerprint_prefix_hash(fp, max_on_bits=32).encode("utf-8")
+        key = int(hashlib.md5(prefix).hexdigest(), 16) % n_sub
+        grouped[key].append(idx)
+
+    sub_buckets = []
+    for bucket_indices in grouped.values():
+        if len(bucket_indices) <= max_bucket_size:
+            sub_buckets.append(bucket_indices)
+        else:
+            # Fallback deterministic chunking if hashing is imbalanced.
+            for start in range(0, len(bucket_indices), max_bucket_size):
+                sub_buckets.append(bucket_indices[start : start + max_bucket_size])
+
+    return sub_buckets
+
+
+def cluster_bucket_with_butina(indices, fingerprints, tanimoto_threshold: float = 0.6):
+    """
+    Stage-2 local threshold clustering with Butina on one bucket.
+
+    Args:
+        indices: Global dataset indices in this bucket
+        fingerprints: Full fingerprints list
+        tanimoto_threshold: Similarity threshold for clustering
+
+    Returns:
+        List of clusters, each as list of global indices
+    """
+    if len(indices) < 2:
+        return [[idx] for idx in indices]
+
+    fps = [fingerprints[idx] for idx in indices]
+    dist_thresh = 1.0 - tanimoto_threshold
+    dists = []
+
+    for i in range(1, len(fps)):
+        sims = DataStructs.BulkTanimotoSimilarity(fps[i], fps[:i])
+        dists.extend(1.0 - sim for sim in sims)
+
+    local_clusters = Butina.ClusterData(dists, len(fps), dist_thresh, isDistData=True)
+    clusters = []
+    for cluster in local_clusters:
+        clusters.append([indices[local_idx] for local_idx in cluster])
+    return clusters
+
+
+def group_by_tanimoto_similarity_scalable(
+    smiles_list,
+    radius: int = 2,
+    n_bits: int = 2048,
+    tanimoto_threshold: float = 0.6,
+    min_bucket_size: int = 2,
+    max_bucket_size: int = 5000,
+):
+    """
+    Group molecules by Tanimoto similarity using scalable 2-stage clustering.
+
+    Args:
+        smiles_list: List of SMILES strings
+        radius: Morgan fingerprint radius (ECFP4 => radius=2)
+        n_bits: Number of fingerprint bits
+        tanimoto_threshold: Similarity threshold for Butina clustering
+        min_bucket_size: Minimum coarse bucket size to run local clustering
+        max_bucket_size: Maximum coarse bucket size before splitting
 
     Returns:
         Array of cluster labels for each molecule
     """
     print(f"Computing Morgan fingerprints for {len(smiles_list)} molecules...")
-    fingerprints = [compute_morgan_fingerprint(s) for s in smiles_list]
-
-    print("Computing Tanimoto distance matrix...")
-    distance_matrix = compute_tanimoto_distance_matrix(fingerprints)
-
-    # Adjust n_clusters if we have fewer samples
-    actual_n_clusters = min(n_clusters, len(smiles_list))
-
-    print(f"Clustering into {actual_n_clusters} groups...")
-    clustering = AgglomerativeClustering(
-        n_clusters=actual_n_clusters, metric="precomputed", linkage="average"
+    molecules, fingerprints, invalid_count = compute_morgan_fingerprints(
+        smiles_list, radius=radius, n_bits=n_bits
     )
-    cluster_labels = clustering.fit_predict(distance_matrix)
+    print(f"Fingerprinting complete. Invalid SMILES: {invalid_count}")
 
-    # Print cluster statistics
+    cluster_labels = np.full(len(smiles_list), -1, dtype=np.int64)
+    next_label = 0
+
+    coarse_buckets = defaultdict(list)
+    for idx, (mol, fp) in enumerate(zip(molecules, fingerprints)):
+        if fp is None:
+            # Invalid molecules are always isolated.
+            cluster_labels[idx] = next_label
+            next_label += 1
+            continue
+        coarse_bucket_id = get_coarse_bucket_id(mol, fp)
+        coarse_buckets[coarse_bucket_id].append(idx)
+
+    print(f"Stage-1 coarse buckets: {len(coarse_buckets)}")
+
+    final_bucket_count = 0
+    clustered_count = 0
+    singleton_count = 0
+
+    for bucket_indices in coarse_buckets.values():
+        sub_buckets = split_large_bucket(bucket_indices, fingerprints, max_bucket_size=max_bucket_size)
+        final_bucket_count += len(sub_buckets)
+
+        for indices in sub_buckets:
+            if len(indices) < min_bucket_size:
+                for idx in indices:
+                    cluster_labels[idx] = next_label
+                    next_label += 1
+                    singleton_count += 1
+                continue
+
+            local_clusters = cluster_bucket_with_butina(
+                indices,
+                fingerprints,
+                tanimoto_threshold=tanimoto_threshold,
+            )
+
+            for cluster in local_clusters:
+                for idx in cluster:
+                    cluster_labels[idx] = next_label
+                if len(cluster) == 1:
+                    singleton_count += 1
+                else:
+                    clustered_count += len(cluster)
+                next_label += 1
+
+    unassigned_mask = cluster_labels < 0
+    if np.any(unassigned_mask):
+        for idx in np.where(unassigned_mask)[0]:
+            cluster_labels[idx] = next_label
+            next_label += 1
+            singleton_count += 1
+
     unique, counts = np.unique(cluster_labels, return_counts=True)
-    print(f"Cluster sizes: min={counts.min()}, max={counts.max()}, mean={counts.mean():.1f}")
+    print(
+        "Stage-2 local clustering complete. "
+        f"Final buckets={final_bucket_count}, "
+        f"clusters={len(unique)}, "
+        f"clustered_samples={clustered_count}, "
+        f"singleton_samples={singleton_count}, "
+        f"min_cluster={counts.min()}, max_cluster={counts.max()}, mean_cluster={counts.mean():.2f}"
+    )
+
+    return cluster_labels
+
+
+def relabel_small_clusters_as_unique(cluster_labels, min_cluster_size: int):
+    """
+    For clusters smaller than min_cluster_size, assign unique labels per sample.
+    """
+    cluster_labels = np.asarray(cluster_labels, dtype=np.int64).copy()
+    if min_cluster_size <= 1:
+        return cluster_labels
+
+    unique, counts = np.unique(cluster_labels, return_counts=True)
+    small_clusters = set(unique[counts < min_cluster_size])
+    if not small_clusters:
+        return cluster_labels
+
+    next_label = int(cluster_labels.max()) + 1
+    for idx, label in enumerate(cluster_labels):
+        if label in small_clusters:
+            cluster_labels[idx] = next_label
+            next_label += 1
 
     return cluster_labels
 
@@ -185,7 +360,7 @@ def apply_quantile_normalization_single_group(spectra):
     return normalized.astype(np.float32)
 
 
-def apply_quantile_normalization(spectra, cluster_labels=None):
+def apply_quantile_normalization(spectra, cluster_labels=None, min_cluster_size_for_qn: int = 20):
     """
     Apply quantile normalization across spectra (sample-wise rows).
     If cluster_labels provided, applies normalization separately to each cluster group.
@@ -193,6 +368,7 @@ def apply_quantile_normalization(spectra, cluster_labels=None):
     Args:
         spectra: 2D numpy array (n_samples, n_features)
         cluster_labels: Optional array of cluster labels for grouped normalization
+        min_cluster_size_for_qn: Minimum cluster size required to apply QN
 
     Returns:
         Quantile-normalized spectra
@@ -207,19 +383,28 @@ def apply_quantile_normalization(spectra, cluster_labels=None):
         return apply_quantile_normalization_single_group(spectra)
 
     # Apply quantile normalization separately to each cluster group
-    normalized = np.zeros_like(spectra)
+    normalized = spectra.copy()
     unique_clusters = np.unique(cluster_labels)
+    normalized_cluster_count = 0
+    skipped_cluster_count = 0
 
     for cluster_id in unique_clusters:
         mask = cluster_labels == cluster_id
         group_spectra = spectra[mask]
 
-        if len(group_spectra) >= 2:
+        if len(group_spectra) >= min_cluster_size_for_qn:
             # Apply quantile normalization within this group
             normalized[mask] = apply_quantile_normalization_single_group(group_spectra)
+            normalized_cluster_count += 1
         else:
-            # Single sample - just return as-is (no normalization possible)
-            normalized[mask] = group_spectra
+            skipped_cluster_count += 1
+
+    print(
+        "Grouped quantile normalization summary: "
+        f"normalized_clusters={normalized_cluster_count}, "
+        f"skipped_clusters={skipped_cluster_count}, "
+        f"min_cluster_size_for_qn={min_cluster_size_for_qn}"
+    )
 
     return normalized
 
@@ -382,7 +567,70 @@ def make_msms_spectrum(spectrum):
 )
 @click.option("--seed", type=int, default=42)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
-def main(analytical_data, base_out_path, columns, seed, n_folds):
+@click.option(
+    "--fingerprint-radius",
+    type=int,
+    default=2,
+    show_default=True,
+    help="Morgan fingerprint radius (ECFP4 corresponds to radius=2)",
+)
+@click.option(
+    "--fingerprint-bits",
+    type=int,
+    default=2048,
+    show_default=True,
+    help="Number of bits in Morgan fingerprint",
+)
+@click.option(
+    "--tanimoto-threshold",
+    type=float,
+    default=0.6,
+    show_default=True,
+    help="Tanimoto similarity threshold for Butina clustering",
+)
+@click.option(
+    "--min-cluster-size-for-qn",
+    type=int,
+    default=20,
+    show_default=True,
+    help="Minimum cluster size required to apply grouped quantile normalization",
+)
+@click.option(
+    "--min-bucket-size",
+    type=int,
+    default=2,
+    show_default=True,
+    help="Minimum coarse bucket size to run local clustering",
+)
+@click.option(
+    "--max-bucket-size",
+    type=int,
+    default=5000,
+    show_default=True,
+    help="Maximum coarse bucket size before deterministic splitting",
+)
+def main(
+    analytical_data,
+    base_out_path,
+    columns,
+    seed,
+    n_folds,
+    fingerprint_radius,
+    fingerprint_bits,
+    tanimoto_threshold,
+    min_cluster_size_for_qn,
+    min_bucket_size,
+    max_bucket_size,
+):
+    if not (0.0 < tanimoto_threshold <= 1.0):
+        raise click.BadParameter("--tanimoto-threshold must be in (0, 1].")
+    if min_cluster_size_for_qn < 1:
+        raise click.BadParameter("--min-cluster-size-for-qn must be >= 1.")
+    if min_bucket_size < 1:
+        raise click.BadParameter("--min-bucket-size must be >= 1.")
+    if max_bucket_size < 2:
+        raise click.BadParameter("--max-bucket-size must be >= 2.")
+
     # Parse columns to process
     columns_to_process = (
         columns.split(",")
@@ -436,6 +684,22 @@ def main(analytical_data, base_out_path, columns, seed, n_folds):
 
     print(f"Total samples loaded: {len(training_data)}")
 
+    # Group molecules once for the whole dataset (before train/test split and CV).
+    smiles_list = training_data["smiles"].tolist()
+    cluster_labels = group_by_tanimoto_similarity_scalable(
+        smiles_list,
+        radius=fingerprint_radius,
+        n_bits=fingerprint_bits,
+        tanimoto_threshold=tanimoto_threshold,
+        min_bucket_size=min_bucket_size,
+        max_bucket_size=max_bucket_size,
+    )
+    cluster_labels = relabel_small_clusters_as_unique(
+        cluster_labels,
+        min_cluster_size=min_cluster_size_for_qn,
+    )
+    print("Grouping complete and small clusters relabeled for safe QN fallback.")
+
     # Process each column
     for col_name in columns_to_process:
         actual_col, output_dir = column_mapping[col_name]
@@ -444,13 +708,13 @@ def main(analytical_data, base_out_path, columns, seed, n_folds):
         print(f"Output directory: {output_dir}_qn")
         print(f"{'='*60}")
 
-        # Group molecules by Tanimoto similarity
-        smiles_list = training_data["smiles"].tolist()
-        cluster_labels = group_by_tanimoto_similarity(smiles_list, n_clusters=50)
-
         # Prepare data and apply quantile normalization per group
-        X_data = np.stack(training_data[actual_col].to_list())
-        X_data = apply_quantile_normalization(X_data, cluster_labels=cluster_labels)
+        X_data = np.stack(training_data[actual_col].to_list()).astype(np.float32, copy=False)
+        X_data = apply_quantile_normalization(
+            X_data,
+            cluster_labels=cluster_labels,
+            min_cluster_size_for_qn=min_cluster_size_for_qn,
+        )
         print(f"Applied quantile normalization with Tanimoto grouping to {actual_col}")
         y_data = np.stack(training_data["func_group"].to_list())
 
@@ -540,6 +804,13 @@ def main(analytical_data, base_out_path, columns, seed, n_folds):
             "train_size": len(X_train_full),
             "test_size": len(X_test),
             "normalization": "Quantile",
+            "grouping": "coarse_buckets_plus_butina",
+            "fingerprint_radius": fingerprint_radius,
+            "fingerprint_bits": fingerprint_bits,
+            "tanimoto_threshold": tanimoto_threshold,
+            "min_cluster_size_for_qn": min_cluster_size_for_qn,
+            "min_bucket_size": min_bucket_size,
+            "max_bucket_size": max_bucket_size,
         }
         results_pickle_path = model_dir / f"{output_dir}_cv_results.pickle"
         with open(results_pickle_path, "wb") as file:
@@ -566,9 +837,17 @@ def main(analytical_data, base_out_path, columns, seed, n_folds):
             f.write(f"{'='*60}\n\n")
             f.write("Model Configuration:\n")
             f.write("  - Normalization: Quantile\n")
+            f.write("  - Grouping: Coarse Buckets + Butina (threshold-based)\n")
             f.write(f"  - Spectrum Type: {col_name}\n")
             f.write("  - Input Shape: (600, 1)\n")
             f.write("  - Number of Functional Groups: 37\n\n")
+            f.write("Grouping Parameters:\n")
+            f.write(f"  - Fingerprint Radius: {fingerprint_radius}\n")
+            f.write(f"  - Fingerprint Bits: {fingerprint_bits}\n")
+            f.write(f"  - Tanimoto Threshold: {tanimoto_threshold}\n")
+            f.write(f"  - Min Cluster Size for QN: {min_cluster_size_for_qn}\n")
+            f.write(f"  - Min Bucket Size: {min_bucket_size}\n")
+            f.write(f"  - Max Bucket Size: {max_bucket_size}\n\n")
             f.write("Dataset Split:\n")
             f.write(f"  - Training samples: {len(X_train_full)} (80%)\n")
             f.write(f"  - Test samples: {len(X_test)} (20%)\n")
