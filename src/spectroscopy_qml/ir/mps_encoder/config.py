@@ -11,11 +11,11 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 1800
-    num_sites: int = 9
-    physical_dim: int = 150
-    bond_dim: int = 128
+    num_sites: int = 5
+    physical_dim: int = 360
+    bond_dim: int = 256
     num_classes: int = 37
-    dropout_rate: float = 0.05
+    dropout_rate: float = 0
 
 
 @dataclass
@@ -24,14 +24,14 @@ class DataConfig:
 
     apply_snv: bool = True
     target_length: int = 1800
-    max_files: int | None = 1
+    max_files: int | None = 10
 
 
 @dataclass
 class TrainingConfig:
     """Training hyperparameters."""
 
-    batch_size: int = 256
+    batch_size: int = 2048
     num_epochs: int = 200
     learning_rate: float = 1e-3
     weight_decay: float = 1e-6
@@ -46,7 +46,7 @@ class TrainingConfig:
     use_amp: bool = True
 
     # Learning rate scheduler
-    lr_scheduler_factor: float = 0.5
+    lr_scheduler_factor: float = 0.9
     lr_scheduler_patience: int = 5
     lr_scheduler_min_lr: float = 1e-6
 

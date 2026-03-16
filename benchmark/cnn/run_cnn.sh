@@ -25,7 +25,14 @@ python ./benchmark/cnn/scripts/run_cnn_jung_baseline.py \
     --n_folds 5
 
 # Evaluate and visualize results
-echo "Evaluating CNN models..."
+echo "Evaluating ORIGINAL CNN models..."
 python ./benchmark/cnn/scripts/evaluate_results.py \
     --models_dir ./benchmark/cnn/models \
-    --output_dir ./benchmark/cnn/results
+    --output_dir ./benchmark/cnn/results \
+    --model_type original
+
+echo "Evaluating K-FOLD CNN models..."
+python ./benchmark/cnn/scripts/evaluate_results.py \
+    --models_dir ./benchmark/cnn/models \
+    --output_dir ./benchmark/cnn/results \
+    --model_type k_fold

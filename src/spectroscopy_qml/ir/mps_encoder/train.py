@@ -441,6 +441,10 @@ def train_model():
 
     best_val_f1 = 0.0  # Track best validation micro F1
     best_thresholds = np.full(MODEL_CONFIG.num_classes, 0.5)  # Initialize with 0.5
+    best_model_state = None  # Store best model state for saving at end
+    best_val_loss = float("inf")  # Store best validation loss
+    best_val_metrics = None  # Store best validation metrics
+    best_epoch = 0  # Track best epoch
     training_log = []
 
     # Create CSV log file
@@ -546,24 +550,15 @@ def train_model():
                 ]
             )
 
-        # Save best model based on validation micro F1 (not loss)
+        # Track best model based on validation micro F1 (not loss)
         if val_metrics["f1_micro"] > best_val_f1:
             best_val_f1 = val_metrics["f1_micro"]
             best_thresholds = tuned_thresholds  # Update best thresholds
-
-            torch.save(
-                {
-                    "epoch": epoch + 1,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "val_loss": val_loss,
-                    "val_metrics": val_metrics,
-                    "thresholds": tuned_thresholds,  # Save tuned thresholds
-                    "config": MODEL_CONFIG,
-                },
-                PATH_CONFIG.best_model_path,
-            )
-            print(f"  ✓ Best model saved (val_f1_micro: {val_metrics['f1_micro']:.4f})")
+            best_model_state = model.state_dict().copy()  # Store best model state
+            best_val_loss = val_loss
+            best_val_metrics = val_metrics.copy()
+            best_epoch = epoch + 1
+            print(f"  ✓ New best model found (val_f1_micro: {val_metrics['f1_micro']:.4f})")
 
         # Early stopping check - monitor validation micro F1
         if early_stopping(val_metrics["f1_micro"]):
@@ -572,6 +567,27 @@ def train_model():
 
     total_time = time.time() - start_time
     print(f"\nTraining completed in {total_time/60:.1f} minutes")
+
+    # Save best model at the end
+    print("\n" + "=" * 80)
+    print("Saving Best Model")
+    print("=" * 80)
+
+    torch.save(
+        {
+            "epoch": best_epoch,
+            "model_state_dict": best_model_state,
+            "optimizer_state_dict": optimizer.state_dict(),
+            "val_loss": best_val_loss,
+            "val_metrics": best_val_metrics,
+            "thresholds": best_thresholds,  # Save tuned thresholds
+            "config": MODEL_CONFIG,
+        },
+        PATH_CONFIG.best_model_path,
+    )
+    print(f"✓ Best model saved from epoch {best_epoch}")
+    print(f"  Validation F1 Micro: {best_val_metrics['f1_micro']:.4f}")
+    print(f"  Validation F1 Macro: {best_val_metrics['f1_macro']:.4f}")
 
     # Evaluate on test set
     print("\n" + "=" * 80)
