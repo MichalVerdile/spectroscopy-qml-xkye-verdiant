@@ -204,7 +204,7 @@ def build_svg() -> str:
     for y in [206, 246, 286, 326, 366, 406]:
         parts.append(line(1296, y, 1388, 182 + (y - 206) * 1.15, dashed=True))
     parts.append(label_box(1224, 96, 150, 72, ["Flatten / concat vector", "(256 values)"], size=15))
-    parts.append(text(1282, 540, "Total: 256 units", size=16, weight="700", fill=MUTED))
+    parts.append(text(1282, 540, "Total: 256 neurons", size=16, weight="700", fill=MUTED))
 
     fc1, fc1_nodes = dense_column(1470, 125, 7, 62, 15, NODE)
     fc2, fc2_nodes = dense_column(1700, 125, 7, 62, 15, NODE)
@@ -223,8 +223,8 @@ def build_svg() -> str:
     parts.append(label_box(1635, 34, 130, 64, ["fc_1", "Fully-Connected", "Linear 128 -> 64"], size=14))
     parts.append(label_box(1865, 34, 130, 64, ["fc_2", "Output layer", "Linear 64 -> 37"], size=14))
     parts.append(label_box(2095, 34, 130, 64, ["OUTPUT", "(logits)", "37 labels"], size=14))
-    parts.append(text(1470, 540, "Total: 128 units", size=16, weight="700", fill=MUTED))
-    parts.append(text(1700, 540, "Total: 64 units", size=16, weight="700", fill=MUTED))
+    parts.append(text(1470, 540, "Total: 128 neurons", size=16, weight="700", fill=MUTED))
+    parts.append(text(1700, 540, "Total: 64 neurons", size=16, weight="700", fill=MUTED))
     parts.append(text(1930, 540, "Total: 37 logits", size=16, weight="700", fill=MUTED))
     parts.append(text(2170, 540, "Total: 37 labels", size=16, weight="700", fill=MUTED))
 
