@@ -24,7 +24,7 @@ class DataConfig:
 
     apply_snv: bool = True
     target_length: int = 1800
-    max_files: int | None = 1
+    max_files: int | None = None
 
 
 @dataclass
