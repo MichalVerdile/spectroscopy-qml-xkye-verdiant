@@ -22,6 +22,9 @@ Examples:
   # Train the model
   python run.py --train
 
+    # Run exhaustive hyperparameter grid search
+    python run.py --grid-search
+
   # Evaluate the model
   python run.py --evaluate
 
@@ -32,6 +35,12 @@ Examples:
 
     parser.add_argument("--train", action="store_true", help="Train the model")
 
+    parser.add_argument(
+        "--grid-search",
+        action="store_true",
+        help="Run exhaustive hyperparameter grid search",
+    )
+
     parser.add_argument("--evaluate", action="store_true", help="Evaluate the model")
 
     parser.add_argument(
@@ -41,7 +50,7 @@ Examples:
     args = parser.parse_args()
 
     # If no arguments, show help
-    if not (args.train or args.evaluate or args.check):
+    if not (args.train or args.evaluate or args.check or args.grid_search):
         parser.print_help()
         return
 
@@ -128,6 +137,23 @@ Examples:
             train_model()
         except Exception as e:
             print(f"Training failed: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return
+
+    # Grid search
+    if args.grid_search:
+        print("\n" + "=" * 80)
+        print("Starting Exhaustive Hyperparameter Grid Search")
+        print("=" * 80 + "\n")
+
+        try:
+            from spectroscopy_qml.ir.mps_encoder.grid_search import run_grid_search
+
+            run_grid_search()
+        except Exception as e:
+            print(f"Grid search failed: {e}")
             import traceback
 
             traceback.print_exc()

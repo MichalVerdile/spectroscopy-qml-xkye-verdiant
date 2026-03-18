@@ -7,10 +7,12 @@ for multi-label classification of functional groups from IR spectra.
 
 from .config import (
     DATA_CONFIG,
+    GRID_SEARCH_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
     DataConfig,
+    GridSearchConfig,
     ModelConfig,
     PathConfig,
     TrainingConfig,
@@ -27,8 +29,10 @@ __all__ = [
     "DataConfig",
     "TrainingConfig",
     "PathConfig",
+    "GridSearchConfig",
     "MODEL_CONFIG",
     "DATA_CONFIG",
     "TRAINING_CONFIG",
     "PATH_CONFIG",
+    "GRID_SEARCH_CONFIG",
 ]
