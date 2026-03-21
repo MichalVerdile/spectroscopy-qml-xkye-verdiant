@@ -102,7 +102,14 @@ class SegmentCompressor(nn.Module):
 
         self.max_segment_length = int(max_segment_length)
         self.chi = int(chi)
-        self.projection = nn.Linear(2 * self.max_segment_length, self.chi)
+        input_dim = 2 * self.max_segment_length
+        hidden_dim = max(input_dim, 2 * self.chi)
+
+        self.input_norm = nn.LayerNorm(input_dim)
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.activation = nn.GELU()
+        self.dropout = nn.Dropout(0.1)
+        self.fc2 = nn.Linear(hidden_dim, self.chi)
 
     def forward(self, embedded_segments: Tensor, segment_mask: Tensor | None = None) -> Tensor:
         """Compress padded embedded segments.
@@ -150,8 +157,12 @@ class SegmentCompressor(nn.Module):
 
         # (batch, num_segments, max_segment_length, 2) -> (batch, num_segments, 2 * max_segment_length)
         flattened = masked_segments.flatten(start_dim=2)
-        # (batch, num_segments, 2 * max_segment_length) -> (batch, num_segments, chi)
-        compressed = self.projection(flattened)
+        # A small MLP gives the segment encoder more capacity than a single projection.
+        compressed = self.input_norm(flattened)
+        compressed = self.fc1(compressed)
+        compressed = self.activation(compressed)
+        compressed = self.dropout(compressed)
+        compressed = self.fc2(compressed)
 
         # Normalizing the segment states keeps the TTN input vectors at a stable scale.
         return F.normalize(compressed, dim=-1, eps=1e-8)
@@ -286,7 +297,14 @@ class TTNIRClassifier(nn.Module):
         self.merge_levels = nn.ModuleList(
             [TensorMerge(chi=self.chi, use_bias=self.use_bias) for _ in range(num_levels)]
         )
-        self.output_head = nn.Linear(self.chi, self.num_labels)
+        head_hidden_dim = max(128, 2 * self.chi)
+        self.output_norm = nn.LayerNorm(self.chi)
+        self.output_head = nn.Sequential(
+            nn.Linear(self.chi, head_hidden_dim),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(head_hidden_dim, self.num_labels),
+        )
 
     @staticmethod
     def _compute_segment_slices(input_dim: int, num_segments: int) -> list[tuple[int, int]]:
@@ -371,7 +389,7 @@ class TTNIRClassifier(nn.Module):
             raise RuntimeError("Tree reduction did not produce a single root node.")
 
         root = node_states[:, 0, :]  # (batch, chi)
-        logits = self.output_head(root)  # (batch, num_labels)
+        logits = self.output_head(self.output_norm(root))  # (batch, num_labels)
 
         if apply_sigmoid:
             return torch.sigmoid(logits)

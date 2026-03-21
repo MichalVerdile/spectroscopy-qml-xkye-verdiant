@@ -13,6 +13,7 @@ import torch
 from sklearn.metrics import f1_score, precision_score, recall_score
 from torch import nn
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 # Allow running as `python src/.../train.py` without requiring editable install.
@@ -36,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, default=Path("src/spectroscopy_qml/ir/tree_tensor_network/results"))
     parser.add_argument("--input-dim", type=int, default=1800)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
-    parser.add_argument("--chi", type=int, default=32)
+    parser.add_argument("--chi", type=int, default=64)
     parser.add_argument("--num-segments", type=int, default=32)
     parser.add_argument("--embedding-scale", type=float, default=0.1)
     parser.add_argument("--x-max-mode", choices=["per_sample", "global"], default="per_sample")
@@ -45,15 +46,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--max-files", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-6)
+    parser.add_argument("--lr-scheduler-factor", type=float, default=0.9)
+    parser.add_argument("--lr-scheduler-patience", type=int, default=5)
+    parser.add_argument("--lr-scheduler-min-lr", type=float, default=1e-6)
     parser.add_argument("--train-ratio", type=float, default=0.8)
     parser.add_argument("--val-ratio", type=float, default=0.1)
     parser.add_argument("--test-ratio", type=float, default=0.1)
     parser.add_argument("--num-workers", type=int, default=0)
-    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--pos-weight-power", type=float, default=0.5)
+    parser.add_argument("--pos-weight-max", type=float, default=None)
     parser.add_argument("--check-only", action="store_true")
     parser.add_argument("--preflight-batch-size", type=int, default=4)
     return parser
@@ -66,7 +72,15 @@ def resolve_device(device_arg: str) -> torch.device:
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but is not available.")
         return torch.device("cuda")
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device_arg == "mps":
+        if not torch.backends.mps.is_available():
+            raise RuntimeError("MPS was requested but is not available.")
+        return torch.device("mps")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
 
 
 def build_model(args: argparse.Namespace) -> TTNIRClassifier:
@@ -100,8 +114,11 @@ def describe_args(args: argparse.Namespace) -> None:
     print(f"Max files:       {args.max_files}")
 
 
-def compute_metrics(y_true: np.ndarray, y_prob: np.ndarray, threshold: float = 0.5) -> dict[str, float]:
-    y_pred = (y_prob >= threshold).astype(int)
+def threshold_predictions(y_prob: np.ndarray, thresholds: float | np.ndarray = 0.5) -> np.ndarray:
+    return (y_prob >= thresholds).astype(int)
+
+
+def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     return {
         "f1_micro": f1_score(y_true, y_pred, average="micro", zero_division=0),
         "f1_macro": f1_score(y_true, y_pred, average="macro", zero_division=0),
@@ -110,12 +127,58 @@ def compute_metrics(y_true: np.ndarray, y_prob: np.ndarray, threshold: float = 0
     }
 
 
-def get_pos_weight(labels: np.ndarray, device: torch.device) -> torch.Tensor:
+def get_pos_weight(
+    labels: np.ndarray,
+    device: torch.device,
+    power: float = 1.0,
+    max_value: float | None = None,
+) -> torch.Tensor:
     positives = labels.sum(axis=0)
     negatives = labels.shape[0] - positives
     pos_weight = np.ones_like(positives, dtype=np.float32)
     np.divide(negatives, positives, out=pos_weight, where=positives > 0)
+    if power <= 0.0:
+        raise ValueError("pos_weight_power must be positive.")
+    if power != 1.0:
+        pos_weight = np.power(pos_weight, power, dtype=np.float32)
+    if max_value is not None:
+        pos_weight = np.clip(pos_weight, 1.0, max_value)
     return torch.as_tensor(pos_weight, dtype=torch.float32, device=device)
+
+
+def tune_thresholds(
+    y_true: np.ndarray,
+    y_probs: np.ndarray,
+    metric: str = "f1_micro",
+) -> np.ndarray:
+    n_classes = y_true.shape[1]
+
+    if metric == "f1_micro":
+        best_score = 0.0
+        best_threshold = 0.5
+
+        for threshold in np.arange(0.1, 0.9, 0.05):
+            y_pred = threshold_predictions(y_probs, threshold)
+            score = f1_score(y_true, y_pred, average="micro", zero_division=0)
+            if score > best_score:
+                best_score = score
+                best_threshold = threshold
+
+        return np.full(n_classes, best_threshold)
+
+    thresholds = np.zeros(n_classes)
+    for class_index in range(n_classes):
+        best_score = 0.0
+        best_threshold = 0.5
+        for threshold in np.arange(0.1, 0.9, 0.05):
+            y_pred = threshold_predictions(y_probs[:, class_index], threshold)
+            score = f1_score(y_true[:, class_index], y_pred, zero_division=0)
+            if score > best_score:
+                best_score = score
+                best_threshold = threshold
+        thresholds[class_index] = best_threshold
+
+    return thresholds
 
 
 def run_synthetic_preflight(model: TTNIRClassifier, args: argparse.Namespace, device: torch.device) -> None:
@@ -194,11 +257,12 @@ def train_epoch(
     criterion: nn.Module,
     optimizer: Adam,
     device: torch.device,
+    thresholds: np.ndarray,
 ) -> tuple[float, dict[str, float]]:
     model.train()
     total_loss = 0.0
     all_labels: list[np.ndarray] = []
-    all_probs: list[np.ndarray] = []
+    all_preds: list[np.ndarray] = []
 
     for spectra, labels in dataloader:
         spectra = spectra.to(device)
@@ -212,10 +276,11 @@ def train_epoch(
 
         total_loss += loss.item() * spectra.size(0)
         all_labels.append(labels.detach().cpu().numpy())
-        all_probs.append(torch.sigmoid(logits).detach().cpu().numpy())
+        probs = torch.sigmoid(logits).detach().cpu().numpy()
+        all_preds.append(threshold_predictions(probs, thresholds))
 
     avg_loss = total_loss / len(dataloader.dataset)
-    metrics = compute_metrics(np.vstack(all_labels), np.vstack(all_probs))
+    metrics = compute_metrics(np.vstack(all_labels), np.vstack(all_preds))
     return avg_loss, metrics
 
 
@@ -225,11 +290,16 @@ def evaluate(
     dataloader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
-) -> tuple[float, dict[str, float]]:
+    thresholds: np.ndarray | None = None,
+    return_probs: bool = False,
+) -> tuple[float, dict[str, float]] | tuple[float, dict[str, float], np.ndarray, np.ndarray]:
     model.eval()
     total_loss = 0.0
     all_labels: list[np.ndarray] = []
     all_probs: list[np.ndarray] = []
+
+    if thresholds is None:
+        thresholds = np.full(model.num_labels, 0.5)
 
     for spectra, labels in dataloader:
         spectra = spectra.to(device)
@@ -243,7 +313,12 @@ def evaluate(
         all_probs.append(torch.sigmoid(logits).cpu().numpy())
 
     avg_loss = total_loss / len(dataloader.dataset)
-    metrics = compute_metrics(np.vstack(all_labels), np.vstack(all_probs))
+    labels = np.vstack(all_labels)
+    probs = np.vstack(all_probs)
+    preds = threshold_predictions(probs, thresholds)
+    metrics = compute_metrics(labels, preds)
+    if return_probs:
+        return avg_loss, metrics, labels, probs
     return avg_loss, metrics
 
 
@@ -251,16 +326,21 @@ def write_summary(
     summary_path: Path,
     elapsed_seconds: float,
     best_epoch: int,
+    best_val_f1: float,
     best_val_loss: float,
     test_loss: float,
     test_metrics: dict[str, float],
+    best_thresholds: np.ndarray,
 ) -> None:
     with summary_path.open("w") as handle:
         handle.write("TTN IR Training Summary\n")
         handle.write("=" * 80 + "\n")
         handle.write(f"Elapsed seconds: {elapsed_seconds:.2f}\n")
         handle.write(f"Best epoch:      {best_epoch}\n")
+        handle.write(f"Best val F1:     {best_val_f1:.6f}\n")
         handle.write(f"Best val loss:   {best_val_loss:.6f}\n")
+        handle.write(f"Threshold mean:  {best_thresholds.mean():.6f}\n")
+        handle.write(f"Threshold std:   {best_thresholds.std():.6f}\n")
         handle.write(f"Test loss:       {test_loss:.6f}\n")
         for key, value in test_metrics.items():
             handle.write(f"{key}: {value:.6f}\n")
@@ -313,7 +393,12 @@ def main() -> None:
     )
 
     train_labels = np.vstack([labels.numpy() for _, labels in train_loader])
-    pos_weight = get_pos_weight(train_labels, device)
+    pos_weight = get_pos_weight(
+        train_labels,
+        device,
+        power=args.pos_weight_power,
+        max_value=args.pos_weight_max,
+    )
     print(
         "Class weights: "
         f"min={pos_weight.min().item():.2f}, "
@@ -334,12 +419,22 @@ def main() -> None:
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    scheduler = ReduceLROnPlateau(
+        optimizer,
+        mode="min",
+        factor=args.lr_scheduler_factor,
+        patience=args.lr_scheduler_patience,
+        min_lr=args.lr_scheduler_min_lr,
+    )
     model = model.to(device)
 
     print("\nStarting training...")
     start_time = time.time()
+    best_val_f1 = 0.0
     best_val_loss = float("inf")
     best_epoch = 0
+    current_thresholds = np.full(args.num_labels, 0.5)
+    best_thresholds = np.full(args.num_labels, 0.5)
 
     with log_path.open("w", newline="") as handle:
         writer = csv.writer(handle)
@@ -352,12 +447,35 @@ def main() -> None:
                 "val_loss",
                 "val_f1_micro",
                 "val_f1_macro",
+                "threshold_mean",
+                "threshold_std",
+                "lr",
             ]
         )
 
         for epoch in range(1, args.epochs + 1):
-            train_loss, train_metrics = train_epoch(model, train_loader, criterion, optimizer, device)
-            val_loss, val_metrics = evaluate(model, val_loader, criterion, device)
+            train_loss, train_metrics = train_epoch(
+                model,
+                train_loader,
+                criterion,
+                optimizer,
+                device,
+                current_thresholds,
+            )
+            val_loss, _, val_labels, val_probs = evaluate(
+                model,
+                val_loader,
+                criterion,
+                device,
+                thresholds=None,
+                return_probs=True,
+            )
+            tuned_thresholds = tune_thresholds(val_labels, val_probs, metric="f1_micro")
+            val_preds = threshold_predictions(val_probs, tuned_thresholds)
+            val_metrics = compute_metrics(val_labels, val_preds)
+            scheduler.step(val_loss)
+            current_lr = optimizer.param_groups[0]["lr"]
+            current_thresholds = tuned_thresholds
 
             writer.writerow(
                 [
@@ -368,6 +486,9 @@ def main() -> None:
                     val_loss,
                     val_metrics["f1_micro"],
                     val_metrics["f1_macro"],
+                    tuned_thresholds.mean(),
+                    tuned_thresholds.std(),
+                    current_lr,
                 ]
             )
             handle.flush()
@@ -375,18 +496,23 @@ def main() -> None:
             print(
                 f"Epoch {epoch:03d} | "
                 f"train_loss={train_loss:.4f} | train_f1_micro={train_metrics['f1_micro']:.4f} | "
-                f"val_loss={val_loss:.4f} | val_f1_micro={val_metrics['f1_micro']:.4f}"
+                f"val_loss={val_loss:.4f} | val_f1_micro={val_metrics['f1_micro']:.4f} | "
+                f"thr={tuned_thresholds.mean():.2f} | lr={current_lr:.2e}"
             )
 
-            if val_loss < best_val_loss:
+            if val_metrics["f1_micro"] > best_val_f1:
+                best_val_f1 = val_metrics["f1_micro"]
                 best_val_loss = val_loss
                 best_epoch = epoch
+                best_thresholds = tuned_thresholds.copy()
                 torch.save(
                     {
                         "epoch": epoch,
                         "model_state_dict": model.state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "val_loss": val_loss,
+                        "val_f1_micro": best_val_f1,
+                        "thresholds": best_thresholds,
                         "args": vars(args),
                     },
                     checkpoint_path,
@@ -394,18 +520,34 @@ def main() -> None:
 
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
-    test_loss, test_metrics = evaluate(model, test_loader, criterion, device)
+    best_thresholds = checkpoint.get("thresholds", np.full(args.num_labels, 0.5))
+    test_loss, test_metrics = evaluate(
+        model,
+        test_loader,
+        criterion,
+        device,
+        thresholds=best_thresholds,
+    )
 
     elapsed_seconds = time.time() - start_time
-    write_summary(summary_path, elapsed_seconds, best_epoch, best_val_loss, test_loss, test_metrics)
+    write_summary(
+        summary_path,
+        elapsed_seconds,
+        best_epoch,
+        best_val_f1,
+        best_val_loss,
+        test_loss,
+        test_metrics,
+        best_thresholds,
+    )
 
     print("\nTraining finished.")
     print(f"Best checkpoint: {checkpoint_path}")
     print(f"Training log:    {log_path}")
     print(f"Summary:         {summary_path}")
     print(
-        f"Best epoch={best_epoch}, best_val_loss={best_val_loss:.4f}, "
-        f"test_f1_micro={test_metrics['f1_micro']:.4f}"
+        f"Best epoch={best_epoch}, best_val_f1_micro={best_val_f1:.4f}, "
+        f"best_val_loss={best_val_loss:.4f}, test_f1_micro={test_metrics['f1_micro']:.4f}"
     )
 
 
