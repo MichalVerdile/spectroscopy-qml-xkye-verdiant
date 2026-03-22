@@ -1,0 +1,12 @@
+Legacy TTN IR Training Summary
+================================================================================
+Elapsed seconds: 200.56
+Epochs completed:200/200
+Data files used: 1/245
+Best epoch:      25
+Best val loss:   1.843411
+Test loss:       1.785331
+f1_micro: 0.287775
+f1_macro: 0.124565
+precision_micro: 0.191196
+recall_micro: 0.581522
