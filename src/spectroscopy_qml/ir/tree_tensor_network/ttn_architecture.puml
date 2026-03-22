@@ -1,0 +1,116 @@
+@startuml
+title TTN IR Classifier Architecture
+
+skinparam backgroundColor white
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
+
+skinparam rectangle {
+  BorderColor #2F4F4F
+  FontColor #111111
+}
+
+skinparam component {
+  BorderColor #2F4F4F
+  FontColor #111111
+}
+
+legend right
+Current default configuration in train.py:
+- input_dim = 1800
+- segment_window_size = 48
+- segment_stride = 24
+- resulting num_segments = 74
+- max_segment_length = 48
+- chi = 64
+- num_labels = 37
+endlegend
+
+rectangle "Input Spectrum\n(batch, 1800)" as Input
+rectangle "Sliding-Window Segmentation\noverlapping windows\n(batch, 74, 48)" as SegmentInput
+rectangle "Segment Mask\n(74, 48)\nmarks valid samples" as Mask
+rectangle "QuantumFeatureMap\nper value: [cos(a*x_scaled), sin(a*x_scaled)]\n(batch, 74, 48, 2)" as FeatureMap
+rectangle "Absolute Position Channel\nnormalized wavenumber in [-1, 1]\n(batch, 74, 48, 1)" as Position
+rectangle "Augmented Local Features\nfeature map + position\n(batch, 74, 48, 3)" as Augmented
+rectangle "SegmentCompressor\nflatten -> LayerNorm -> Linear -> GELU -> Dropout(0.1) -> Linear\n+ skip projection + LayerNorm\n(batch, 74, 64)" as Compressor
+
+package "Hierarchical Tree Reduction" {
+  rectangle "Level 0\npairwise TensorMerge\n74 -> 37 nodes\n(batch, 37, 64)" as L0
+  rectangle "Level 1\npairwise TensorMerge\n37 -> 19 nodes\ncarry odd node upward\n(batch, 19, 64)" as L1
+  rectangle "Level 2\npairwise TensorMerge\n19 -> 10 nodes\n(batch, 10, 64)" as L2
+  rectangle "...\ncontinue until one root remains" as MidLevels
+  rectangle "Final Level\n2 -> 1 root\n(batch, 1, 64)" as LFinal
+}
+
+rectangle "Multi-Scale Pooling\nmean pool each TTN level\n8 pooled vectors for 74 segments\n(batch, 8 x 64)" as Readout
+rectangle "Readout Fusion\nconcat pooled levels\n(batch, 512)" as ReadoutConcat
+rectangle "Output Norm\nLayerNorm(512)" as OutNorm
+rectangle "Output Head\nLinear(512 -> 256)\nGELU\nDropout(0.1)\nLinear(256 -> 37)" as Head
+rectangle "Logits\n(batch, 37)" as Logits
+rectangle "Optional Sigmoid\n(batch, 37)" as Sigmoid
+
+component "TensorMerge\northogonalized left/right/output factors\nrank-3 core contraction + residual path\noptional LayerNorm" as MergeDetail
+
+Input --> SegmentInput
+SegmentInput --> Mask
+SegmentInput --> FeatureMap
+Mask --> FeatureMap
+SegmentInput --> Position
+FeatureMap --> Augmented
+Position --> Augmented
+Augmented --> Compressor
+Mask --> Compressor
+Compressor --> L0
+L0 --> L1
+L1 --> L2
+L2 --> MidLevels
+MidLevels --> LFinal
+Compressor --> Readout
+L0 --> Readout
+L1 --> Readout
+L2 --> Readout
+MidLevels --> Readout
+LFinal --> Readout
+Readout --> ReadoutConcat
+ReadoutConcat --> OutNorm
+OutNorm --> Head
+Head --> Logits
+Logits --> Sigmoid : apply_sigmoid=True
+
+L0 ..> MergeDetail
+L1 ..> MergeDetail
+L2 ..> MergeDetail
+MidLevels ..> MergeDetail
+LFinal ..> MergeDetail
+
+note bottom of SegmentInput
+Windows overlap by 50 percent with the default stride.
+Every spectral region is seen in more than one local context,
+which reduces boundary loss for narrow peaks and shoulders.
+end note
+
+note bottom of FeatureMap
+x_max_mode default: per_sample
+embedding_scale a = 0.1
+end note
+
+note bottom of Compressor
+Each overlapping window is still treated as one TTN site.
+No CNN frontend is used.
+end note
+
+note bottom of MidLevels
+Number of levels is dynamic:
+ceil(log2(max(2, num_segments))).
+Odd numbers of nodes are handled by carrying the last node upward.
+end note
+
+note bottom of Readout
+The classifier no longer relies on the root alone.
+Pooled site-level, intermediate and root-level states are concatenated,
+which preserves local, mid-level and global evidence.
+end note
+
+@enduml

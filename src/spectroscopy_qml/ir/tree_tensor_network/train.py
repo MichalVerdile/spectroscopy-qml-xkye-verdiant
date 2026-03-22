@@ -21,12 +21,48 @@ SRC_DIR = Path(__file__).parents[3]
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.ir.mps_encoder.data_loader import (  # noqa: E402
+from spectroscopy_qml.ir.tree_tensor_network.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     load_ir_data,
     prepare_dataloaders,
 )
 from spectroscopy_qml.ir.tree_tensor_network import TTNIRClassifier  # noqa: E402
+
+
+class EarlyStopping:
+    """Early stopping on a validation metric."""
+
+    def __init__(
+        self,
+        patience: int = 20,
+        min_delta: float = 1e-4,
+        mode: str = "max",
+        verbose: bool = True,
+    ) -> None:
+        self.patience = int(patience)
+        self.min_delta = float(min_delta)
+        self.mode = mode
+        self.verbose = verbose
+        self.counter = 0
+        self.best_score: float | None = None
+
+    def _is_improvement(self, score: float) -> bool:
+        if self.best_score is None:
+            return True
+        if self.mode == "min":
+            return score < self.best_score - self.min_delta
+        return score > self.best_score + self.min_delta
+
+    def __call__(self, score: float) -> bool:
+        if self._is_improvement(score):
+            self.best_score = score
+            self.counter = 0
+            return False
+
+        self.counter += 1
+        if self.verbose:
+            print(f"EarlyStopping counter: {self.counter}/{self.patience}")
+        return self.counter >= self.patience
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,11 +74,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input-dim", type=int, default=1800)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
     parser.add_argument("--chi", type=int, default=64)
-    parser.add_argument("--num-segments", type=int, default=32)
+    parser.add_argument("--num-segments", type=int, default=None)
+    parser.add_argument("--segment-window-size", type=int, default=48)
+    parser.add_argument("--segment-stride", type=int, default=24)
     parser.add_argument("--embedding-scale", type=float, default=0.1)
     parser.add_argument("--x-max-mode", choices=["per_sample", "global"], default="per_sample")
     parser.add_argument("--global-x-max", type=float, default=None)
     parser.add_argument("--use-bias", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--merge-normalization", choices=["layernorm", "none"], default="layernorm")
+    parser.add_argument("--merge-residual-weight", type=float, default=0.25)
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--max-files", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
@@ -60,6 +100,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--pos-weight-power", type=float, default=0.5)
     parser.add_argument("--pos-weight-max", type=float, default=None)
+    parser.add_argument(
+        "--threshold-metric",
+        choices=["f1_micro", "f1_macro", "per_class_f1"],
+        default="f1_micro",
+    )
+    parser.add_argument("--early-stopping-patience", type=int, default=20)
+    parser.add_argument("--early-stopping-min-delta", type=float, default=1e-4)
+    parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--check-only", action="store_true")
     parser.add_argument("--preflight-batch-size", type=int, default=4)
     return parser
@@ -88,10 +136,14 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier:
         num_labels=args.num_labels,
         chi=args.chi,
         num_segments=args.num_segments,
+        segment_window_size=args.segment_window_size,
+        segment_stride=args.segment_stride,
         embedding_scale=args.embedding_scale,
         x_max_mode=args.x_max_mode,
         global_x_max=args.global_x_max,
         use_bias=args.use_bias,
+        merge_normalization=args.merge_normalization,
+        merge_residual_weight=args.merge_residual_weight,
         input_dim=args.input_dim,
     )
 
@@ -106,11 +158,16 @@ def describe_args(args: argparse.Namespace) -> None:
     print(f"Num labels:      {args.num_labels}")
     print(f"Chi:             {args.chi}")
     print(f"Num segments:    {args.num_segments}")
+    print(f"Window size:     {args.segment_window_size}")
+    print(f"Window stride:   {args.segment_stride}")
     print(f"Embedding scale: {args.embedding_scale}")
     print(f"x_max mode:      {args.x_max_mode}")
+    print(f"Merge norm:      {args.merge_normalization}")
+    print(f"Merge residual:  {args.merge_residual_weight}")
     print(f"Apply SNV:       {args.apply_snv}")
     print(f"Batch size:      {args.batch_size}")
     print(f"Epochs:          {args.epochs}")
+    print(f"Threshold metric:{args.threshold_metric}")
     print(f"Max files:       {args.max_files}")
 
 
@@ -149,15 +206,16 @@ def get_pos_weight(
 def tune_thresholds(
     y_true: np.ndarray,
     y_probs: np.ndarray,
-    metric: str = "f1_micro",
+    metric: str = "per_class_f1",
 ) -> np.ndarray:
     n_classes = y_true.shape[1]
+    threshold_grid = np.arange(0.05, 1.0, 0.05)
 
     if metric == "f1_micro":
-        best_score = 0.0
+        best_score = -1.0
         best_threshold = 0.5
 
-        for threshold in np.arange(0.1, 0.9, 0.05):
+        for threshold in threshold_grid:
             y_pred = threshold_predictions(y_probs, threshold)
             score = f1_score(y_true, y_pred, average="micro", zero_division=0)
             if score > best_score:
@@ -166,13 +224,18 @@ def tune_thresholds(
 
         return np.full(n_classes, best_threshold)
 
-    thresholds = np.zeros(n_classes)
+    thresholds = np.full(n_classes, 0.5)
     for class_index in range(n_classes):
-        best_score = 0.0
+        class_labels = y_true[:, class_index]
+        if class_labels.sum() == 0:
+            thresholds[class_index] = 0.95
+            continue
+
+        best_score = -1.0
         best_threshold = 0.5
-        for threshold in np.arange(0.1, 0.9, 0.05):
+        for threshold in threshold_grid:
             y_pred = threshold_predictions(y_probs[:, class_index], threshold)
-            score = f1_score(y_true[:, class_index], y_pred, zero_division=0)
+            score = f1_score(class_labels, y_pred, zero_division=0)
             if score > best_score:
                 best_score = score
                 best_threshold = threshold
@@ -258,6 +321,7 @@ def train_epoch(
     optimizer: Adam,
     device: torch.device,
     thresholds: np.ndarray,
+    grad_clip_norm: float | None = None,
 ) -> tuple[float, dict[str, float]]:
     model.train()
     total_loss = 0.0
@@ -272,6 +336,8 @@ def train_epoch(
         logits = model(spectra)
         loss = criterion(logits, labels)
         loss.backward()
+        if grad_clip_norm is not None and grad_clip_norm > 0.0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
         optimizer.step()
 
         total_loss += loss.item() * spectra.size(0)
@@ -282,6 +348,25 @@ def train_epoch(
     avg_loss = total_loss / len(dataloader.dataset)
     metrics = compute_metrics(np.vstack(all_labels), np.vstack(all_preds))
     return avg_loss, metrics
+
+
+@torch.no_grad()
+def tune_thresholds_on_best_checkpoint(
+    model: TTNIRClassifier,
+    dataloader: DataLoader,
+    criterion: nn.Module,
+    device: torch.device,
+    metric: str,
+) -> np.ndarray:
+    _, _, labels, probs = evaluate(
+        model,
+        dataloader,
+        criterion,
+        device,
+        thresholds=None,
+        return_probs=True,
+    )
+    return tune_thresholds(labels, probs, metric=metric)
 
 
 @torch.no_grad()
@@ -390,6 +475,7 @@ def main() -> None:
         random_seed=args.seed,
         num_workers=args.num_workers,
         pin_memory=device.type == "cuda",
+        stratify_multilabel=True,
     )
 
     train_labels = np.vstack([labels.numpy() for _, labels in train_loader])
@@ -421,20 +507,25 @@ def main() -> None:
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     scheduler = ReduceLROnPlateau(
         optimizer,
-        mode="min",
+        mode="max",
         factor=args.lr_scheduler_factor,
         patience=args.lr_scheduler_patience,
         min_lr=args.lr_scheduler_min_lr,
+    )
+    early_stopping = EarlyStopping(
+        patience=args.early_stopping_patience,
+        min_delta=args.early_stopping_min_delta,
+        mode="max",
     )
     model = model.to(device)
 
     print("\nStarting training...")
     start_time = time.time()
-    best_val_f1 = 0.0
+    best_val_f1 = -1.0
     best_val_loss = float("inf")
     best_epoch = 0
-    current_thresholds = np.full(args.num_labels, 0.5)
-    best_thresholds = np.full(args.num_labels, 0.5)
+    selection_thresholds = np.full(args.num_labels, 0.5)
+    best_thresholds = selection_thresholds.copy()
 
     with log_path.open("w", newline="") as handle:
         writer = csv.writer(handle)
@@ -460,22 +551,18 @@ def main() -> None:
                 criterion,
                 optimizer,
                 device,
-                current_thresholds,
+                selection_thresholds,
+                grad_clip_norm=args.grad_clip_norm,
             )
-            val_loss, _, val_labels, val_probs = evaluate(
+            val_loss, val_metrics = evaluate(
                 model,
                 val_loader,
                 criterion,
                 device,
-                thresholds=None,
-                return_probs=True,
+                thresholds=selection_thresholds,
             )
-            tuned_thresholds = tune_thresholds(val_labels, val_probs, metric="f1_micro")
-            val_preds = threshold_predictions(val_probs, tuned_thresholds)
-            val_metrics = compute_metrics(val_labels, val_preds)
-            scheduler.step(val_loss)
+            scheduler.step(val_metrics["f1_micro"])
             current_lr = optimizer.param_groups[0]["lr"]
-            current_thresholds = tuned_thresholds
 
             writer.writerow(
                 [
@@ -486,8 +573,8 @@ def main() -> None:
                     val_loss,
                     val_metrics["f1_micro"],
                     val_metrics["f1_macro"],
-                    tuned_thresholds.mean(),
-                    tuned_thresholds.std(),
+                    selection_thresholds.mean(),
+                    selection_thresholds.std(),
                     current_lr,
                 ]
             )
@@ -497,14 +584,13 @@ def main() -> None:
                 f"Epoch {epoch:03d} | "
                 f"train_loss={train_loss:.4f} | train_f1_micro={train_metrics['f1_micro']:.4f} | "
                 f"val_loss={val_loss:.4f} | val_f1_micro={val_metrics['f1_micro']:.4f} | "
-                f"thr={tuned_thresholds.mean():.2f} | lr={current_lr:.2e}"
+                f"thr={selection_thresholds.mean():.2f} | lr={current_lr:.2e}"
             )
 
             if val_metrics["f1_micro"] > best_val_f1:
                 best_val_f1 = val_metrics["f1_micro"]
                 best_val_loss = val_loss
                 best_epoch = epoch
-                best_thresholds = tuned_thresholds.copy()
                 torch.save(
                     {
                         "epoch": epoch,
@@ -512,15 +598,26 @@ def main() -> None:
                         "optimizer_state_dict": optimizer.state_dict(),
                         "val_loss": val_loss,
                         "val_f1_micro": best_val_f1,
+                        "val_metrics": val_metrics,
                         "thresholds": best_thresholds,
                         "args": vars(args),
                     },
                     checkpoint_path,
                 )
 
+            if early_stopping(val_metrics["f1_micro"]):
+                print(f"Early stopping triggered at epoch {epoch:03d}.")
+                break
+
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
-    best_thresholds = checkpoint.get("thresholds", np.full(args.num_labels, 0.5))
+    best_thresholds = tune_thresholds_on_best_checkpoint(
+        model,
+        val_loader,
+        criterion,
+        device,
+        metric=args.threshold_metric,
+    )
     test_loss, test_metrics = evaluate(
         model,
         test_loader,

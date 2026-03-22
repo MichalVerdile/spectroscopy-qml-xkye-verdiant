@@ -20,10 +20,13 @@ def main() -> None:
     model = TTNIRClassifier(
         num_labels=num_labels,
         chi=32,
-        num_segments=32,
+        segment_window_size=48,
+        segment_stride=24,
         embedding_scale=0.1,
         x_max_mode="per_sample",
         use_bias=True,
+        merge_normalization="layernorm",
+        merge_residual_weight=0.25,
         input_dim=input_dim,
     )
 
