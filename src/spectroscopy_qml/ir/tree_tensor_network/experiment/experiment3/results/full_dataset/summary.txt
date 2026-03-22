@@ -1,0 +1,14 @@
+TTN IR Training Summary
+================================================================================
+Run type:                 full-dataset experiment3 artifact
+Requested epochs:         200
+Data files used:          245/245
+Best checkpoint epoch:    1
+Best checkpoint val F1:   0.651180
+Best checkpoint val loss: 0.421604
+Training log rows:        153
+Last logged epoch:        187
+Last logged val F1:       0.182566
+Last logged val loss:     1.183331
+Note: current full-dataset artifacts are not internally consistent enough for a
+final trusted test summary, so elapsed time and final test metrics are omitted.
