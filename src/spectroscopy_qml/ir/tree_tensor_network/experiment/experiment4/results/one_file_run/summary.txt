@@ -1,0 +1,15 @@
+TTN IR Experiment4 Summary
+================================================================================
+Elapsed seconds: 27799.72
+Epochs completed:22/200
+Data files used: 1/245
+Best epoch:      2
+Best val F1:     0.599930
+Best val loss:   0.626421
+Threshold mean:  0.400000
+Threshold std:   0.000000
+Test loss:       0.643713
+f1_micro: 0.706367
+f1_macro: 0.118284
+precision_micro: 0.794444
+recall_micro: 0.635870

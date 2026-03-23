@@ -1,13 +1,13 @@
 TTN IR Training Summary
 ================================================================================
-Run type:                 one-file experiment3 run
-Requested epochs:         200
-Data files used:          1/245
-Logged epochs so far:     10
-Latest logged epoch:      10
-Latest logged val F1:     0.599930
-Latest logged val loss:   0.559145
-Best checkpoint epoch:    3
-Best checkpoint val F1:   0.689379
-Best checkpoint val loss: 0.597955
-Latest logged lr:         0.000900
+Elapsed seconds: 39130.79
+Best epoch:      3
+Best val F1:     0.689379
+Best val loss:   0.597955
+Threshold mean:  0.450000
+Threshold std:   0.000000
+Test loss:       0.622001
+f1_micro: 0.706367
+f1_macro: 0.118284
+precision_micro: 0.794444
+recall_micro: 0.635870
