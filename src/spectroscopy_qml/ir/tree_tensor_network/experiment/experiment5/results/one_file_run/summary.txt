@@ -1,0 +1,17 @@
+TTN IR Experiment5 Summary
+================================================================================
+Elapsed seconds:           16394.38
+Epochs completed:          52/200
+Data files used:           1/245
+Fixed split artifact:      src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment5/results/one_file_run/data_split_seed42_files1.npz
+Best epoch:                6
+Best early-stop score:     0.294480
+Best score metric:         blended_f1
+Best val loss:             0.580961
+Threshold mean:            0.122973
+Threshold std:             0.245664
+Test loss:                 0.610904
+Test f1_micro:             0.406531
+Test f1_macro:             0.215766
+Test precision_micro:      0.256173
+Test recall_micro:         0.984190

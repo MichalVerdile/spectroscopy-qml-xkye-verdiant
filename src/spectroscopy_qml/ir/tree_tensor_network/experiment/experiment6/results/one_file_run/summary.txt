@@ -1,0 +1,18 @@
+TTN IR Experiment6 Summary
+================================================================================
+Feature channels:          raw + first_derivative + second_derivative
+Elapsed seconds:           1227.18
+Epochs completed:          57/200
+Data files used:           1/245
+Fixed split artifact:      src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results/one_file_run/data_split_seed42_files1.npz
+Best epoch:                37
+Best early-stop score:     0.542745
+Best score metric:         blended_f1
+Best val loss:             0.855997
+Threshold mean:            0.240541
+Threshold std:             0.288715
+Test loss:                 0.948671
+Test f1_micro:             0.754337
+Test f1_macro:             0.275775
+Test precision_micro:      0.717663
+Test recall_micro:         0.794960
