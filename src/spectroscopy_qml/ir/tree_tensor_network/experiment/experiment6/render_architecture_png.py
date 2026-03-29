@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -10,6 +11,12 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle, Circl
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "ttn_architecture_diagram.png"
 OUTPUT_SVG = ROOT / "ttn_architecture_diagram.svg"
+RUN_CONFIG = (
+    ROOT
+    / "results"
+    / "full_dataset_run_mps_finetuned_winner_lr4e4_bs1024_20260328"
+    / "run_config.json"
+)
 
 # ── Colour palette ────────────────────────────────────────────────────────────
 BG      = "#F1F3F6"
@@ -26,6 +33,58 @@ HIDDEN  = "#78D04E"
 OUT_RED = "#FF6E63"
 LINK    = "#D4DFEE"
 POOL_C  = "#C8DDF5"
+
+
+def compute_segment_count(
+    input_dim: int,
+    segment_window_size: int,
+    segment_stride: int,
+    segment_mode: str,
+    segment_offset: int | None,
+) -> int:
+    window_size = min(segment_window_size, input_dim)
+    max_start = max(0, input_dim - window_size)
+
+    def build_starts(offset: int) -> list[int]:
+        starts = list(range(offset, max_start + 1, segment_stride)) if offset <= max_start else []
+        starts.extend([0, max_start])
+        return [start for start in starts if 0 <= start <= max_start]
+
+    starts = build_starts(0)
+    if segment_mode == "dual_offset":
+        effective_offset = segment_stride // 2 if segment_offset is None else segment_offset
+        if effective_offset > 0:
+            starts.extend(build_starts(effective_offset))
+    return len(sorted(set(starts)))
+
+
+def load_architecture_config() -> dict[str, int | float | bool | str | None]:
+    config = json.loads(RUN_CONFIG.read_text())
+    num_segments = compute_segment_count(
+        input_dim=int(config["input_dim"]),
+        segment_window_size=int(config["segment_window_size"]),
+        segment_stride=int(config["segment_stride"]),
+        segment_mode=str(config["segment_mode"]),
+        segment_offset=config["segment_offset"],
+    )
+
+    level_counts = [num_segments]
+    while level_counts[-1] > 1:
+        level_counts.append((level_counts[-1] + 1) // 2)
+
+    num_readout_scales = len(level_counts)
+    readout_dim = num_readout_scales * int(config["chi"])
+    readout_hidden_dim = max(128, 4 * int(config["chi"]), readout_dim // 2)
+
+    config["num_segments"] = num_segments
+    config["level_counts"] = level_counts
+    config["num_readout_scales"] = num_readout_scales
+    config["readout_dim"] = readout_dim
+    config["readout_hidden_dim"] = readout_hidden_dim
+    return config
+
+
+CFG = load_architecture_config()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -132,12 +191,12 @@ def draw_ttn_tree(ax, x, y, w, h):
 
     ax.text(
         x + w / 2, y + h - 0.38,
-        "Binary tree reduction over 56 segment states",
+        f"Binary tree reduction over {CFG['num_segments']} segment states",
         ha="center", va="center", fontsize=10, weight="bold", color=TEXT
     )
 
-    level_counts = [56, 28, 14, 7, 4, 2, 1]
-    level_labels = ["56", "28", "14", "7", "4", "2", "1"]
+    level_counts = list(CFG["level_counts"])
+    level_labels = [str(count) for count in level_counts]
     n_cols = len(level_counts)
 
     col_xs = [x + 0.55 + i * (w - 0.9) / (n_cols - 1) for i in range(n_cols)]
@@ -189,12 +248,13 @@ def draw_ttn_tree(ax, x, y, w, h):
 
     ax.text(
         x + w / 2, y + 0.58,
-        "RelaxedIsometricMerge per level",
+        "FastRelaxedIsometricMerge per level",
         ha="center", va="center", fontsize=8.2, weight="bold", color=TEXT
     )
     ax.text(
         x + w / 2, y + 0.26,
-        "outer product 64×64=4096  →  isometric projection 4096→64  +  residual  +  L2 norm",
+        f"outer product {CFG['chi']}×{CFG['chi']} → projection → {CFG['chi']}  +  "
+        f"residual({CFG['merge_residual_weight']:.2f})  +  L2 norm",
         ha="center", va="center", fontsize=7.2, color="#5A6B7E"
     )
 
@@ -210,7 +270,7 @@ def draw_mlp_block(ax, x0, cy):
             facecolor="#BBC7D6", edgecolor="#8FA1B8", lw=0.9,
         ))
 
-    rbox(ax, stub_x, cy + 2.10, "Flatten / concat\n(448 values)",
+    rbox(ax, stub_x, cy + 2.10, f"Flatten / concat\n({CFG['readout_dim']} values)",
          fs=8.2, min_w=1.25, min_h=0.70)
 
     x1 = x0 + 1.55
@@ -229,18 +289,23 @@ def draw_mlp_block(ax, x0, cy):
         ax.add_patch(Circle((x2, yy), r, facecolor=HIDDEN, edgecolor="#607A99", lw=1.0, zorder=3))
         ax.add_patch(Circle((x3, yy), r, facecolor=OUT_RED, edgecolor="#607A99", lw=1.0, zorder=3))
 
-    rbox(ax, x1, cy + 2.08, "fc_1\nLinear(448→256)\nGELU + Dropout(0.1)",
+    rbox(
+        ax,
+        x1,
+        cy + 2.08,
+        f"fc_1\nLinear({CFG['readout_dim']}→{CFG['readout_hidden_dim']})\n"
+        f"GELU + Dropout({CFG['readout_dropout']:.1f})",
          fs=7.8, min_w=1.45, min_h=0.95)
-    rbox(ax, x2, cy + 2.08, "fc_2\nLinear(256→37)\nOutput layer",
+    rbox(ax, x2, cy + 2.08, f"fc_2\nLinear({CFG['readout_hidden_dim']}→{CFG['num_labels']})\nOutput layer",
          fs=7.8, min_w=1.45, min_h=0.95)
-    rbox(ax, x3, cy + 2.08, "OUTPUT\n(logits)\n37 labels",
+    rbox(ax, x3, cy + 2.08, f"OUTPUT\n(logits)\n{CFG['num_labels']} labels",
          fs=7.8, min_w=1.45, min_h=0.95)
 
     for xc, lbl in [
-        (stub_x, "Total: 448\nvalues"),
-        (x1, "Total: 256\nneurons"),
-        (x2, "Total: 37\nlogits"),
-        (x3, "Total: 37\nlabels"),
+        (stub_x, f"Total: {CFG['readout_dim']}\nvalues"),
+        (x1, f"Total: {CFG['readout_hidden_dim']}\nneurons"),
+        (x2, f"Total: {CFG['num_labels']}\nlogits"),
+        (x3, f"Total: {CFG['num_labels']}\nlabels"),
     ]:
         ax.text(xc, cy - 1.72, lbl,
                 ha="center", va="top", fontsize=7.8, color="#5A6B7E")
@@ -264,7 +329,7 @@ def main() -> None:
 
     ax.text(
         17, 9.55,
-        "TTN Functional Group Classifier — Experiment 6",
+        "TTN Functional Group Classifier — Experiment 6 Winner Run",
         ha="center", va="center", fontsize=19, weight="bold", color=TEXT
     )
 
@@ -277,7 +342,8 @@ def main() -> None:
     )
 
     # PREPROCESSING
-    rbox(ax, 2.25, CY + 1.28, "Preprocessing\nSNV normalisation", fs=9, min_w=1.85, min_h=0.75)
+    preprocessing_label = "Preprocessing\nSNV normalisation" if CFG["apply_snv"] else "Preprocessing\nraw spectrum"
+    rbox(ax, 2.25, CY + 1.28, preprocessing_label, fs=9, min_w=1.85, min_h=0.75)
     stack_cards(ax, 1.45, CY - 0.58, 1.10, 1.30, n=3, fc=BLUE)
     ax.text(2.00, CY - 0.95, "(1800×1)",
             ha="center", va="top", fontsize=8.5, color="#5A6B7E")
@@ -292,19 +358,21 @@ def main() -> None:
 
     # SEGMENTATION
     rbox(ax, 7.40, CY + 1.28,
-         "Sliding-Window Segmentation\n56 windows × 64 points\nstride=32 (50 % overlap)",
+         f"Sliding-Window Segmentation\n{CFG['num_segments']} windows × {CFG['segment_window_size']} points\n"
+         f"stride={CFG['segment_stride']} ({CFG['segment_mode']})",
          fs=8.5, min_w=2.20, min_h=0.85)
 
     # LEAF ENCODER
     rbox(ax, 7.40, CY - 0.15,
-         "SegmentLeafEncoder\nflatten → LayerNorm\nLinear→GELU→Dropout(0.1)→Linear\nskip proj + LayerNorm + L2 norm\n(batch, 56, 64)",
+         f"SegmentLeafEncoder\nflatten → LayerNorm\nLinear→GELU→Dropout({CFG['leaf_dropout']:.1f})→Linear\n"
+         f"skip proj + LayerNorm + L2 norm\n(batch, {CFG['num_segments']}, {CFG['chi']})",
          fs=8.0, fc="#F4F8FF", min_w=2.20, min_h=1.60)
-    ax.text(7.40, CY - 1.35, "(56×64)",
+    ax.text(7.40, CY - 1.35, f"({CFG['num_segments']}×{CFG['chi']})",
             ha="center", va="top", fontsize=8.5, color="#5A6B7E")
 
     # POSITION EMBEDDING
     rbox(ax, 9.75, CY + 1.28,
-         "Learnable Position Embedding\nEmbedding(56, 64)\nadded to leaf states",
+         f"Learnable Position Embedding\nEmbedding({CFG['num_segments']}, {CFG['chi']})\nadded to leaf states",
          fs=8.5, min_w=2.00, min_h=0.85)
 
     # TTN
@@ -317,14 +385,15 @@ def main() -> None:
     # POOL
     POOL_X = 19.80
     rbox(ax, POOL_X + 0.85, CY + 0.05,
-         "Multi-Scale\nPooling\nmean pool × 7 levels\n(batch, 7×64)",
+         f"Multi-Scale\nPooling\nmean pool × {CFG['num_readout_scales']} levels\n"
+         f"(batch, {CFG['num_readout_scales']}×{CFG['chi']})",
          fs=8.5, fc=POOL_C, min_w=1.70, min_h=1.30)
     arr(ax, (18.85, CY), (POOL_X, CY))
 
     # FUSE
     FUSE_X = 21.95
     rbox(ax, FUSE_X + 0.75, CY + 0.02,
-         "Readout Fusion\nconcat → (448)\nLayerNorm(448)",
+         f"Readout Fusion\nconcat → ({CFG['readout_dim']})\nLayerNorm({CFG['readout_dim']})",
          fs=8.5, min_w=1.50, min_h=0.88)
     arr(ax, (POOL_X + 1.70, CY), (FUSE_X, CY))
 
@@ -352,7 +421,7 @@ def main() -> None:
 
     # SEGMENT MASK
     rbox(ax, 7.40, CY - 2.38,
-         "Segment Mask (56×64)\nmarks valid samples",
+         f"Segment Mask ({CFG['num_segments']}×{CFG['segment_window_size']})\nmarks valid samples",
          fs=8, fc="#F0F4F8", ec="#B0BFCF", min_w=2.20, min_h=0.58)
     ax.annotate(
         "", xy=(7.40, CY - 0.95), xytext=(7.40, CY - 2.05),
@@ -361,19 +430,21 @@ def main() -> None:
 
     # BOTTOM
     ax.text(17, 1.30,
-            "Readout path: 448 → 256 → 37",
+            f"Readout path: {CFG['readout_dim']} → {CFG['readout_hidden_dim']} → {CFG['num_labels']}",
             ha="center", va="center", fontsize=14, weight="bold", color=TEXT)
     ax.text(
         17, 0.86,
-        "Config: input_dim=1800 · num_segments=56 · chi=64 · num_labels=37 · "
-        "segment_window=64 · stride=32 · apply_snv=True",
+        f"Config: input_dim={CFG['input_dim']} · num_segments={CFG['num_segments']} · chi={CFG['chi']} · "
+        f"num_labels={CFG['num_labels']} · segment_window={CFG['segment_window_size']} · "
+        f"stride={CFG['segment_stride']} · leaf_dropout={CFG['leaf_dropout']:.1f} · "
+        f"readout_dropout={CFG['readout_dropout']:.1f} · apply_snv={CFG['apply_snv']}",
         ha="center", va="center", fontsize=9, color="#607080"
     )
     ax.text(
         17, 0.48,
         "The TTN encoder hierarchically merges derivative-aware local segments via "
-        "RelaxedIsometricMerge; multi-scale pooled states from all 7 levels are "
-        "fused and mapped by an MLP to 37 functional-group logits.",
+        "FastRelaxedIsometricMerge; multi-scale pooled states from all levels are "
+        "fused and mapped by an MLP to the final functional-group logits.",
         ha="center", va="center", fontsize=7.8, color="#607080"
     )
 

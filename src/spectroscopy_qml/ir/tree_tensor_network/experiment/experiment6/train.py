@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from torch.amp import GradScaler, autocast
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -33,7 +34,6 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     build_threshold_grid,
     compute_metrics,
     count_available_data_files,
-    evaluate_with_probs,
     get_pos_weight,
     resolve_device,
     resolve_used_file_count,
@@ -41,7 +41,6 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     run_synthetic_preflight,
     select_early_stopping_score,
     threshold_predictions,
-    train_epoch,
     tune_thresholds,
     write_epoch_details,
     write_threshold_artifact,
@@ -123,6 +122,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--check-only", action="store_true")
     parser.add_argument("--preflight-batch-size", type=int, default=4)
+    parser.add_argument(
+        "--amp",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable mixed-precision (AMP) training for ~2x speedup.",
+    )
+    parser.add_argument(
+        "--compile",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use torch.compile to fuse ops (requires PyTorch 2.0+).",
+    )
     return parser
 
 
@@ -185,6 +196,9 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Batch size:               {args.batch_size}")
     print(f"Epochs:                   {args.epochs}")
     print(f"Max files:                {args.max_files}")
+    print(f"Mixed precision (AMP):    {args.amp}")
+    print(f"torch.compile:            {args.compile}")
+    print(f"Num workers:              {args.num_workers}")
 
 
 def write_summary(
@@ -224,6 +238,102 @@ def write_summary(
         handle.write(f"Test recall_micro:         {float(test_metrics['recall_micro']):.6f}\n")
 
 
+def sanitize_binary_targets_and_probs(
+    labels: np.ndarray,
+    probs: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Stabilize labels/probabilities before metric and threshold code."""
+    safe_labels = np.nan_to_num(labels, nan=0.0, posinf=1.0, neginf=0.0)
+    safe_labels = (safe_labels >= 0.5).astype(np.int32, copy=False)
+
+    safe_probs = np.nan_to_num(probs, nan=0.5, posinf=1.0, neginf=0.0)
+    safe_probs = np.clip(safe_probs.astype(np.float32, copy=False), 0.0, 1.0)
+    return safe_labels, safe_probs
+
+
+def train_epoch_amp(
+    model,
+    dataloader,
+    criterion,
+    optimizer,
+    device,
+    grad_clip_norm: float | None = None,
+    scaler: GradScaler | None = None,
+) -> tuple[float, dict[str, float | np.ndarray]]:
+    """AMP-aware training epoch."""
+    model.train()
+    total_loss = 0.0
+    labels_list: list[np.ndarray] = []
+    probs_list: list[np.ndarray] = []
+    use_amp = scaler is not None
+
+    for spectra, labels in dataloader:
+        spectra = spectra.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+
+        optimizer.zero_grad(set_to_none=True)
+        with autocast(device_type=device.type, enabled=use_amp):
+            logits = model(spectra)
+            loss = criterion(logits, labels)
+
+        if use_amp:
+            scaler.scale(loss).backward()
+            if grad_clip_norm is not None and grad_clip_norm > 0.0:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            loss.backward()
+            if grad_clip_norm is not None and grad_clip_norm > 0.0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+            optimizer.step()
+
+        total_loss += loss.item() * spectra.size(0)
+        labels_list.append(labels.detach().cpu().numpy())
+        probs_list.append(torch.sigmoid(logits.float()).detach().cpu().numpy())
+
+    all_labels = np.concatenate(labels_list, axis=0)
+    all_probs = np.concatenate(probs_list, axis=0)
+    all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
+    metrics = compute_metrics(all_labels, threshold_predictions(all_probs, 0.5))
+    avg_loss = total_loss / len(dataloader.dataset)
+    return avg_loss, metrics
+
+
+@torch.no_grad()
+def evaluate_with_probs_amp(
+    model,
+    dataloader,
+    criterion,
+    device,
+    use_amp: bool = False,
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """AMP-aware evaluation."""
+    model.eval()
+    total_loss = 0.0
+    labels_list: list[np.ndarray] = []
+    probs_list: list[np.ndarray] = []
+
+    for spectra, labels in dataloader:
+        spectra = spectra.to(device, non_blocking=True)
+        labels = labels.to(device, non_blocking=True)
+
+        with autocast(device_type=device.type, enabled=use_amp):
+            logits = model(spectra)
+            loss = criterion(logits, labels)
+
+        total_loss += loss.item() * spectra.size(0)
+        labels_list.append(labels.cpu().numpy())
+        probs_list.append(torch.sigmoid(logits.float()).cpu().numpy())
+
+    all_labels = np.concatenate(labels_list, axis=0)
+    all_probs = np.concatenate(probs_list, axis=0)
+    all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
+    avg_loss = total_loss / len(dataloader.dataset)
+    return avg_loss, all_labels, all_probs
+
+
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
@@ -256,6 +366,10 @@ def main() -> None:
     np.random.seed(args.seed)
     device = resolve_device(args.device)
     print(f"Device: {device}")
+
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+        torch.set_float32_matmul_precision("high")
 
     model = build_model(args)
     run_synthetic_preflight(model, args, device)
@@ -314,6 +428,18 @@ def main() -> None:
         print("\nCheck-only mode finished successfully.")
         return
 
+    use_amp = args.amp and device.type == "cuda"
+    scaler = GradScaler() if use_amp else None
+    if use_amp:
+        print("Mixed precision (AMP) enabled.")
+    elif args.amp and device.type != "cuda":
+        print(f"AMP requested but device is {device.type}; falling back to fp32.")
+
+    if args.compile:
+        print("Compiling model with torch.compile...")
+        model = torch.compile(model)
+        print("Compilation done.")
+
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     scheduler = ReduceLROnPlateau(
         optimizer,
@@ -358,15 +484,22 @@ def main() -> None:
         )
 
         for epoch in range(1, args.epochs + 1):
-            train_loss, train_metrics = train_epoch(
+            train_loss, train_metrics = train_epoch_amp(
                 model,
                 train_loader,
                 criterion,
                 optimizer,
                 device,
                 grad_clip_norm=args.grad_clip_norm,
+                scaler=scaler,
             )
-            val_loss, val_labels, val_probs = evaluate_with_probs(model, val_loader, criterion, device)
+            val_loss, val_labels, val_probs = evaluate_with_probs_amp(
+                model,
+                val_loader,
+                criterion,
+                device,
+                use_amp=use_amp,
+            )
             current_thresholds = tune_thresholds(
                 val_labels,
                 val_probs,
@@ -466,7 +599,13 @@ def main() -> None:
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
     final_thresholds = np.asarray(checkpoint["thresholds"], dtype=np.float32)
-    test_loss, test_labels, test_probs = evaluate_with_probs(model, test_loader, criterion, device)
+    test_loss, test_labels, test_probs = evaluate_with_probs_amp(
+        model,
+        test_loader,
+        criterion,
+        device,
+        use_amp=use_amp,
+    )
     test_preds = threshold_predictions(test_probs, final_thresholds)
     test_metrics = compute_metrics(test_labels, test_preds)
 

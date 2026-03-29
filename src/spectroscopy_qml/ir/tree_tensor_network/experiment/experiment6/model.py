@@ -6,11 +6,40 @@ import math
 
 import torch
 from torch import Tensor, nn
+from torch.nn import functional as F
 
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.model import (
     RelaxedIsometricMerge,
     SegmentLeafEncoder,
 )
+
+
+class FastRelaxedIsometricMerge(RelaxedIsometricMerge):
+    """Drop-in replacement using torch.linalg.qr instead of Python Gram-Schmidt.
+
+    The base class ``_orthonormalize_columns`` runs O(chi^2) sequential Python
+    operations per call. QR decomposition via LAPACK/cuBLAS is significantly
+    faster for chi >= 64 and remains numerically stable.
+    """
+
+    @torch.compiler.disable
+    def forward(self, left: Tensor, right: Tensor) -> Tensor:
+        if left.shape != right.shape:
+            raise ValueError("left and right must have matching shapes.")
+        if left.size(-1) != self.chi:
+            raise ValueError(f"Expected last dimension chi={self.chi}, got {left.size(-1)}.")
+
+        Q, _ = torch.linalg.qr(self.raw_isometry.float())
+        pair_state = torch.einsum("...i,...j->...ij", left, right).flatten(start_dim=-2)
+        merged = torch.matmul(pair_state, Q.to(pair_state.dtype))
+
+        if self.residual_weight > 0.0:
+            residual = 0.5 * (left + right)
+            merged = (1.0 - self.residual_weight) * merged + self.residual_weight * residual
+
+        if self.renormalize_output:
+            merged = F.normalize(merged, dim=-1, eps=1e-8)
+        return merged
 
 
 class SpectralDerivativeFeatureMap(nn.Module):
@@ -128,6 +157,12 @@ class TTNIRClassifier6(nn.Module):
             mask[index, : end - start] = 1.0
         self.register_buffer("segment_mask", mask, persistent=False)
 
+        gather_idx = torch.zeros(self.num_segments, self.max_segment_length, dtype=torch.long)
+        for seg_i, (start, end) in enumerate(segment_slices):
+            seg_len = end - start
+            gather_idx[seg_i, :seg_len] = torch.arange(start, end)
+        self.register_buffer("_gather_idx", gather_idx, persistent=False)
+
         self.feature_map = SpectralDerivativeFeatureMap()
         self.leaf_encoder = SegmentLeafEncoder(
             max_segment_length=self.max_segment_length,
@@ -143,7 +178,7 @@ class TTNIRClassifier6(nn.Module):
         num_levels = 0 if self.num_segments <= 1 else math.ceil(math.log2(self.num_segments))
         self.merge_levels = nn.ModuleList(
             [
-                RelaxedIsometricMerge(
+                FastRelaxedIsometricMerge(
                     chi=self.chi,
                     mode=merge_mode,
                     residual_weight=merge_residual_weight,
@@ -209,11 +244,13 @@ class TTNIRClassifier6(nn.Module):
         if features.size(1) != self.input_dim:
             raise ValueError(f"Expected input_dim={self.input_dim}, got {features.size(1)}.")
 
-        batch_size = features.size(0)
-        feature_dim = features.size(2)
-        segments = features.new_zeros(batch_size, self.num_segments, self.max_segment_length, feature_dim)
-        for segment_index, (start, end) in enumerate(self.segment_slices):
-            segments[:, segment_index, : end - start, :] = features[:, start:end, :]
+        idx = self._gather_idx.unsqueeze(0).expand(features.size(0), -1, -1)
+        segments = torch.gather(
+            features.unsqueeze(1).expand(-1, self.num_segments, -1, -1),
+            dim=2,
+            index=idx.unsqueeze(-1).expand(-1, -1, -1, features.size(2)),
+        )
+        segments = segments * self.segment_mask.unsqueeze(0).unsqueeze(-1)
         return segments
 
     @staticmethod
