@@ -319,24 +319,31 @@ def draw_mlp_block(ax, x0, cy):
         ax.add_patch(Circle((x2, yy), r, facecolor=HIDDEN, edgecolor="#607A99", lw=1.0, zorder=3))
         ax.add_patch(Circle((x3, yy), r, facecolor=OUT_RED, edgecolor="#607A99", lw=1.0, zorder=3))
 
+    fc1_text = (
+        f"Fully connected 1\nFeature transformation\n"
+        f"Linear({CFG['readout_dim']}→{CFG['readout_hidden_dim']})\nGELU"
+    )
+    if CFG["readout_dropout"] > 0:
+        fc1_text += f" + Dropout({CFG['readout_dropout']:.1f})"
+    rbox(ax, x1, cy + 2.08, fc1_text, fs=7.5, min_w=0.8, min_h=0.75)
+    rbox(ax, x2, cy + 2.08,
+         f"Fully connected 2\nOutput mapping\nLinear({CFG['readout_hidden_dim']}→{CFG['num_labels']})\nOutput layer",
+         fs=7.1, min_w=0.8, min_h=0.75)
     rbox(
         ax,
-        x1,
+        x3,
         cy + 2.08,
-        f"fc_1\nFeature transformation\nLinear({CFG['readout_dim']}→{CFG['readout_hidden_dim']})\n"
-        f"GELU + Dropout({CFG['readout_dropout']:.1f})",
-         fs=7.5, min_w=0.8, min_h=0.75)
-    rbox(ax, x2, cy + 2.08,
-         f"fc_2\nOutput mapping\nLinear({CFG['readout_hidden_dim']}→{CFG['num_labels']})\nOutput layer",
-         fs=7.1, min_w=0.8, min_h=0.75)
-    rbox(ax, x3, cy + 2.08, f"OUTPUT\n(logits)\n{CFG['num_labels']} labels",
-         fs=7.8, min_w=0.8, min_h=0.75)
+        f"OUTPUT\n{CFG['num_labels']} logits\nsigmoid → probabilities",
+        fs=7.5,
+        min_w=0.95,
+        min_h=0.78,
+    )
 
     for xc, lbl in [
         (stub_x, f"Total: {CFG['readout_dim']}\nvalues"),
         (x1, f"Total: {CFG['readout_hidden_dim']}\nneurons"),
         (x2, f"Total: {CFG['num_labels']}\nlogits"),
-        (x3, f"Total: {CFG['num_labels']}\nlabels"),
+        (x3, f"Total: {CFG['num_labels']}\noutputs"),
     ]:
         ax.text(xc, cy - 1.72, lbl,
                 ha="center", va="top", fontsize=7.8, color="#5A6B7E")
@@ -399,13 +406,13 @@ def draw_leaf_encoder_block(ax, cx, cy):
         ax.add_patch(Circle((x_in, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
         ax.add_patch(Circle((x_main_out, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
 
-    ax.text(x_in, cy + 0.62, f"input\n64×3={CFG['leaf_input_dim']}", ha="center", va="bottom",
+    ax.text(x_in, cy + 0.62, f"input\n64×3={CFG['leaf_input_dim']}\nflatten", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
-    ax.text(x_hidden, cy + 0.62, f"hidden\n{CFG['leaf_hidden_dim_resolved']}", ha="center", va="bottom",
+    ax.text(x_hidden, cy + 0.62, f"hidden\n{CFG['leaf_hidden_dim_resolved']}\nfeature expansion", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
-    ax.text(x_main_out, cy + 0.62, f"main\n{CFG['chi']}", ha="center", va="bottom",
+    ax.text(x_main_out, cy + 0.62, f"main\n{CFG['chi']}\ncompressed to {CFG['chi']}", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
-    ax.text(x_final, cy + 0.62, f"final\n{CFG['chi']}", ha="center", va="bottom",
+    ax.text(x_final, cy + 0.62, f"final\n{CFG['chi']}\nafter add+norm", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
 
     ax.annotate(
@@ -423,8 +430,16 @@ def draw_leaf_encoder_block(ax, cx, cy):
         arrowprops=dict(arrowstyle="-|>", color="#D98A4E", lw=1.3),
         zorder=5,
     )
-    ax.text((x_in + x_main_out) / 2, skip_ys[-1] - 0.10, f"skip {CFG['leaf_input_dim']}→{CFG['chi']}",
-            ha="center", va="top", fontsize=8.0, color="#A16634", zorder=6)
+    ax.text(
+        (x_in + x_main_out) / 2,
+        skip_ys[-1] - 0.08,
+        f"skip linear projection {CFG['leaf_input_dim']}→{CFG['chi']}",
+        ha="center",
+        va="top",
+        fontsize=7.4,
+        color="#A16634",
+        zorder=6,
+    )
 
     ax.add_patch(Circle((x_add, merge_y), 0.16, facecolor="white", edgecolor="#607A99", lw=1.2, zorder=7))
     ax.text(x_add, merge_y, "+", ha="center", va="center", fontsize=13, color=TEXT, weight="bold", zorder=8)
@@ -547,14 +562,22 @@ def draw_leaf_encoder_zoom(ax, x, y, w, h):
     for yy in main_ys:
         ax.add_patch(Circle((x_out, yy), 0.10, facecolor=MERGE, edgecolor="#607A99", lw=1.0, zorder=3))
 
-    ax.text(x_in, top - 1.05, f"input\n{CFG['leaf_input_dim']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
-    ax.text(x_hidden, top - 1.05, f"hidden\n{CFG['leaf_hidden_dim_resolved']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
-    ax.text(x_main, top - 1.05, f"main\n{CFG['chi']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
-    ax.text(x_out, top - 1.05, f"final\n{CFG['chi']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_in, top - 1.05, f"input\n{CFG['leaf_input_dim']}\nflatten", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_hidden, top - 1.05, f"hidden\n{CFG['leaf_hidden_dim_resolved']}\nfeature expansion", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_main, top - 1.05, f"main\n{CFG['chi']}\ncompressed to {CFG['chi']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_out, top - 1.05, f"final\n{CFG['chi']}\nafter add+norm", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
 
     ax.text((x_in + x_hidden) / 2, y + 2.48, f"flatten {CFG['leaf_input_dim']}", ha="center", va="bottom", fontsize=7.6, color="#5A6B7E")
     ax.text((x_hidden + x_main) / 2, y + 0.66, f"GELU + Dropout({CFG['leaf_dropout']:.1f})", ha="center", va="center", fontsize=7.6, color="#5A6B7E")
-    ax.text((x_in + x_main) / 2, y + 0.02, f"skip linear {CFG['leaf_input_dim']}→{CFG['chi']}", ha="center", va="bottom", fontsize=7.6, color="#A16634")
+    ax.text(
+        (x_in + x_main) / 2,
+        y + 0.02,
+        f"skip linear projection {CFG['leaf_input_dim']}→{CFG['chi']}",
+        ha="center",
+        va="bottom",
+        fontsize=7.2,
+        color="#A16634",
+    )
     ax.text(x_add + 0.02, merge_y - 0.32, "main + skip", ha="center", va="center", fontsize=7.6, color="#5A6B7E")
     ax.text(cx, y + 0.40, "LayerNorm + L2 norm", ha="center", va="center", fontsize=7.8, color="#5A6B7E")
 
@@ -750,7 +773,8 @@ def main() -> None:
         19, 0.48,
         "The TTN encoder hierarchically merges derivative-aware local segments via "
         "FastRelaxedIsometricMerge; multi-scale pooled states from all levels are "
-        "fused and mapped by an MLP to the final functional-group logits.",
+        "fused and mapped by an MLP to final functional-group logits, which are "
+        "converted by sigmoid into per-label probabilities for inference.",
         ha="center", va="center", fontsize=7.8, color="#607080"
     )
 
