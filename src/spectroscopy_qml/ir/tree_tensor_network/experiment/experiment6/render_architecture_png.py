@@ -75,12 +75,18 @@ def load_architecture_config() -> dict[str, int | float | bool | str | None]:
     num_readout_scales = len(level_counts)
     readout_dim = num_readout_scales * int(config["chi"])
     readout_hidden_dim = max(128, 4 * int(config["chi"]), readout_dim // 2)
+    leaf_input_dim = int(config["segment_window_size"]) * 3
+    leaf_hidden_dim = config["leaf_hidden_dim"]
+    if leaf_hidden_dim is None:
+        leaf_hidden_dim = max(4 * int(config["chi"]), 2 * leaf_input_dim)
 
     config["num_segments"] = num_segments
     config["level_counts"] = level_counts
     config["num_readout_scales"] = num_readout_scales
     config["readout_dim"] = readout_dim
     config["readout_hidden_dim"] = readout_hidden_dim
+    config["leaf_input_dim"] = leaf_input_dim
+    config["leaf_hidden_dim_resolved"] = int(leaf_hidden_dim)
     return config
 
 
@@ -316,19 +322,232 @@ def draw_mlp_block(ax, x0, cy):
     ax.text(x3 + 0.32, ys[-1], "36", va="center", ha="left", fontsize=8.5, color=TEXT)
 
 
+def draw_leaf_encoder_block(ax, cx, cy):
+    box_w = 4.0
+    box_h = 4.05
+    top_y = cy + 1.68
+    box_bottom = top_y - box_h
+    patch = FancyBboxPatch(
+        (cx - box_w / 2, box_bottom), box_w, box_h,
+        boxstyle="round,pad=0.02,rounding_size=0.10",
+        linewidth=1.4, edgecolor=EDGE, facecolor="#F4F8FF", zorder=4,
+    )
+    ax.add_patch(patch)
+
+    ax.text(
+        cx, top_y - 0.36,
+        "SegmentLeafEncoder",
+        ha="center", va="center", fontsize=10.0, weight="bold", color=TEXT, zorder=6,
+    )
+    ax.text(
+        cx, top_y - 0.55,
+        "per-segment MLP + skip",
+        ha="center", va="center", fontsize=8.3, color="#5A6B7E", zorder=6,
+    )
+
+    x_in = cx - 1.60
+    x_hidden = cx - 0.55
+    x_main_out = cx + 0.50
+    x_add = cx + 1.05
+    x_final = cx + 1.60
+
+    main_ys = [cy + 0.36, cy + 0.08, cy - 0.20, cy - 0.48]
+    skip_ys = [cy - 0.98, cy - 1.28, cy - 1.58]
+    merge_y = cy
+    skip_merge_y = skip_ys[1]
+
+    for y1 in main_ys:
+        for y2 in main_ys:
+            ax.plot([x_in + 0.12, x_hidden - 0.12], [y1, y2], color=LINK, lw=0.8, zorder=5)
+            ax.plot([x_hidden + 0.12, x_main_out - 0.12], [y1, y2], color=LINK, lw=0.8, zorder=5)
+
+    for y1 in skip_ys:
+        for y2 in skip_ys:
+            ax.plot([x_in + 0.12, x_main_out - 0.12], [y1, y2], color="#E6B58D", lw=0.85, zorder=5)
+
+    for x_col, fill in [(x_in, BLUE), (x_hidden, HIDDEN), (x_main_out, MERGE)]:
+        for yy in main_ys:
+            ax.add_patch(Circle((x_col, yy), 0.11, facecolor=fill, edgecolor="#607A99", lw=1.1, zorder=6))
+
+    for yy in skip_ys:
+        ax.add_patch(Circle((x_in, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
+        ax.add_patch(Circle((x_main_out, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
+
+    ax.text(x_in, cy + 0.62, f"input\n{CFG['leaf_input_dim']}", ha="center", va="bottom",
+            fontsize=8.0, color="#5A6B7E", zorder=6)
+    ax.text(x_hidden, cy + 0.62, f"hidden\n{CFG['leaf_hidden_dim_resolved']}", ha="center", va="bottom",
+            fontsize=8.0, color="#5A6B7E", zorder=6)
+    ax.text(x_main_out, cy + 0.62, f"main\n{CFG['chi']}", ha="center", va="bottom",
+            fontsize=8.0, color="#5A6B7E", zorder=6)
+    ax.text(x_final, cy + 0.62, f"final\n{CFG['chi']}", ha="center", va="bottom",
+            fontsize=8.0, color="#5A6B7E", zorder=6)
+
+    ax.annotate(
+        "",
+        xy=(x_add - 0.14, merge_y),
+        xytext=(x_main_out + 0.14, merge_y),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.4),
+        zorder=5,
+    )
+
+    ax.annotate(
+        "",
+        xy=(x_add - 0.04, merge_y - 0.03),
+        xytext=(x_main_out + 0.12, skip_merge_y),
+        arrowprops=dict(arrowstyle="-|>", color="#D98A4E", lw=1.3),
+        zorder=5,
+    )
+    ax.text((x_in + x_main_out) / 2, skip_ys[-1] - 0.10, f"skip {CFG['leaf_input_dim']}→{CFG['chi']}",
+            ha="center", va="top", fontsize=8.0, color="#A16634", zorder=6)
+
+    ax.add_patch(Circle((x_add, merge_y), 0.16, facecolor="white", edgecolor="#607A99", lw=1.2, zorder=7))
+    ax.text(x_add, merge_y, "+", ha="center", va="center", fontsize=13, color=TEXT, weight="bold", zorder=8)
+    ax.annotate(
+        "",
+        xy=(x_final - 0.12, merge_y),
+        xytext=(x_add + 0.16, merge_y),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.4),
+        zorder=5,
+    )
+
+    for yy in main_ys:
+        ax.add_patch(Circle((x_final, yy), 0.11, facecolor=MERGE, edgecolor="#607A99", lw=1.1, zorder=6))
+
+    ax.text(
+        x_hidden, cy - 0.74,
+        f"GELU + Dropout({CFG['leaf_dropout']:.1f})",
+        ha="center", va="center", fontsize=8.0, color="#5A6B7E", zorder=6,
+    )
+    ax.text(
+        cx, box_bottom + 0.30,
+        "LayerNorm + L2 norm",
+        ha="center", va="bottom", fontsize=8.0, color="#5A6B7E", zorder=6,
+    )
+    ax.text(
+        cx, box_bottom + 0.12,
+        f"(batch, {CFG['num_segments']}, {CFG['chi']})",
+        ha="center", va="bottom", fontsize=8.0, color="#5A6B7E", zorder=6,
+    )
+    return (cx - box_w / 2, cx + box_w / 2, box_bottom, top_y)
+
+
+def draw_leaf_encoder_zoom(ax, x, y, w, h):
+    rbox_fixed(ax, x, y, w, h, "", fc="#F4F8FF", ec=EDGE, lw=1.5, pad=0.05, rs=0.14)
+
+    cx = x + w / 2
+    top = y + h
+
+    ax.text(
+        cx,
+        top - 0.30,
+        "SegmentLeafEncoder Zoom-In",
+        ha="center",
+        va="center",
+        fontsize=10.5,
+        weight="bold",
+        color=TEXT,
+    )
+    ax.text(
+        cx,
+        top - 0.62,
+        f"flatten {CFG['leaf_input_dim']}  ->  hidden {CFG['leaf_hidden_dim_resolved']}  ->  output {CFG['chi']}",
+        ha="center",
+        va="center",
+        fontsize=8.0,
+        color="#5A6B7E",
+    )
+
+    x_in = x + 0.85
+    x_hidden = x + 2.20
+    x_main = x + 3.55
+    x_add = x + 4.25
+    x_out = x + 5.00
+
+    main_ys = [y + 2.20, y + 1.75, y + 1.30, y + 0.85]
+    skip_ys = [y + 0.42, y + 0.18]
+    merge_y = y + 1.52
+
+    for y1 in main_ys:
+        for y2 in main_ys:
+            ax.plot([x_in + 0.12, x_hidden - 0.12], [y1, y2], color=LINK, lw=0.8, zorder=2)
+            ax.plot([x_hidden + 0.12, x_main - 0.12], [y1, y2], color=LINK, lw=0.8, zorder=2)
+
+    for y1 in skip_ys:
+        for y2 in skip_ys:
+            ax.plot([x_in + 0.11, x_main - 0.11], [y1, y2], color="#E6B58D", lw=0.9, zorder=2)
+
+    for col_x, fill, edge, radius, ys in [
+        (x_in, BLUE, "#607A99", 0.10, main_ys),
+        (x_hidden, HIDDEN, "#607A99", 0.10, main_ys),
+        (x_main, MERGE, "#607A99", 0.10, main_ys),
+        (x_in, "#F8D5B7", "#A16634", 0.09, skip_ys),
+        (x_main, "#F8D5B7", "#A16634", 0.09, skip_ys),
+    ]:
+        for yy in ys:
+            ax.add_patch(Circle((col_x, yy), radius, facecolor=fill, edgecolor=edge, lw=1.0, zorder=3))
+
+    ax.annotate(
+        "",
+        xy=(x_add - 0.14, merge_y),
+        xytext=(x_main + 0.12, merge_y),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.3),
+        zorder=2,
+    )
+    ax.annotate(
+        "",
+        xy=(x_add - 0.05, merge_y - 0.03),
+        xytext=(x_main + 0.10, y + 0.30),
+        arrowprops=dict(arrowstyle="-|>", color="#D98A4E", lw=1.2),
+        zorder=2,
+    )
+
+    ax.add_patch(Circle((x_add, merge_y), 0.14, facecolor="white", edgecolor="#607A99", lw=1.2, zorder=4))
+    ax.text(x_add, merge_y, "+", ha="center", va="center", fontsize=12, weight="bold", color=TEXT, zorder=5)
+
+    ax.annotate(
+        "",
+        xy=(x_out - 0.12, merge_y),
+        xytext=(x_add + 0.14, merge_y),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.3),
+        zorder=2,
+    )
+    for yy in main_ys:
+        ax.add_patch(Circle((x_out, yy), 0.10, facecolor=MERGE, edgecolor="#607A99", lw=1.0, zorder=3))
+
+    ax.text(x_in, top - 1.05, f"input\n{CFG['leaf_input_dim']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_hidden, top - 1.05, f"hidden\n{CFG['leaf_hidden_dim_resolved']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_main, top - 1.05, f"main\n{CFG['chi']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+    ax.text(x_out, top - 1.05, f"final\n{CFG['chi']}", ha="center", va="top", fontsize=8.0, color="#5A6B7E")
+
+    ax.text((x_in + x_hidden) / 2, y + 2.48, f"flatten {CFG['leaf_input_dim']}", ha="center", va="bottom", fontsize=7.6, color="#5A6B7E")
+    ax.text((x_hidden + x_main) / 2, y + 0.66, f"GELU + Dropout({CFG['leaf_dropout']:.1f})", ha="center", va="center", fontsize=7.6, color="#5A6B7E")
+    ax.text((x_in + x_main) / 2, y + 0.02, f"skip linear {CFG['leaf_input_dim']}→{CFG['chi']}", ha="center", va="bottom", fontsize=7.6, color="#A16634")
+    ax.text(x_add + 0.02, merge_y - 0.32, "main + skip", ha="center", va="center", fontsize=7.6, color="#5A6B7E")
+    ax.text(cx, y + 0.40, "LayerNorm + L2 norm", ha="center", va="center", fontsize=7.8, color="#5A6B7E")
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main() -> None:
-    fig, ax = plt.subplots(figsize=(34, 10), dpi=200)
+    fig, ax = plt.subplots(figsize=(38, 10), dpi=200)
     fig.patch.set_facecolor(BG)
     ax.set_facecolor(BG)
-    ax.set_xlim(0, 34)
+    ax.set_xlim(0, 38)
     ax.set_ylim(0, 10)
     ax.axis("off")
 
     CY = 5.2
+    TOP_BOX_Y = CY + 1.62
+    PREPROCESS_X = 2.00
+    FEATURE_X = 4.35
+    LEAF_X = 9.25
+    TOP_MIRROR_OFFSET = 1.70
+    SEGMENT_X = LEAF_X - TOP_MIRROR_OFFSET
+    POSITION_X = LEAF_X + TOP_MIRROR_OFFSET
+    POSITION_BOX_Y = TOP_BOX_Y
+    LEAF_CY = CY - 0.78
 
     ax.text(
-        17, 9.55,
+        19, 9.55,
         "TTN Functional Group Classifier — Experiment 6 Winner Run",
         ha="center", va="center", fontsize=19, weight="bold", color=TEXT
     )
@@ -343,71 +562,96 @@ def main() -> None:
 
     # PREPROCESSING
     preprocessing_label = "Preprocessing\nSNV normalisation" if CFG["apply_snv"] else "Preprocessing\nraw spectrum"
-    rbox(ax, 2.25, CY + 1.28, preprocessing_label, fs=9, min_w=1.85, min_h=0.75)
+    _, pre_w, pre_h = rbox(ax, PREPROCESS_X, TOP_BOX_Y, preprocessing_label, fs=9, min_w=1.85, min_h=0.75)
     stack_cards(ax, 1.45, CY - 0.58, 1.10, 1.30, n=3, fc=BLUE)
     ax.text(2.00, CY - 0.95, "(1800×1)",
             ha="center", va="top", fontsize=8.5, color="#5A6B7E")
 
     # FEATURE MAP
-    rbox(ax, 4.80, CY + 1.26,
-         "SpectralDerivativeFeatureMap\nraw · first deriv · second deriv\nOutput: (1800×3)",
-         fs=8.8, min_w=2.40, min_h=1.00)
+    _, feature_w, feature_h = rbox(
+        ax,
+        FEATURE_X,
+        TOP_BOX_Y,
+        "SpectralDerivativeFeatureMap\nraw · first deriv · second deriv\nOutput: (1800×3)",
+        fs=8.8,
+        min_w=2.40,
+        min_h=1.00,
+    )
     stack_cards(ax, 3.80, CY - 0.58, 1.10, 1.30, n=3, fc=GREEN, ec="#90B988")
     ax.text(4.35, CY - 0.95, "(1800×3)",
             ha="center", va="top", fontsize=8.5, color="#5A6B7E")
+    arr(ax, (2.72, CY + 0.05), (3.78, CY + 0.05), lw=1.0)
 
     # SEGMENTATION
-    rbox(ax, 7.40, CY + 1.28,
-         f"Sliding-Window Segmentation\n{CFG['num_segments']} windows × {CFG['segment_window_size']} points\n"
-         f"stride={CFG['segment_stride']} ({CFG['segment_mode']})",
-         fs=8.5, min_w=2.20, min_h=0.85)
+    _, segment_w, segment_h = rbox(
+        ax,
+        SEGMENT_X,
+        TOP_BOX_Y,
+        f"Sliding-Window Segmentation\n{CFG['num_segments']} windows × {CFG['segment_window_size']} points\n"
+        f"stride={CFG['segment_stride']} ({CFG['segment_mode']})",
+        fs=8.5,
+        min_w=2.20,
+        min_h=0.85,
+    )
 
     # LEAF ENCODER
-    rbox(ax, 7.40, CY - 0.15,
-         f"SegmentLeafEncoder\nflatten → LayerNorm\nLinear→GELU→Dropout({CFG['leaf_dropout']:.1f})→Linear\n"
-         f"skip proj + LayerNorm + L2 norm\n(batch, {CFG['num_segments']}, {CFG['chi']})",
-         fs=8.0, fc="#F4F8FF", min_w=2.20, min_h=1.60)
-    ax.text(7.40, CY - 1.35, f"({CFG['num_segments']}×{CFG['chi']})",
-            ha="center", va="top", fontsize=8.5, color="#5A6B7E")
+    leaf_left, leaf_right, leaf_bottom, leaf_top = draw_leaf_encoder_block(ax, LEAF_X, LEAF_CY)
 
     # POSITION EMBEDDING
-    rbox(ax, 9.75, CY + 1.28,
-         f"Learnable Position Embedding\nEmbedding({CFG['num_segments']}, {CFG['chi']})\nadded to leaf states",
-         fs=8.5, min_w=2.00, min_h=0.85)
+    _, position_w, position_h = rbox(
+        ax,
+        POSITION_X,
+        POSITION_BOX_Y,
+        f"Learnable Position Embedding\nEmbedding({CFG['num_segments']}, {CFG['chi']})\nadded to leaf states",
+        fs=8.5,
+        min_w=2.00,
+        min_h=0.85,
+    )
+
+    # TOP-ROW BOX ARROWS
+    arr(ax, (1.12, TOP_BOX_Y), (PREPROCESS_X - pre_w / 2, TOP_BOX_Y), lw=1.2)
+    arr(ax, (PREPROCESS_X + pre_w / 2, TOP_BOX_Y), (FEATURE_X - feature_w / 2, TOP_BOX_Y), lw=1.2)
+    arr(ax, (FEATURE_X + feature_w / 2, TOP_BOX_Y), (SEGMENT_X - segment_w / 2, TOP_BOX_Y), lw=1.2)
+    ax.annotate(
+        "",
+        xy=(SEGMENT_X, leaf_top + 0.02),
+        xytext=(SEGMENT_X, TOP_BOX_Y - segment_h / 2),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.1),
+    )
+    ax.annotate(
+        "",
+        xy=(POSITION_X, leaf_top + 0.02),
+        xytext=(POSITION_X, POSITION_BOX_Y - position_h / 2),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.1),
+    )
 
     # TTN
-    TTN_X = 11.05
+    TTN_X = 13.35
     TTN_W = 7.80
     TTN_H = 4.20
     TTN_Y = CY - TTN_H / 2
     draw_ttn_tree(ax, TTN_X, TTN_Y, TTN_W, TTN_H)
+    arr(ax, (leaf_right + 0.10, LEAF_CY), (TTN_X - 0.10, LEAF_CY), lw=1.2)
 
     # POOL
-    POOL_X = 19.80
+    POOL_X = 23.00
     rbox(ax, POOL_X + 0.85, CY + 0.05,
          f"Multi-Scale\nPooling\nmean pool × {CFG['num_readout_scales']} levels\n"
          f"(batch, {CFG['num_readout_scales']}×{CFG['chi']})",
          fs=8.5, fc=POOL_C, min_w=1.70, min_h=1.30)
-    arr(ax, (18.85, CY), (POOL_X, CY))
+    arr(ax, (22.05, CY), (POOL_X, CY))
 
     # FUSE
-    FUSE_X = 21.95
+    FUSE_X = 25.15
     rbox(ax, FUSE_X + 0.75, CY + 0.02,
          f"Readout Fusion\nconcat → ({CFG['readout_dim']})\nLayerNorm({CFG['readout_dim']})",
          fs=8.5, min_w=1.50, min_h=0.88)
     arr(ax, (POOL_X + 1.70, CY), (FUSE_X, CY))
 
     # MLP
-    MLP_X = 24.10
+    MLP_X = 27.30
     draw_mlp_block(ax, MLP_X, CY)
     arr(ax, (FUSE_X + 1.50, CY), (MLP_X - 0.12, CY))
-
-    # LEFT ARROWS
-    arr(ax, (1.05, CY - 0.08), (1.32, CY - 0.08))
-    arr(ax, (3.35, CY - 0.08), (3.63, CY - 0.08))
-    arr(ax, (6.05, CY - 0.08), (6.33, CY - 0.08))
-    arr(ax, (8.50, CY - 0.08), (8.78, CY - 0.08))
-    arr(ax, (10.75, CY - 0.08), (11.08, CY - 0.08))
 
     # MULTI-SCALE ARROWS
     tree_right = TTN_X + TTN_W
@@ -420,20 +664,20 @@ def main() -> None:
         )
 
     # SEGMENT MASK
-    rbox(ax, 7.40, CY - 2.38,
+    rbox(ax, LEAF_X, CY - 3.90,
          f"Segment Mask ({CFG['num_segments']}×{CFG['segment_window_size']})\nmarks valid samples",
          fs=8, fc="#F0F4F8", ec="#B0BFCF", min_w=2.20, min_h=0.58)
     ax.annotate(
-        "", xy=(7.40, CY - 0.95), xytext=(7.40, CY - 2.05),
+        "", xy=(LEAF_X, leaf_bottom - 0.10), xytext=(LEAF_X, CY - 3.53),
         arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.0, linestyle="dashed")
     )
 
     # BOTTOM
-    ax.text(17, 1.30,
+    ax.text(19, 1.30,
             f"Readout path: {CFG['readout_dim']} → {CFG['readout_hidden_dim']} → {CFG['num_labels']}",
             ha="center", va="center", fontsize=14, weight="bold", color=TEXT)
     ax.text(
-        17, 0.86,
+        19, 0.86,
         f"Config: input_dim={CFG['input_dim']} · num_segments={CFG['num_segments']} · chi={CFG['chi']} · "
         f"num_labels={CFG['num_labels']} · segment_window={CFG['segment_window_size']} · "
         f"stride={CFG['segment_stride']} · leaf_dropout={CFG['leaf_dropout']:.1f} · "
@@ -441,7 +685,7 @@ def main() -> None:
         ha="center", va="center", fontsize=9, color="#607080"
     )
     ax.text(
-        17, 0.48,
+        19, 0.48,
         "The TTN encoder hierarchically merges derivative-aware local segments via "
         "FastRelaxedIsometricMerge; multi-scale pooled states from all levels are "
         "fused and mapped by an MLP to the final functional-group logits.",
