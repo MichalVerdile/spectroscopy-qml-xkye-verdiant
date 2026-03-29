@@ -136,6 +136,7 @@ def rbox_fixed(ax, x, y, w, h, text, *, fc=BOX, ec=EDGE, fs=9.5, weight="normal"
         (x, y), w, h,
         boxstyle=f"round,pad={pad},rounding_size={rs}",
         linewidth=lw, edgecolor=ec, facecolor=fc,
+        zorder=4,
     )
     ax.add_patch(patch)
     ax.text(
@@ -143,6 +144,7 @@ def rbox_fixed(ax, x, y, w, h, text, *, fc=BOX, ec=EDGE, fs=9.5, weight="normal"
         ha="center", va="center",
         fontsize=fs, color=color, weight=weight,
         linespacing=1.2,
+        zorder=6,
     )
     return patch
 
@@ -192,13 +194,13 @@ def draw_ttn_tree(ax, x, y, w, h):
     ax.text(
         x + w / 2, y + h + 0.22,
         "Hierarchical TTN Encoder",
-        ha="center", va="center", fontsize=12, weight="bold", color=TEXT
+        ha="center", va="center", fontsize=12, weight="bold", color=TEXT, zorder=6
     )
 
     ax.text(
         x + w / 2, y + h - 0.38,
         f"Binary tree reduction over {CFG['num_segments']} segment states",
-        ha="center", va="center", fontsize=10, weight="bold", color=TEXT
+        ha="center", va="center", fontsize=10, weight="bold", color=TEXT, zorder=6
     )
 
     level_counts = list(CFG["level_counts"])
@@ -224,7 +226,7 @@ def draw_ttn_tree(ax, x, y, w, h):
         ax.text(
             col_xs[col], y + 0.82,
             level_labels[col] + " nodes",
-            ha="center", va="center", fontsize=8.5, color="#5A6B7E"
+            ha="center", va="center", fontsize=8.5, color="#5A6B7E", zorder=6
         )
         coords.append([(col_xs[col], yy) for yy in ys_col])
 
@@ -237,31 +239,31 @@ def draw_ttn_tree(ax, x, y, w, h):
             x2, y2 = right[j]
 
             ax.plot([x1 + 0.06, x2 - 0.06], [y1, y2],
-                    color="#C3D2E6", lw=0.9, zorder=1)
+                    color="#C3D2E6", lw=0.9, zorder=5)
 
             if j + 1 < len(right) and i % 2 == 0:
                 x3, y3 = right[j + 1]
                 ax.plot([x1 + 0.06, x3 - 0.06], [y1, y3],
-                        color="#D4E0EE", lw=0.7, zorder=1)
+                        color="#D4E0EE", lw=0.7, zorder=5)
 
     for nodes in coords:
         for nx, ny in nodes:
             s = 0.08
             ax.add_patch(Rectangle(
                 (nx - s, ny - s), 2 * s, 2 * s,
-                facecolor=MERGE, edgecolor="#8EA5C3", lw=0.9, zorder=2,
+                facecolor=MERGE, edgecolor="#8EA5C3", lw=0.9, zorder=6,
             ))
 
     ax.text(
         x + w / 2, y + 0.58,
         "FastRelaxedIsometricMerge per level",
-        ha="center", va="center", fontsize=8.2, weight="bold", color=TEXT
+        ha="center", va="center", fontsize=8.2, weight="bold", color=TEXT, zorder=6
     )
     ax.text(
         x + w / 2, y + 0.26,
         f"outer product {CFG['chi']}×{CFG['chi']} → projection → {CFG['chi']}  +  "
         f"residual({CFG['merge_residual_weight']:.2f})  +  L2 norm",
-        ha="center", va="center", fontsize=7.2, color="#5A6B7E"
+        ha="center", va="center", fontsize=7.2, color="#5A6B7E", zorder=6
     )
 
 
@@ -323,8 +325,8 @@ def draw_mlp_block(ax, x0, cy):
 
 
 def draw_leaf_encoder_block(ax, cx, cy):
-    box_w = 4.0
-    box_h = 4.05
+    box_w = 7.2
+    box_h = 3.9
     top_y = cy + 1.68
     box_bottom = top_y - box_h
     patch = FancyBboxPatch(
@@ -345,11 +347,12 @@ def draw_leaf_encoder_block(ax, cx, cy):
         ha="center", va="center", fontsize=8.3, color="#5A6B7E", zorder=6,
     )
 
-    x_in = cx - 1.60
-    x_hidden = cx - 0.55
-    x_main_out = cx + 0.50
-    x_add = cx + 1.05
-    x_final = cx + 1.60
+    x_in = cx - 3.15
+    x_hidden = cx - 1.75
+    x_main_out = cx - 0.35
+    x_add = cx + 0.95
+    x_norm = cx + 2.05
+    x_final = cx + 3.35
 
     main_ys = [cy + 0.36, cy + 0.08, cy - 0.20, cy - 0.48]
     skip_ys = [cy - 0.98, cy - 1.28, cy - 1.58]
@@ -373,7 +376,7 @@ def draw_leaf_encoder_block(ax, cx, cy):
         ax.add_patch(Circle((x_in, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
         ax.add_patch(Circle((x_main_out, yy), 0.10, facecolor="#F8D5B7", edgecolor="#A16634", lw=1.1, zorder=6))
 
-    ax.text(x_in, cy + 0.62, f"input\n{CFG['leaf_input_dim']}", ha="center", va="bottom",
+    ax.text(x_in, cy + 0.62, f"input\n64×3={CFG['leaf_input_dim']}", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
     ax.text(x_hidden, cy + 0.62, f"hidden\n{CFG['leaf_hidden_dim_resolved']}", ha="center", va="bottom",
             fontsize=8.0, color="#5A6B7E", zorder=6)
@@ -402,12 +405,23 @@ def draw_leaf_encoder_block(ax, cx, cy):
 
     ax.add_patch(Circle((x_add, merge_y), 0.16, facecolor="white", edgecolor="#607A99", lw=1.2, zorder=7))
     ax.text(x_add, merge_y, "+", ha="center", va="center", fontsize=13, color=TEXT, weight="bold", zorder=8)
+
     ax.annotate(
         "",
-        xy=(x_final - 0.12, merge_y),
+        xy=(x_final - 0.14, merge_y),
         xytext=(x_add + 0.16, merge_y),
         arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.4),
         zorder=5,
+    )
+    ax.text(
+        (x_add + x_final) / 2,
+        merge_y + 0.18,
+        "LayerNorm + L2 norm",
+        ha="center",
+        va="center",
+        fontsize=8.2,
+        color="#5A6B7E",
+        zorder=6,
     )
 
     for yy in main_ys:
@@ -419,14 +433,10 @@ def draw_leaf_encoder_block(ax, cx, cy):
         ha="center", va="center", fontsize=8.0, color="#5A6B7E", zorder=6,
     )
     ax.text(
-        cx, box_bottom + 0.30,
-        "LayerNorm + L2 norm",
-        ha="center", va="bottom", fontsize=8.0, color="#5A6B7E", zorder=6,
-    )
-    ax.text(
-        cx, box_bottom + 0.12,
-        f"(batch, {CFG['num_segments']}, {CFG['chi']})",
-        ha="center", va="bottom", fontsize=8.0, color="#5A6B7E", zorder=6,
+        (x_add + x_final) / 2,
+        merge_y - 0.20,
+        f"Output: (batch, {CFG['num_segments']}, {CFG['chi']})",
+        ha="center", va="center", fontsize=8.0, color="#5A6B7E", zorder=6,
     )
     return (cx - box_w / 2, cx + box_w / 2, box_bottom, top_y)
 
@@ -537,11 +547,11 @@ def main() -> None:
 
     CY = 5.2
     TOP_BOX_Y = CY + 1.62
-    PREPROCESS_X = 2.00
-    FEATURE_X = 4.35
-    LEAF_X = 9.25
-    TOP_MIRROR_OFFSET = 1.70
-    SEGMENT_X = LEAF_X - TOP_MIRROR_OFFSET
+    PREPROCESS_X = 2.25
+    FEATURE_X = 4.95
+    LEAF_X = 9.10
+    TOP_MIRROR_OFFSET = 1.95
+    SEGMENT_X = LEAF_X
     POSITION_X = LEAF_X + TOP_MIRROR_OFFSET
     POSITION_BOX_Y = TOP_BOX_Y
     LEAF_CY = CY - 0.78
@@ -583,58 +593,57 @@ def main() -> None:
     arr(ax, (2.72, CY + 0.05), (3.78, CY + 0.05), lw=1.0)
 
     # SEGMENTATION
+    SEGMENT_BOX_Y = TOP_BOX_Y + 0.22
     _, segment_w, segment_h = rbox(
         ax,
         SEGMENT_X,
-        TOP_BOX_Y,
-        f"Sliding-Window Segmentation\n{CFG['num_segments']} windows × {CFG['segment_window_size']} points\n"
+        SEGMENT_BOX_Y,
+        "Sliding-Window Segmentation\n"
+        f"Input: ({CFG['input_dim']}×3)\n"
+        f"Output: ({CFG['num_segments']}×{CFG['segment_window_size']}×3)\n"
         f"stride={CFG['segment_stride']} ({CFG['segment_mode']})",
-        fs=8.5,
+        fs=8.3,
         min_w=2.20,
-        min_h=0.85,
+        min_h=1.05,
     )
 
     # LEAF ENCODER
     leaf_left, leaf_right, leaf_bottom, leaf_top = draw_leaf_encoder_block(ax, LEAF_X, LEAF_CY)
 
+    # TOP-ROW BOX ARROWS
+    arr(ax, (1.12, TOP_BOX_Y), (PREPROCESS_X - pre_w / 2, TOP_BOX_Y), lw=1.2)
+    arr(ax, (FEATURE_X + feature_w / 2, TOP_BOX_Y), (SEGMENT_X - segment_w / 2, SEGMENT_BOX_Y), lw=1.2)
+    ax.annotate(
+        "",
+        xy=(SEGMENT_X, leaf_top + 0.02),
+        xytext=(SEGMENT_X, SEGMENT_BOX_Y - segment_h / 2),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.1),
+    )
+
+    # TTN
+    TTN_X = 16.45
+    TTN_W = 7.80
+    TTN_H = 4.20
+    TTN_Y = CY - TTN_H / 2
+
     # POSITION EMBEDDING
+    POSITION_X = (leaf_right + TTN_X) / 2
+    POSITION_BOX_Y = LEAF_CY + 0.58
     _, position_w, position_h = rbox(
         ax,
         POSITION_X,
         POSITION_BOX_Y,
         f"Learnable Position Embedding\nEmbedding({CFG['num_segments']}, {CFG['chi']})\nadded to leaf states",
-        fs=8.5,
-        min_w=2.00,
+        fs=8.2,
+        min_w=1.80,
         min_h=0.85,
     )
-
-    # TOP-ROW BOX ARROWS
-    arr(ax, (1.12, TOP_BOX_Y), (PREPROCESS_X - pre_w / 2, TOP_BOX_Y), lw=1.2)
-    arr(ax, (PREPROCESS_X + pre_w / 2, TOP_BOX_Y), (FEATURE_X - feature_w / 2, TOP_BOX_Y), lw=1.2)
-    arr(ax, (FEATURE_X + feature_w / 2, TOP_BOX_Y), (SEGMENT_X - segment_w / 2, TOP_BOX_Y), lw=1.2)
-    ax.annotate(
-        "",
-        xy=(SEGMENT_X, leaf_top + 0.02),
-        xytext=(SEGMENT_X, TOP_BOX_Y - segment_h / 2),
-        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.1),
-    )
-    ax.annotate(
-        "",
-        xy=(POSITION_X, leaf_top + 0.02),
-        xytext=(POSITION_X, POSITION_BOX_Y - position_h / 2),
-        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.1),
-    )
-
-    # TTN
-    TTN_X = 13.35
-    TTN_W = 7.80
-    TTN_H = 4.20
-    TTN_Y = CY - TTN_H / 2
     draw_ttn_tree(ax, TTN_X, TTN_Y, TTN_W, TTN_H)
-    arr(ax, (leaf_right + 0.10, LEAF_CY), (TTN_X - 0.10, LEAF_CY), lw=1.2)
+    arr(ax, (leaf_right + 0.10, POSITION_BOX_Y), (POSITION_X - position_w / 2 - 0.08, POSITION_BOX_Y), lw=1.3)
+    arr(ax, (POSITION_X + position_w / 2 + 0.08, POSITION_BOX_Y), (TTN_X - 0.10, POSITION_BOX_Y), lw=1.3)
 
     # POOL
-    POOL_X = 23.00
+    POOL_X = 25.90
     rbox(ax, POOL_X + 0.85, CY + 0.05,
          f"Multi-Scale\nPooling\nmean pool × {CFG['num_readout_scales']} levels\n"
          f"(batch, {CFG['num_readout_scales']}×{CFG['chi']})",
@@ -642,14 +651,14 @@ def main() -> None:
     arr(ax, (22.05, CY), (POOL_X, CY))
 
     # FUSE
-    FUSE_X = 25.15
+    FUSE_X = 28.05
     rbox(ax, FUSE_X + 0.75, CY + 0.02,
          f"Readout Fusion\nconcat → ({CFG['readout_dim']})\nLayerNorm({CFG['readout_dim']})",
          fs=8.5, min_w=1.50, min_h=0.88)
     arr(ax, (POOL_X + 1.70, CY), (FUSE_X, CY))
 
     # MLP
-    MLP_X = 27.30
+    MLP_X = 30.20
     draw_mlp_block(ax, MLP_X, CY)
     arr(ax, (FUSE_X + 1.50, CY), (MLP_X - 0.12, CY))
 
@@ -662,15 +671,6 @@ def main() -> None:
             "", xy=(pool_left, CY + 0.10), xytext=(tree_right, yy),
             arrowprops=dict(arrowstyle="-|>", color="#8FA3BC", lw=0.9)
         )
-
-    # SEGMENT MASK
-    rbox(ax, LEAF_X, CY - 3.90,
-         f"Segment Mask ({CFG['num_segments']}×{CFG['segment_window_size']})\nmarks valid samples",
-         fs=8, fc="#F0F4F8", ec="#B0BFCF", min_w=2.20, min_h=0.58)
-    ax.annotate(
-        "", xy=(LEAF_X, leaf_bottom - 0.10), xytext=(LEAF_X, CY - 3.53),
-        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.0, linestyle="dashed")
-    )
 
     # BOTTOM
     ax.text(19, 1.30,
