@@ -223,10 +223,27 @@ def draw_ttn_tree(ax, x, y, w, h):
             step = (top - bottom) / (shown - 1)
             ys_col = [top - j * step for j in range(shown)]
 
+        level_name = f"L{col}"
+        ax.text(
+            col_xs[col], y + h - 0.62,
+            level_name,
+            ha="center", va="center", fontsize=8.1, weight="bold", color="#5A6B7E", zorder=6
+        )
+        if col == 0:
+            level_text = level_labels[col] + f" nodes\n(batch, {level_counts[col]}, {CFG['chi']})"
+        else:
+            prev_cnt = level_counts[col - 1]
+            merge_count = prev_cnt // 2
+            if prev_cnt % 2 == 0:
+                merge_text = f"{merge_count}×(64×64)"
+            else:
+                merge_text = f"{merge_count}×(64×64) + carry"
+            level_text = level_labels[col] + f" nodes\n{merge_text}"
+
         ax.text(
             col_xs[col], y + 0.82,
-            level_labels[col] + " nodes",
-            ha="center", va="center", fontsize=8.5, color="#5A6B7E", zorder=6
+            level_text,
+            ha="center", va="center", fontsize=7.7, color="#5A6B7E", zorder=6
         )
         coords.append([(col_xs[col], yy) for yy in ys_col])
 
@@ -256,14 +273,19 @@ def draw_ttn_tree(ax, x, y, w, h):
 
     ax.text(
         x + w / 2, y + 0.58,
-        "FastRelaxedIsometricMerge per level",
+        "Pairwise TTN merge per level",
         ha="center", va="center", fontsize=8.2, weight="bold", color=TEXT, zorder=6
     )
     ax.text(
         x + w / 2, y + 0.26,
-        f"outer product {CFG['chi']}×{CFG['chi']} → projection → {CFG['chi']}  +  "
-        f"residual({CFG['merge_residual_weight']:.2f})  +  L2 norm",
-        ha="center", va="center", fontsize=7.2, color="#5A6B7E", zorder=6
+        f"{CFG['chi']}×{CFG['chi']} outer product → proj. {CFG['chi']} + "
+        f"res. {CFG['merge_residual_weight']:.2f} + L2 norm",
+        ha="center", va="center", fontsize=7.0, color="#5A6B7E", zorder=6
+    )
+    ax.text(
+        x + w / 2, y + 0.08,
+        "models all left-right component interactions",
+        ha="center", va="center", fontsize=6.9, color="#6C7C90", zorder=6
     )
 
 
@@ -301,13 +323,14 @@ def draw_mlp_block(ax, x0, cy):
         ax,
         x1,
         cy + 2.08,
-        f"fc_1\nLinear({CFG['readout_dim']}→{CFG['readout_hidden_dim']})\n"
+        f"fc_1\nFeature transformation\nLinear({CFG['readout_dim']}→{CFG['readout_hidden_dim']})\n"
         f"GELU + Dropout({CFG['readout_dropout']:.1f})",
-         fs=7.8, min_w=1.45, min_h=0.95)
-    rbox(ax, x2, cy + 2.08, f"fc_2\nLinear({CFG['readout_hidden_dim']}→{CFG['num_labels']})\nOutput layer",
-         fs=7.8, min_w=1.45, min_h=0.95)
+         fs=7.5, min_w=0.8, min_h=0.75)
+    rbox(ax, x2, cy + 2.08,
+         f"fc_2\nOutput mapping\nLinear({CFG['readout_hidden_dim']}→{CFG['num_labels']})\nOutput layer",
+         fs=7.1, min_w=0.8, min_h=0.75)
     rbox(ax, x3, cy + 2.08, f"OUTPUT\n(logits)\n{CFG['num_labels']} labels",
-         fs=7.8, min_w=1.45, min_h=0.95)
+         fs=7.8, min_w=0.8, min_h=0.75)
 
     for xc, lbl in [
         (stub_x, f"Total: {CFG['readout_dim']}\nvalues"),
@@ -633,44 +656,83 @@ def main() -> None:
         ax,
         POSITION_X,
         POSITION_BOX_Y,
-        f"Learnable Position Embedding\nEmbedding({CFG['num_segments']}, {CFG['chi']})\nadded to leaf states",
-        fs=8.2,
+        "Learnable Position Embedding\n"
+        f"Input: (batch, {CFG['num_segments']}, {CFG['chi']})\n"
+        f"Embedding({CFG['num_segments']}, {CFG['chi']})\n"
+        "position vector + segment vector\n"
+        f"Output: (batch, {CFG['num_segments']}, {CFG['chi']})",
+        fs=7.6,
         min_w=1.80,
-        min_h=0.85,
+        min_h=1.34,
+    )
+    ax.text(
+        POSITION_X,
+        POSITION_BOX_Y - position_h / 2 - 0.28,
+        "Example: s_v=[0.10,-0.20,0.40,...],  p_v=[0.03,0.01,...]\n"
+        "s_p_v = s_v + p_v = [0.13,-0.19,0.40,...]\n"
+        "similar in spirit to key-value vector addition",
+        ha="center",
+        va="top",
+        fontsize=7.1,
+        color="#5A6B7E",
+        zorder=6,
     )
     draw_ttn_tree(ax, TTN_X, TTN_Y, TTN_W, TTN_H)
     arr(ax, (leaf_right + 0.10, POSITION_BOX_Y), (POSITION_X - position_w / 2 - 0.08, POSITION_BOX_Y), lw=1.3)
     arr(ax, (POSITION_X + position_w / 2 + 0.08, POSITION_BOX_Y), (TTN_X - 0.10, POSITION_BOX_Y), lw=1.3)
 
     # POOL
-    POOL_X = 25.90
-    rbox(ax, POOL_X + 0.85, CY + 0.05,
-         f"Multi-Scale\nPooling\nmean pool × {CFG['num_readout_scales']} levels\n"
-         f"(batch, {CFG['num_readout_scales']}×{CFG['chi']})",
-         fs=8.5, fc=POOL_C, min_w=1.70, min_h=1.30)
-    arr(ax, (22.05, CY), (POOL_X, CY))
+    POOL_X = TTN_X + TTN_W / 2 - 0.85
+    POOL_CY = TTN_Y - 0.95
+    _, pool_w, pool_h = rbox(
+        ax, POOL_X + 0.85, POOL_CY,
+        f"Multi-Scale\nPooling\nlevels L0-L{CFG['num_readout_scales'] - 1}\n"
+        f"{CFG['num_readout_scales']} pooled {CFG['chi']}-d vectors\n"
+        f"(batch, {CFG['num_readout_scales']}×{CFG['chi']})",
+        fs=7.8, fc=POOL_C, min_w=1.45, min_h=1.10
+    )
 
     # FUSE
-    FUSE_X = 28.05
+    FUSE_X = 25.65
     rbox(ax, FUSE_X + 0.75, CY + 0.02,
-         f"Readout Fusion\nconcat → ({CFG['readout_dim']})\nLayerNorm({CFG['readout_dim']})",
-         fs=8.5, min_w=1.50, min_h=0.88)
-    arr(ax, (POOL_X + 1.70, CY), (FUSE_X, CY))
+         f"Readout Fusion\nconcat ({CFG['num_readout_scales']}×{CFG['chi']}) → {CFG['readout_dim']}\n"
+         f"LayerNorm({CFG['readout_dim']})",
+         fs=8.1, min_w=1.70, min_h=0.96)
+    pool_right = POOL_X + 0.85 + pool_w / 2
+    elbow_x = FUSE_X - 0.16
+    ax.plot(
+        [pool_right, elbow_x, elbow_x],
+        [POOL_CY, POOL_CY, CY],
+        color=ARROW, lw=1.15, zorder=5
+    )
+    ax.annotate(
+        "",
+        xy=(FUSE_X, CY),
+        xytext=(elbow_x, CY),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.15),
+    )
 
     # MLP
-    MLP_X = 30.20
+    MLP_X = 28.80
     draw_mlp_block(ax, MLP_X, CY)
-    arr(ax, (FUSE_X + 1.50, CY), (MLP_X - 0.12, CY))
+    arr(ax, (FUSE_X + 1.00, CY), (MLP_X - 0.05, CY))
 
-    # MULTI-SCALE ARROWS
-    tree_right = TTN_X + TTN_W
-    pool_left = POOL_X
-    for frac in [0.88, 0.70, 0.52, 0.34, 0.16]:
-        yy = TTN_Y + frac * TTN_H
-        ax.annotate(
-            "", xy=(pool_left, CY + 0.10), xytext=(tree_right, yy),
-            arrowprops=dict(arrowstyle="-|>", color="#8FA3BC", lw=0.9)
-        )
+    # MULTI-SCALE ARROW
+    tree_center_x = TTN_X + TTN_W / 2
+    pool_top = POOL_CY + pool_h / 2
+    pool_x = POOL_X + pool_w / 2
+    ax.annotate(
+        "",
+        xy=(pool_x, pool_top),
+        xytext=(tree_center_x, TTN_Y),
+        arrowprops=dict(arrowstyle="-|>", color=ARROW, lw=1.0),
+    )
+
+    ax.text(
+        TTN_X + TTN_W / 2, TTN_Y - 0.26,
+        f"mean over all nodes at levels L0-L{CFG['num_readout_scales'] - 1}",
+        ha="center", va="center", fontsize=7.4, color="#5A6B7E"
+    )
 
     # BOTTOM
     ax.text(19, 1.30,
