@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--threshold-grid-steps", nargs="+", type=float, default=[0.05])
     parser.add_argument("--chis", nargs="+", type=int, default=[64])
     parser.add_argument("--segment-window-sizes", nargs="+", type=int, default=[64])
-    parser.add_argument("--segment-strides", nargs="+", type=int, default=[32])
+    parser.add_argument("--segment-strides", nargs="+", type=int, default=[58])
     parser.add_argument(
         "--ranking-metric",
         choices=["best_early_stop_score", "test_f1_micro", "test_f1_macro"],
@@ -205,7 +205,7 @@ def apply_preset(args: argparse.Namespace) -> None:
     args.threshold_grid_steps = [0.02]
     args.chis = [64]
     args.segment_window_sizes = [64]
-    args.segment_strides = [32]
+    args.segment_strides = [58]
     if args.limit is None:
         args.limit = 36
 

@@ -47,6 +47,8 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
 )
 
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import (  # noqa: E402
+    DEFAULT_SEGMENT_STRIDE,
+    DEFAULT_SEGMENT_WINDOW_SIZE,
     TTNIRClassifier6,
 )
 
@@ -66,8 +68,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input-dim", type=int, default=1800)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
     parser.add_argument("--chi", type=int, default=64)
-    parser.add_argument("--segment-window-size", type=int, default=64)
-    parser.add_argument("--segment-stride", type=int, default=32)
+    parser.add_argument("--segment-window-size", type=int, default=DEFAULT_SEGMENT_WINDOW_SIZE)
+    parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
     parser.add_argument("--segment-mode", choices=["overlap", "dual_offset"], default="overlap")
     parser.add_argument("--segment-offset", type=int, default=None)
     parser.add_argument("--leaf-hidden-dim", type=int, default=None)

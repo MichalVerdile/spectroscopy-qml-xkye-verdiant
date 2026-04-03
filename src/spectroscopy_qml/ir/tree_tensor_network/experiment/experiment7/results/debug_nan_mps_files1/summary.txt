@@ -1,0 +1,18 @@
+Experiment7 Summary
+================================================================================
+Architecture:              SNV -> derivative feature map -> MLP encoder -> classifier
+Elapsed seconds:           3.61
+Epochs completed:          3/3
+Data files used:           1/245
+Fixed split artifact:      src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment7/results/debug_nan_mps_files1/data_split_seed42_files1.npz
+Best epoch:                3
+Best early-stop score:     0.325269
+Best score metric:         blended_f1
+Best val loss:             0.596941
+Threshold mean:            0.304054
+Threshold std:             0.238344
+Test loss:                 0.615672
+Test f1_micro:             0.395004
+Test f1_macro:             0.260678
+Test precision_micro:      0.251941
+Test recall_micro:         0.914032

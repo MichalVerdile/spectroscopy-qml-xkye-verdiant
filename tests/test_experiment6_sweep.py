@@ -37,7 +37,7 @@ class _Args:
     threshold_grid_steps = [0.05]
     chis = [64]
     segment_window_sizes = [64]
-    segment_strides = [32]
+    segment_strides = [58]
     ranking_metric = "test_f1_micro"
     limit = None
     preset = "coarse"
@@ -55,10 +55,10 @@ def test_build_run_name_is_stable() -> None:
             "threshold_grid_step": 0.05,
             "chi": 64,
             "segment_window_size": 64,
-            "segment_stride": 32,
+            "segment_stride": 58,
         }
     )
-    assert run_name == "lr0p001_bs2048_wd1em06_ld0p1_rd0p1_mrw0p15_tgs0p05_chi64_win64_stride32"
+    assert run_name == "lr0p001_bs2048_wd1em06_ld0p1_rd0p1_mrw0p15_tgs0p05_chi64_win64_stride58"
 
 
 def test_build_command_includes_cache_split_and_runtime_flags() -> None:
@@ -75,7 +75,7 @@ def test_build_command_includes_cache_split_and_runtime_flags() -> None:
             "threshold_grid_step": 0.02,
             "chi": 64,
             "segment_window_size": 64,
-            "segment_stride": 32,
+            "segment_stride": 58,
         },
     )
 
@@ -130,6 +130,7 @@ def test_apply_preset_fine_replaces_search_space() -> None:
     assert args.learning_rates == [4e-4, 5e-4, 6e-4]
     assert args.batch_sizes == [1024]
     assert args.threshold_grid_steps == [0.02]
+    assert args.segment_strides == [58]
     assert args.limit == 36
 
 

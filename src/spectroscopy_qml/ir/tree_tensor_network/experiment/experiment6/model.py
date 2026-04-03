@@ -13,6 +13,62 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.model import
     SegmentLeafEncoder,
 )
 
+DEFAULT_SEGMENT_WINDOW_SIZE = 64
+TARGET_SEGMENT_OVERLAP_RATIO = 0.10
+
+
+def recommended_segment_stride(
+    segment_window_size: int,
+    target_overlap_ratio: float = TARGET_SEGMENT_OVERLAP_RATIO,
+) -> int:
+    """Return the closest integer stride for the requested overlap target."""
+    return max(1, round(segment_window_size * (1.0 - target_overlap_ratio)))
+
+
+DEFAULT_SEGMENT_STRIDE = recommended_segment_stride(DEFAULT_SEGMENT_WINDOW_SIZE)
+
+
+def compute_adjacent_overlap_ratios(segment_slices: list[tuple[int, int]]) -> list[float]:
+    """Return the overlap ratio for every adjacent segment pair."""
+    overlap_ratios: list[float] = []
+    for (left_start, left_end), (right_start, right_end) in zip(segment_slices, segment_slices[1:]):
+        overlap = max(0, left_end - right_start)
+
+        shortest_window = min(left_end - left_start, right_end - right_start)
+        if shortest_window <= 0:
+            raise ValueError("segment_slices must contain positive-length windows.")
+        overlap_ratios.append(overlap / shortest_window)
+    return overlap_ratios
+
+
+def compute_mean_adjacent_overlap_ratio(segment_slices: list[tuple[int, int]]) -> float:
+    overlap_ratios = compute_adjacent_overlap_ratios(segment_slices)
+    if not overlap_ratios:
+        return 0.0
+    return sum(overlap_ratios) / len(overlap_ratios)
+
+
+def validate_target_segment_overlap(
+    segment_slices: list[tuple[int, int]],
+    target_overlap_ratio: float = TARGET_SEGMENT_OVERLAP_RATIO,
+) -> None:
+    """Reject segment layouts that miss the experiment-6 overlap target badly."""
+    overlap_ratios = compute_adjacent_overlap_ratios(segment_slices)
+    if not overlap_ratios:
+        return
+
+    reference_window = segment_slices[0][1] - segment_slices[0][0]
+    tolerance_ratio = 1.0 / max(1, reference_window)
+    mean_overlap_ratio = sum(overlap_ratios) / len(overlap_ratios)
+
+    if abs(mean_overlap_ratio - target_overlap_ratio) > tolerance_ratio + 1e-9:
+        raise ValueError(
+            "Experiment 6 targets "
+            f"{target_overlap_ratio:.1%} overlap between adjacent segment windows, "
+            f"but the configured layout averages {mean_overlap_ratio:.1%}. "
+            "Adjust segment_stride or segment_window_size."
+        )
+
 
 class FastRelaxedIsometricMerge(RelaxedIsometricMerge):
     """Drop-in replacement using torch.linalg.qr instead of Python Gram-Schmidt.
@@ -105,8 +161,8 @@ class TTNIRClassifier6(nn.Module):
         num_labels: int,
         chi: int,
         input_dim: int = 1800,
-        segment_window_size: int = 64,
-        segment_stride: int = 32,
+        segment_window_size: int = DEFAULT_SEGMENT_WINDOW_SIZE,
+        segment_stride: int = DEFAULT_SEGMENT_STRIDE,
         segment_mode: str = "overlap",
         segment_offset: int | None = None,
         leaf_hidden_dim: int | None = None,
@@ -147,6 +203,7 @@ class TTNIRClassifier6(nn.Module):
             segment_mode=self.segment_mode,
             segment_offset=self.segment_offset,
         )
+        validate_target_segment_overlap(segment_slices)
         self.segment_slices = segment_slices
         self.num_segments = len(segment_slices)
         self.segment_lengths = [end - start for start, end in segment_slices]
@@ -163,6 +220,8 @@ class TTNIRClassifier6(nn.Module):
             gather_idx[seg_i, :seg_len] = torch.arange(start, end)
         self.register_buffer("_gather_idx", gather_idx, persistent=False)
 
+        self.input_position_embedding = nn.Embedding(self.input_dim, 1)
+        nn.init.normal_(self.input_position_embedding.weight, mean=0.0, std=1.0 / math.sqrt(self.input_dim))
         self.feature_map = SpectralDerivativeFeatureMap()
         self.leaf_encoder = SegmentLeafEncoder(
             max_segment_length=self.max_segment_length,
@@ -172,8 +231,6 @@ class TTNIRClassifier6(nn.Module):
             dropout=leaf_dropout,
             renormalize_output=leaf_renormalize_output,
         )
-        self.segment_position_embedding = nn.Embedding(self.num_segments, self.chi)
-        nn.init.normal_(self.segment_position_embedding.weight, mean=0.0, std=1.0 / math.sqrt(self.chi))
 
         num_levels = 0 if self.num_segments <= 1 else math.ceil(math.log2(self.num_segments))
         self.merge_levels = nn.ModuleList(
@@ -188,18 +245,13 @@ class TTNIRClassifier6(nn.Module):
             ]
         )
 
-        self.num_readout_scales = len(self.merge_levels) + 1
-        self.readout_dim = self.num_readout_scales * self.chi
         if readout_hidden_dim is None:
-            readout_hidden_dim = max(128, 4 * self.chi, self.readout_dim // 2)
+            readout_hidden_dim = max(128, 4 * self.chi)
         self.readout_hidden_dim = int(readout_hidden_dim)
 
-        self.readout_norms = nn.ModuleList(
-            [nn.LayerNorm(self.chi) for _ in range(self.num_readout_scales)]
-        )
-        self.output_norm = nn.LayerNorm(self.readout_dim)
+        self.output_norm = nn.LayerNorm(self.chi)
         self.output_head = nn.Sequential(
-            nn.Linear(self.readout_dim, self.readout_hidden_dim),
+            nn.Linear(self.chi, self.readout_hidden_dim),
             nn.GELU(),
             nn.Dropout(readout_dropout),
             nn.Linear(self.readout_hidden_dim, self.num_labels),
@@ -216,9 +268,20 @@ class TTNIRClassifier6(nn.Module):
         window_size = min(segment_window_size, input_dim)
         max_start = max(0, input_dim - window_size)
 
+        if max_start == 0:
+            return [(0, input_dim)]
+
+        def build_even_starts(approx_stride: int) -> list[int]:
+            num_segments = max(2, math.ceil(max_start / approx_stride) + 1)
+            starts = [round(index * max_start / (num_segments - 1)) for index in range(num_segments)]
+            return sorted(set(starts))
+
         def build_starts(offset: int) -> list[int]:
             if offset < 0:
                 raise ValueError("segment_offset must be non-negative.")
+            if offset == 0:
+                return build_even_starts(segment_stride)
+
             starts = list(range(offset, max_start + 1, segment_stride)) if offset <= max_start else []
             starts.extend([0, max_start])
             return [start for start in starts if 0 <= start <= max_start]
@@ -253,24 +316,17 @@ class TTNIRClassifier6(nn.Module):
         segments = segments * self.segment_mask.unsqueeze(0).unsqueeze(-1)
         return segments
 
-    @staticmethod
-    def _pool_level(node_states: Tensor) -> Tensor:
-        if node_states.ndim != 3:
-            raise ValueError("node_states must have shape (batch_size, num_nodes, chi).")
-        return node_states.mean(dim=1)
-
     def forward(self, x: Tensor, apply_sigmoid: bool = False) -> Tensor:
         if x.ndim != 2:
             raise ValueError(f"Expected input shape (batch_size, {self.input_dim}), got {tuple(x.shape)}.")
         if x.size(1) != self.input_dim:
             raise ValueError(f"Expected input_dim={self.input_dim}, got {x.size(1)}.")
 
-        feature_sequence = self.feature_map(x)
+        spectral_positions = torch.arange(self.input_dim, device=x.device)
+        positioned_raw = x + self.input_position_embedding(spectral_positions).squeeze(-1).unsqueeze(0)
+        feature_sequence = self.feature_map(positioned_raw)
         segmented_features = self._segment_feature_sequence(feature_sequence)
         node_states = self.leaf_encoder(segmented_features, self.segment_mask)
-        segment_indices = torch.arange(self.num_segments, device=x.device)
-        node_states = node_states + self.segment_position_embedding(segment_indices).unsqueeze(0)
-        multi_scale_states = [self.readout_norms[0](self._pool_level(node_states))]
 
         level_index = 0
         while node_states.size(1) > 1:
@@ -288,10 +344,9 @@ class TTNIRClassifier6(nn.Module):
             else:
                 node_states = merged
 
-            multi_scale_states.append(self.readout_norms[level_index + 1](self._pool_level(node_states)))
             level_index += 1
 
-        readout = torch.cat(multi_scale_states, dim=-1)
+        readout = node_states[:, 0, :]
         logits = self.output_head(self.output_norm(readout))
         if apply_sigmoid:
             return torch.sigmoid(logits)
