@@ -51,6 +51,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--segment-window-sizes", nargs="+", type=int, default=[64])
     parser.add_argument("--segment-strides", nargs="+", type=int, default=[58])
     parser.add_argument(
+        "--pair-segment-layouts",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Pair segment_window_sizes and segment_strides elementwise instead of taking the cartesian product.",
+    )
+    parser.add_argument(
         "--ranking-metric",
         choices=["best_early_stop_score", "test_f1_micro", "test_f1_macro"],
         default="test_f1_micro",
@@ -153,7 +159,21 @@ def parse_summary(summary_path: Path) -> dict[str, str]:
     return metrics
 
 
+def iter_segment_layouts(args: argparse.Namespace) -> list[tuple[int, int]]:
+    window_sizes = list(args.segment_window_sizes)
+    strides = list(args.segment_strides)
+    if args.pair_segment_layouts:
+        if len(window_sizes) != len(strides):
+            raise ValueError(
+                "pair_segment_layouts requires segment_window_sizes and segment_strides to have the same length."
+            )
+        return list(zip(window_sizes, strides, strict=True))
+
+    return list(itertools.product(window_sizes, strides))
+
+
 def iter_configs(args: argparse.Namespace) -> list[dict[str, object]]:
+    segment_layouts = iter_segment_layouts(args)
     configs = [
         {
             "learning_rate": learning_rate,
@@ -167,7 +187,7 @@ def iter_configs(args: argparse.Namespace) -> list[dict[str, object]]:
             "segment_window_size": segment_window_size,
             "segment_stride": segment_stride,
         }
-        for learning_rate, batch_size, weight_decay, leaf_dropout, readout_dropout, merge_residual_weight, threshold_grid_step, chi, segment_window_size, segment_stride in itertools.product(
+        for learning_rate, batch_size, weight_decay, leaf_dropout, readout_dropout, merge_residual_weight, threshold_grid_step, chi, (segment_window_size, segment_stride) in itertools.product(
             args.learning_rates,
             args.batch_sizes,
             args.weight_decays,
@@ -176,8 +196,7 @@ def iter_configs(args: argparse.Namespace) -> list[dict[str, object]]:
             args.merge_residual_weights,
             args.threshold_grid_steps,
             args.chis,
-            args.segment_window_sizes,
-            args.segment_strides,
+            segment_layouts,
         )
     ]
     if args.limit is not None:
@@ -204,8 +223,9 @@ def apply_preset(args: argparse.Namespace) -> None:
     args.merge_residual_weights = [0.1, 0.15]
     args.threshold_grid_steps = [0.02]
     args.chis = [64]
-    args.segment_window_sizes = [64]
-    args.segment_strides = [58]
+    args.segment_window_sizes = [48, 64, 80]
+    args.segment_strides = [43, 58, 72]
+    args.pair_segment_layouts = True
     if args.limit is None:
         args.limit = 36
 

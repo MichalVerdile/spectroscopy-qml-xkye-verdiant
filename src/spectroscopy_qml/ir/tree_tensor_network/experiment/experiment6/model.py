@@ -172,7 +172,7 @@ class TTNIRClassifier6(nn.Module):
         merge_residual_weight: float = 0.15,
         merge_renormalize_output: bool = True,
         readout_hidden_dim: int | None = None,
-        readout_dropout: float = 0.1,
+        readout_dropout: float = 0.0,
     ) -> None:
         super().__init__()
         if num_labels <= 0:

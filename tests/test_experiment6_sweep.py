@@ -9,6 +9,7 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.sweep import
     build_command,
     build_run_name,
     iter_configs,
+    iter_segment_layouts,
     parse_summary,
     write_best_run_artifacts,
 )
@@ -38,6 +39,7 @@ class _Args:
     chis = [64]
     segment_window_sizes = [64]
     segment_strides = [58]
+    pair_segment_layouts = False
     ranking_metric = "test_f1_micro"
     limit = None
     preset = "coarse"
@@ -96,6 +98,31 @@ def test_iter_configs_returns_cartesian_product() -> None:
     assert len(configs) == 4
 
 
+def test_iter_segment_layouts_can_pair_window_and_stride() -> None:
+    args = _Args()
+    args.segment_window_sizes = [48, 64, 80]
+    args.segment_strides = [43, 58, 72]
+    args.pair_segment_layouts = True
+
+    layouts = iter_segment_layouts(args)
+
+    assert layouts == [(48, 43), (64, 58), (80, 72)]
+
+
+def test_iter_segment_layouts_rejects_mismatched_paired_lists() -> None:
+    args = _Args()
+    args.segment_window_sizes = [48, 64]
+    args.segment_strides = [43]
+    args.pair_segment_layouts = True
+
+    try:
+        iter_segment_layouts(args)
+    except ValueError as exc:
+        assert "same length" in str(exc)
+    else:
+        raise AssertionError("Expected iter_segment_layouts to reject mismatched paired lists.")
+
+
 def test_parse_summary_extracts_experiment6_metrics(tmp_path: Path) -> None:
     summary_path = tmp_path / "summary.txt"
     summary_path.write_text(
@@ -130,7 +157,9 @@ def test_apply_preset_fine_replaces_search_space() -> None:
     assert args.learning_rates == [4e-4, 5e-4, 6e-4]
     assert args.batch_sizes == [1024]
     assert args.threshold_grid_steps == [0.02]
-    assert args.segment_strides == [58]
+    assert args.segment_window_sizes == [48, 64, 80]
+    assert args.segment_strides == [43, 58, 72]
+    assert args.pair_segment_layouts is True
     assert args.limit == 36
 
 
