@@ -84,3 +84,7 @@ docs/.doctrees/
 
 # Pre-commit
 .pre-commit-config.yaml.backup
+
+# Local experiment artifacts
+data/cache/
+src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results/

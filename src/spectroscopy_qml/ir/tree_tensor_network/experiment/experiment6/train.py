@@ -73,10 +73,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--segment-mode", choices=["overlap", "dual_offset"], default="overlap")
     parser.add_argument("--segment-offset", type=int, default=None)
     parser.add_argument("--leaf-hidden-dim", type=int, default=None)
-    parser.add_argument("--leaf-dropout", type=float, default=0.1)
+    parser.add_argument("--leaf-dropout", type=float, default=0.05)
     parser.add_argument("--leaf-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--merge-mode", choices=["strict", "relaxed"], default="relaxed")
-    parser.add_argument("--merge-residual-weight", type=float, default=0.15)
+    parser.add_argument("--merge-residual-weight", type=float, default=0.1)
     parser.add_argument("--merge-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--readout-hidden-dim", type=int, default=None)
     parser.add_argument("--readout-dropout", type=float, default=0.0)
@@ -86,7 +86,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-files", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=1024)
     parser.add_argument("--epochs", type=int, default=200)
-    parser.add_argument("--learning-rate", type=float, default=5e-4)
+    parser.add_argument("--learning-rate", type=float, default=4e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-6)
     parser.add_argument("--lr-scheduler-factor", type=float, default=0.9)
     parser.add_argument("--lr-scheduler-patience", type=int, default=5)
@@ -106,7 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["f1_micro", "f1_macro", "per_class_f1"],
         default="per_class_f1",
     )
-    parser.add_argument("--threshold-grid-step", type=float, default=0.05)
+    parser.add_argument("--threshold-grid-step", type=float, default=0.02)
     parser.add_argument(
         "--early-stopping-metric",
         choices=["f1_micro", "f1_macro", "blended_f1"],
@@ -251,6 +251,11 @@ def sanitize_binary_targets_and_probs(
     safe_probs = np.nan_to_num(probs, nan=0.5, posinf=1.0, neginf=0.0)
     safe_probs = np.clip(safe_probs.astype(np.float32, copy=False), 0.0, 1.0)
     return safe_labels, safe_probs
+
+
+def resolve_compile_enabled(requested_compile: bool, device: torch.device) -> bool:
+    """Disable torch.compile automatically on backends where it is unstable here."""
+    return bool(requested_compile and device.type != "mps")
 
 
 def train_epoch_amp(
@@ -437,7 +442,11 @@ def main() -> None:
     elif args.amp and device.type != "cuda":
         print(f"AMP requested but device is {device.type}; falling back to fp32.")
 
-    if args.compile:
+    compile_enabled = resolve_compile_enabled(args.compile, device)
+    if args.compile and not compile_enabled:
+        print(f"torch.compile requested but disabled on device {device.type}; using eager mode.")
+
+    if compile_enabled:
         print("Compiling model with torch.compile...")
         model = torch.compile(model)
         print("Compilation done.")

@@ -13,7 +13,7 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.model import
     SegmentLeafEncoder,
 )
 
-DEFAULT_SEGMENT_WINDOW_SIZE = 64
+DEFAULT_SEGMENT_WINDOW_SIZE = 48
 TARGET_SEGMENT_OVERLAP_RATIO = 0.10
 
 
@@ -166,10 +166,10 @@ class TTNIRClassifier6(nn.Module):
         segment_mode: str = "overlap",
         segment_offset: int | None = None,
         leaf_hidden_dim: int | None = None,
-        leaf_dropout: float = 0.1,
+        leaf_dropout: float = 0.05,
         leaf_renormalize_output: bool = True,
         merge_mode: str = "relaxed",
-        merge_residual_weight: float = 0.15,
+        merge_residual_weight: float = 0.1,
         merge_renormalize_output: bool = True,
         readout_hidden_dim: int | None = None,
         readout_dropout: float = 0.0,

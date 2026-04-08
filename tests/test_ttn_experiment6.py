@@ -10,14 +10,20 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import
     compute_adjacent_overlap_ratios,
     compute_mean_adjacent_overlap_ratio,
 )
+from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.train import (
+    resolve_compile_enabled,
+)
 
 
 def test_experiment6_default_stride_tracks_ten_percent_overlap_target() -> None:
     model = TTNIRClassifier6(num_labels=5, chi=8, input_dim=1800)
     overlap_ratios = compute_adjacent_overlap_ratios(model.segment_slices)
 
+    assert model.segment_window_size == 48
     assert model.segment_stride == DEFAULT_SEGMENT_STRIDE
-    assert set(overlap_ratios) == {0.09375, 0.109375}
+    assert model.num_segments == 42
+    assert len(model.merge_levels) == 6
+    assert set(overlap_ratios) == {0.10416666666666667, 0.125}
     assert abs(compute_mean_adjacent_overlap_ratio(model.segment_slices) - TARGET_SEGMENT_OVERLAP_RATIO) < 0.01
     assert model.input_position_embedding.embedding_dim == 1
     assert model.input_position_embedding.num_embeddings == model.input_dim
@@ -91,3 +97,9 @@ def test_experiment6_forward_pass_handles_alternative_segment_layouts(
 
     assert logits.shape == (3, 5)
     assert torch.isfinite(logits).all()
+
+
+def test_experiment6_disables_torch_compile_on_mps() -> None:
+    assert resolve_compile_enabled(True, torch.device("mps")) is False
+    assert resolve_compile_enabled(True, torch.device("cpu")) is True
+    assert resolve_compile_enabled(False, torch.device("mps")) is False
