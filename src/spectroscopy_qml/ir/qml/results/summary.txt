@@ -1,0 +1,10 @@
+QML Training Summary
+========================================
+max_files      : 1
+samples        : 3235
+batch_size     : 32
+epochs_run     : 14
+best_val_f1    : 0.4049
+test_f1_micro  : 0.3968
+test_loss      : 1.3061
+training_time  : 238.7s
