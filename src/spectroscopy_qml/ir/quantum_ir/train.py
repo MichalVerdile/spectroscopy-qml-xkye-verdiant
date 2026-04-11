@@ -232,6 +232,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--separate-quarters", dest="shared_quarters",
                    action="store_false")
     p.add_argument("--seed",           default=SEED,        type=int)
+    p.add_argument("--cache-path",     default=None,        type=Path,
+                   help="Pfad zu einem .npz SNV-Cache (wird erstellt falls nicht vorhanden)")
+    p.add_argument("--use-gpu",        action="store_true",
+                   help="lightning.gpu für Quantenschaltkreise verwenden (CUDA erforderlich)")
     p.add_argument("--no-bloch",       action="store_true",
                    help="Bloch-Visualisierung nach Training überspringen")
     return p.parse_args()
@@ -260,7 +264,8 @@ def main() -> None:
     # ── Daten ─────────────────────────────────────────────────────────────────
     print(f"Lade Daten (max_files={args.max_files}) …")
     X, y = load_ir_data(args.data_dir, target_length=TARGET_LEN,
-                        max_files=args.max_files, apply_snv=APPLY_SNV)
+                        max_files=args.max_files, apply_snv=APPLY_SNV,
+                        cache_path=args.cache_path)
     print(f"Datensatz: {X.shape[0]:,} Samples  |  {y.shape[1]} Klassen")
 
     train_loader, val_loader, test_loader = prepare_dataloaders(
@@ -272,8 +277,9 @@ def main() -> None:
 
     # ── Modell ────────────────────────────────────────────────────────────────
     print("\nErstelle CantorQuantumClassifier …")
+    use_gpu = args.use_gpu or USE_GPU
     model = CantorQuantumClassifier(
-        use_gpu=USE_GPU,
+        use_gpu=use_gpu,
         shared_quarters=args.shared_quarters,
     ).to(device)
     model.param_summary()
