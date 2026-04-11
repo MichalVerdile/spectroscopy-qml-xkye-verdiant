@@ -285,7 +285,9 @@ def main() -> None:
     model.param_summary()
 
     # ── Loss ──────────────────────────────────────────────────────────────────
-    train_labels = np.vstack([y.numpy() for _, y in train_loader])
+    # Direkt aus dem originalen y-Array (vermeidet leeren DataLoader-Bug)
+    n_train = int(len(X) * TRAIN_RATIO)
+    train_labels = y[:n_train] if isinstance(y, np.ndarray) else y[:n_train].numpy()
     pos_weight   = compute_pos_weight(train_labels, device)
     print(f"\npos_weight  min={pos_weight.min():.1f}  "
           f"max={pos_weight.max():.1f}  mean={pos_weight.mean():.1f}  "
