@@ -112,36 +112,39 @@ class CantorQuantumClassifier(nn.Module):
         # ── 2. Viertel-Encoder (Ebene 3, 9 Qubits) ───────────────────────────
         if shared_quarters:
             # Geteilte Gewichte: ein Encoder für alle 4 Viertel
-            self.q_quarter = QuantumEncoderLevel(n_qubits=9, n_layers=2, use_gpu=use_gpu)
+            self.q_quarter = QuantumEncoderLevel(n_qubits=9, n_layers=3, use_gpu=use_gpu)
         else:
             # Separate Gewichte: spektralregionspezifische Encoder
-            self.q_quarter0 = QuantumEncoderLevel(n_qubits=9, n_layers=2, use_gpu=use_gpu)
-            self.q_quarter1 = QuantumEncoderLevel(n_qubits=9, n_layers=2, use_gpu=use_gpu)
-            self.q_quarter2 = QuantumEncoderLevel(n_qubits=9, n_layers=2, use_gpu=use_gpu)
-            self.q_quarter3 = QuantumEncoderLevel(n_qubits=9, n_layers=2, use_gpu=use_gpu)
+            self.q_quarter0 = QuantumEncoderLevel(n_qubits=9, n_layers=3, use_gpu=use_gpu)
+            self.q_quarter1 = QuantumEncoderLevel(n_qubits=9, n_layers=3, use_gpu=use_gpu)
+            self.q_quarter2 = QuantumEncoderLevel(n_qubits=9, n_layers=3, use_gpu=use_gpu)
+            self.q_quarter3 = QuantumEncoderLevel(n_qubits=9, n_layers=3, use_gpu=use_gpu)
 
         # ── 3. Hälften-Encoder (Ebene 2, 10 Qubits) ──────────────────────────
         # Separate Encoder: 0–900 cm⁻¹ und 900–1800 cm⁻¹ sind chemisch sehr verschieden
-        self.q_half0 = QuantumEncoderLevel(n_qubits=10, n_layers=2, use_gpu=use_gpu)
-        self.q_half1 = QuantumEncoderLevel(n_qubits=10, n_layers=2, use_gpu=use_gpu)
+        self.q_half0 = QuantumEncoderLevel(n_qubits=10, n_layers=3, use_gpu=use_gpu)
+        self.q_half1 = QuantumEncoderLevel(n_qubits=10, n_layers=3, use_gpu=use_gpu)
 
         # ── 4. Volles-Spektrum-Encoder (Ebene 1, 11 Qubits) ──────────────────
-        self.q_full = QuantumEncoderLevel(n_qubits=11, n_layers=3, use_gpu=use_gpu)
+        self.q_full = QuantumEncoderLevel(n_qubits=11, n_layers=4, use_gpu=use_gpu)
 
-        # ── 5. Klassischer TTN-Merger ─────────────────────────────────────────
-        # Viertel-Paare zusammenführen (9+9=18 → 9)
-        self.merge_q01 = nn.Sequential(nn.Linear(18,  9), nn.GELU())
-        self.merge_q23 = nn.Sequential(nn.Linear(18,  9), nn.GELU())
+        # ── 5. Klassischer TTN-Merger (grösser: mehr Kapazität) ───────────────
+        # Viertel-Paare zusammenführen (9+9=18 → 32)
+        self.merge_q01 = nn.Sequential(nn.Linear(18, 32), nn.GELU())
+        self.merge_q23 = nn.Sequential(nn.Linear(18, 32), nn.GELU())
 
-        # Hälfte + zusammengeführte Viertel (10+9=19 → 10)
-        self.merge_h0  = nn.Sequential(nn.Linear(19, 10), nn.GELU())
-        self.merge_h1  = nn.Sequential(nn.Linear(19, 10), nn.GELU())
+        # Hälfte + zusammengeführte Viertel (10+32=42 → 32)
+        self.merge_h0  = nn.Sequential(nn.Linear(42, 32), nn.GELU())
+        self.merge_h1  = nn.Sequential(nn.Linear(42, 32), nn.GELU())
 
-        # Globale Zusammenführung: voll + beide Hälften-Merges (11+10+10=31 → 16)
-        self.merge_global = nn.Sequential(nn.Linear(31, 16), nn.GELU())
+        # Globale Zusammenführung: voll + beide Hälften-Merges (11+32+32=75 → 64)
+        self.merge_global = nn.Sequential(
+            nn.Linear(75, 64), nn.GELU(),
+            nn.Linear(64, 32), nn.GELU(),
+        )
 
         # ── 6. Klassifikationskopf ────────────────────────────────────────────
-        self.head = nn.Linear(16, N_CLASSES)
+        self.head = nn.Linear(32, N_CLASSES)
 
     # ── Forward ────────────────────────────────────────────────────────────────
 
@@ -175,10 +178,10 @@ class CantorQuantumClassifier(nn.Module):
         f  = self.q_full(segs["full"])
 
         # Klassischer TTN-Merger
-        m01 = self.merge_q01(torch.cat([q0, q1], dim=-1))   # (batch, 9)
-        m23 = self.merge_q23(torch.cat([q2, q3], dim=-1))   # (batch, 9)
-        m_h0 = self.merge_h0(torch.cat([h0, m01], dim=-1))  # (batch, 10)
-        m_h1 = self.merge_h1(torch.cat([h1, m23], dim=-1))  # (batch, 10)
+        m01 = self.merge_q01(torch.cat([q0, q1], dim=-1))   # (batch, 32)
+        m23 = self.merge_q23(torch.cat([q2, q3], dim=-1))   # (batch, 32)
+        m_h0 = self.merge_h0(torch.cat([h0, m01], dim=-1))  # (batch, 32)
+        m_h1 = self.merge_h1(torch.cat([h1, m23], dim=-1))  # (batch, 32)
         g = self.merge_global(
             torch.cat([f, m_h0, m_h1], dim=-1)              # (batch, 31)
         )                                                    # (batch, 16)

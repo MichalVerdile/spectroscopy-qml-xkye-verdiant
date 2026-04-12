@@ -55,10 +55,10 @@ TARGET_LEN       = 1800
 
 BATCH_SIZE       = 8          # Klein halten: 7 Quanten-Schaltkreise pro Forward-Pass
 NUM_EPOCHS       = 100
-LR               = 5e-3
+LR               = 1e-3       # Kleinere LR — Quantum-Parameter stabiler
 WEIGHT_DECAY     = 1e-6
 PATIENCE         = 20
-LR_PATIENCE      = 8
+LR_PATIENCE      = 5          # Schnelleres LR-Decay
 LR_FACTOR        = 0.5
 MIN_LR           = 1e-6
 
@@ -67,7 +67,7 @@ USE_FOCAL_LOSS   = True
 FOCAL_ALPHA      = 0.25
 FOCAL_GAMMA      = 2.0
 
-SHARED_QUARTERS  = True       # Geteilte Gewichte für alle 4 Viertel-Encoder
+SHARED_QUARTERS  = False      # Separate Encoder pro Spektralregion
 USE_GPU          = False       # Lightning.qubit auf CPU (lightning.gpu falls verfügbar)
 
 TRAIN_RATIO      = 0.8
