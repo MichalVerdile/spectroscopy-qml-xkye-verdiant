@@ -573,7 +573,14 @@ def main() -> None:
                 best_epoch = epoch
                 best_thresholds = current_thresholds.astype(np.float32, copy=True)
                 torch.save(model.state_dict(), checkpoint_path)
-                write_threshold_artifact(threshold_path, label_names, best_thresholds)
+                write_threshold_artifact(
+                    threshold_path,
+                    label_names,
+                    best_thresholds,
+                    args.threshold_mode,
+                    args.threshold_target_metric,
+                    best_epoch,
+                )
 
             if epoch >= args.min_epochs_before_stopping and early_stopping.step(early_stopping_score):
                 print(f"Stopping early at epoch {epoch}.")
