@@ -1,0 +1,14 @@
+Cantor-Quanten IR-Klassifikator — Trainingszusammenfassung
+==================================================
+max_files         : 1
+samples           : 3235
+batch_size        : 8
+epochs_run        : 5
+loss              : Focal(α=0.25,γ=2.0)
+pos_weight_max    : 50.0
+shared_quarters   : False
+best_blended      : 0.2783
+test_f1_micro     : 0.3440
+test_f1_macro     : 0.1883
+test_loss         : 0.0807
+training_time     : 932s

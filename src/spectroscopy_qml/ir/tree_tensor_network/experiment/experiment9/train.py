@@ -1,4 +1,4 @@
-"""Training entry point for experiment 6."""
+"""Training entry point for experiment 9."""
 
 from __future__ import annotations
 
@@ -45,23 +45,22 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     write_epoch_details,
     write_threshold_artifact,
 )
-
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import (  # noqa: E402
+from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment9.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
-    TTNIRClassifier6,
+    TTNIRClassifier9,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Train experiment6: TTN IR classifier with raw, first- and second-derivative channels."
+        description="Train experiment9: TTN IR classifier with derivative channels and a direct residual leaf projection."
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results"),
+        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment9/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
@@ -72,7 +71,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
     parser.add_argument("--segment-mode", choices=["overlap", "dual_offset"], default="overlap")
     parser.add_argument("--segment-offset", type=int, default=None)
-    parser.add_argument("--leaf-hidden-dim", type=int, default=None)
     parser.add_argument("--leaf-dropout", type=float, default=0.05)
     parser.add_argument("--leaf-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--merge-mode", choices=["strict", "relaxed"], default="relaxed")
@@ -149,8 +147,8 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     return cache_dir / f"ir_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
 
 
-def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
-    return TTNIRClassifier6(
+def build_model(args: argparse.Namespace) -> TTNIRClassifier9:
+    return TTNIRClassifier9(
         num_labels=args.num_labels,
         chi=args.chi,
         input_dim=args.input_dim,
@@ -158,7 +156,6 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
         segment_stride=args.segment_stride,
         segment_mode=args.segment_mode,
         segment_offset=args.segment_offset,
-        leaf_hidden_dim=args.leaf_hidden_dim,
         leaf_dropout=args.leaf_dropout,
         leaf_renormalize_output=args.leaf_renormalize_output,
         merge_mode=args.merge_mode,
@@ -171,7 +168,7 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
 
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
-    print("TTN IR Experiment6 Training")
+    print("TTN IR Experiment9 Training")
     print("=" * 80)
     print(f"Data dir:                 {args.data_dir}")
     print(f"Output dir:               {args.output_dir}")
@@ -179,12 +176,13 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Input dim:                {args.input_dim}")
     print(f"Num labels:               {args.num_labels}")
     print(f"Chi:                      {args.chi}")
+    print("Leaf encoder:             direct residual projection (no hidden layer)")
     print(f"Feature channels:         raw + first_derivative + second_derivative")
     print(f"Window size:              {args.segment_window_size}")
     print(f"Stride:                   {args.segment_stride}")
     print(f"Segment mode:             {args.segment_mode}")
     print(f"Segment offset:           {args.segment_offset}")
-    print(f"Leaf hidden dim:          {args.leaf_hidden_dim}")
+    print(f"Leaf dropout:             {args.leaf_dropout}")
     print(f"Merge mode:               {args.merge_mode}")
     print(f"Merge residual weight:    {args.merge_residual_weight}")
     print(f"Merge renormalize output: {args.merge_renormalize_output}")
@@ -220,8 +218,9 @@ def write_summary(
     final_thresholds: np.ndarray,
 ) -> None:
     with summary_path.open("w") as handle:
-        handle.write("TTN IR Experiment6 Summary\n")
+        handle.write("TTN IR Experiment9 Summary\n")
         handle.write("=" * 80 + "\n")
+        handle.write("Leaf encoder:              direct residual projection (no hidden layer)\n")
         handle.write("Feature channels:          raw + first_derivative + second_derivative\n")
         handle.write(f"Elapsed seconds:           {elapsed_seconds:.2f}\n")
         handle.write(f"Epochs completed:          {completed_epochs}/{requested_epochs}\n")
@@ -244,7 +243,6 @@ def sanitize_binary_targets_and_probs(
     labels: np.ndarray,
     probs: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Stabilize labels/probabilities before metric and threshold code."""
     safe_labels = np.nan_to_num(labels, nan=0.0, posinf=1.0, neginf=0.0)
     safe_labels = (safe_labels >= 0.5).astype(np.int32, copy=False)
 
@@ -254,7 +252,6 @@ def sanitize_binary_targets_and_probs(
 
 
 def ensure_finite_tensor(tensor: torch.Tensor, name: str, stage: str, batch_index: int) -> None:
-    """Fail fast when numerics break instead of masking them in later metrics."""
     if torch.isfinite(tensor).all():
         return
     raise RuntimeError(
@@ -263,7 +260,6 @@ def ensure_finite_tensor(tensor: torch.Tensor, name: str, stage: str, batch_inde
 
 
 def resolve_compile_enabled(requested_compile: bool, device: torch.device) -> bool:
-    """Disable torch.compile automatically on backends where it is unstable here."""
     return bool(requested_compile and device.type != "mps")
 
 
@@ -276,7 +272,6 @@ def train_epoch_amp(
     grad_clip_norm: float | None = None,
     scaler: GradScaler | None = None,
 ) -> tuple[float, dict[str, float | np.ndarray]]:
-    """AMP-aware training epoch."""
     model.train()
     total_loss = 0.0
     labels_list: list[np.ndarray] = []
@@ -327,7 +322,6 @@ def evaluate_with_probs_amp(
     device,
     use_amp: bool = False,
 ) -> tuple[float, np.ndarray, np.ndarray]:
-    """AMP-aware evaluation."""
     model.eval()
     total_loss = 0.0
     labels_list: list[np.ndarray] = []

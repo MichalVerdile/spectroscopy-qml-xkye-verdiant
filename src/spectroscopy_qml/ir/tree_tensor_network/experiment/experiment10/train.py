@@ -1,4 +1,4 @@
-"""Training entry point for experiment 6."""
+"""Training entry point for experiment 10."""
 
 from __future__ import annotations
 
@@ -45,23 +45,22 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     write_epoch_details,
     write_threshold_artifact,
 )
-
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import (  # noqa: E402
+from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
-    TTNIRClassifier6,
+    TTNIRClassifier10,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Train experiment6: TTN IR classifier with raw, first- and second-derivative channels."
+        description="Train experiment10: TTN IR classifier with direct segmented states and no leaf encoder."
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results"),
+        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
@@ -72,9 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
     parser.add_argument("--segment-mode", choices=["overlap", "dual_offset"], default="overlap")
     parser.add_argument("--segment-offset", type=int, default=None)
-    parser.add_argument("--leaf-hidden-dim", type=int, default=None)
-    parser.add_argument("--leaf-dropout", type=float, default=0.05)
-    parser.add_argument("--leaf-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--segment-state-normalize", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--merge-mode", choices=["strict", "relaxed"], default="relaxed")
     parser.add_argument("--merge-residual-weight", type=float, default=0.1)
     parser.add_argument("--merge-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
@@ -149,8 +146,8 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     return cache_dir / f"ir_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
 
 
-def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
-    return TTNIRClassifier6(
+def build_model(args: argparse.Namespace) -> TTNIRClassifier10:
+    return TTNIRClassifier10(
         num_labels=args.num_labels,
         chi=args.chi,
         input_dim=args.input_dim,
@@ -158,9 +155,7 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
         segment_stride=args.segment_stride,
         segment_mode=args.segment_mode,
         segment_offset=args.segment_offset,
-        leaf_hidden_dim=args.leaf_hidden_dim,
-        leaf_dropout=args.leaf_dropout,
-        leaf_renormalize_output=args.leaf_renormalize_output,
+        segment_state_normalize=args.segment_state_normalize,
         merge_mode=args.merge_mode,
         merge_residual_weight=args.merge_residual_weight,
         merge_renormalize_output=args.merge_renormalize_output,
@@ -171,7 +166,7 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier6:
 
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
-    print("TTN IR Experiment6 Training")
+    print("TTN IR Experiment10 Training")
     print("=" * 80)
     print(f"Data dir:                 {args.data_dir}")
     print(f"Output dir:               {args.output_dir}")
@@ -179,12 +174,13 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Input dim:                {args.input_dim}")
     print(f"Num labels:               {args.num_labels}")
     print(f"Chi:                      {args.chi}")
+    print("Leaf encoder:             none (segments enter TTN directly)")
+    print(f"Segment state normalize:  {args.segment_state_normalize}")
     print(f"Feature channels:         raw + first_derivative + second_derivative")
     print(f"Window size:              {args.segment_window_size}")
     print(f"Stride:                   {args.segment_stride}")
     print(f"Segment mode:             {args.segment_mode}")
     print(f"Segment offset:           {args.segment_offset}")
-    print(f"Leaf hidden dim:          {args.leaf_hidden_dim}")
     print(f"Merge mode:               {args.merge_mode}")
     print(f"Merge residual weight:    {args.merge_residual_weight}")
     print(f"Merge renormalize output: {args.merge_renormalize_output}")
@@ -220,8 +216,9 @@ def write_summary(
     final_thresholds: np.ndarray,
 ) -> None:
     with summary_path.open("w") as handle:
-        handle.write("TTN IR Experiment6 Summary\n")
+        handle.write("TTN IR Experiment10 Summary\n")
         handle.write("=" * 80 + "\n")
+        handle.write("Leaf encoder:              none (segments enter TTN directly)\n")
         handle.write("Feature channels:          raw + first_derivative + second_derivative\n")
         handle.write(f"Elapsed seconds:           {elapsed_seconds:.2f}\n")
         handle.write(f"Epochs completed:          {completed_epochs}/{requested_epochs}\n")
@@ -231,8 +228,8 @@ def write_summary(
         handle.write(f"Best early-stop score:     {best_score:.6f}\n")
         handle.write(f"Best score metric:         {best_metric_name}\n")
         handle.write(f"Best val loss:             {best_val_loss:.6f}\n")
-        handle.write(f"Threshold mean:            {final_thresholds.mean():.6f}\n")
-        handle.write(f"Threshold std:             {final_thresholds.std():.6f}\n")
+        handle.write(f"Threshold mean:            {float(np.mean(final_thresholds)):.6f}\n")
+        handle.write(f"Threshold std:             {float(np.std(final_thresholds)):.6f}\n")
         handle.write(f"Test loss:                 {test_loss:.6f}\n")
         handle.write(f"Test f1_micro:             {float(test_metrics['f1_micro']):.6f}\n")
         handle.write(f"Test f1_macro:             {float(test_metrics['f1_macro']):.6f}\n")
@@ -240,16 +237,13 @@ def write_summary(
         handle.write(f"Test recall_micro:         {float(test_metrics['recall_micro']):.6f}\n")
 
 
-def sanitize_binary_targets_and_probs(
-    labels: np.ndarray,
-    probs: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Stabilize labels/probabilities before metric and threshold code."""
+def sanitize_binary_targets_and_probs(labels: np.ndarray, probs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     safe_labels = np.nan_to_num(labels, nan=0.0, posinf=1.0, neginf=0.0)
-    safe_labels = (safe_labels >= 0.5).astype(np.int32, copy=False)
+    safe_labels = np.clip(safe_labels, 0.0, 1.0)
+    safe_labels = (safe_labels >= 0.5).astype(np.float32)
 
     safe_probs = np.nan_to_num(probs, nan=0.5, posinf=1.0, neginf=0.0)
-    safe_probs = np.clip(safe_probs.astype(np.float32, copy=False), 0.0, 1.0)
+    safe_probs = np.clip(safe_probs, 0.0, 1.0).astype(np.float32)
     return safe_labels, safe_probs
 
 
@@ -275,8 +269,7 @@ def train_epoch_amp(
     device,
     grad_clip_norm: float | None = None,
     scaler: GradScaler | None = None,
-) -> tuple[float, dict[str, float | np.ndarray]]:
-    """AMP-aware training epoch."""
+):
     model.train()
     total_loss = 0.0
     labels_list: list[np.ndarray] = []
@@ -296,38 +289,32 @@ def train_epoch_amp(
 
         if use_amp:
             scaler.scale(loss).backward()
-            if grad_clip_norm is not None and grad_clip_norm > 0.0:
+            if grad_clip_norm is not None:
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
             scaler.step(optimizer)
             scaler.update()
         else:
             loss.backward()
-            if grad_clip_norm is not None and grad_clip_norm > 0.0:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+            if grad_clip_norm is not None:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
             optimizer.step()
 
         total_loss += loss.item() * spectra.size(0)
         labels_list.append(labels.detach().cpu().numpy())
-        probs_list.append(torch.sigmoid(logits.float()).detach().cpu().numpy())
+        probs_list.append(torch.sigmoid(logits.detach().float()).cpu().numpy())
 
     all_labels = np.concatenate(labels_list, axis=0)
     all_probs = np.concatenate(probs_list, axis=0)
     all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
-    metrics = compute_metrics(all_labels, threshold_predictions(all_probs, 0.5))
+    preds = threshold_predictions(all_probs, 0.5)
+    metrics = compute_metrics(all_labels, preds)
     avg_loss = total_loss / len(dataloader.dataset)
     return avg_loss, metrics
 
 
 @torch.no_grad()
-def evaluate_with_probs_amp(
-    model,
-    dataloader,
-    criterion,
-    device,
-    use_amp: bool = False,
-) -> tuple[float, np.ndarray, np.ndarray]:
-    """AMP-aware evaluation."""
+def evaluate_with_probs_amp(model, dataloader, criterion, device, use_amp: bool = False):
     model.eval()
     total_loss = 0.0
     labels_list: list[np.ndarray] = []
@@ -567,62 +554,45 @@ def main() -> None:
                 val_metrics=val_metrics,
                 early_stopping_score=early_stopping_score,
             )
-            completed_epochs = epoch
+            details_handle.flush()
 
             print(
                 f"Epoch {epoch:03d} | "
                 f"train_loss={train_loss:.4f} | "
                 f"val_loss={val_loss:.4f} | "
-                f"val_f1_micro={float(val_metrics['f1_micro']):.4f} | "
-                f"val_f1_macro={float(val_metrics['f1_macro']):.4f} | "
+                f"val_f1_micro={val_metrics['f1_micro']:.4f} | "
+                f"val_f1_macro={val_metrics['f1_macro']:.4f} | "
                 f"score={early_stopping_score:.4f} | "
                 f"lr={current_lr:.2e}"
             )
 
-            if early_stopping_score > best_score + args.early_stopping_min_delta:
+            completed_epochs = epoch
+            if early_stopping_score > best_score:
                 best_score = early_stopping_score
                 best_val_loss = val_loss
                 best_epoch = epoch
-                best_thresholds = current_thresholds.copy()
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": model.state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "best_score": best_score,
-                        "best_val_loss": best_val_loss,
-                        "val_metrics": {
-                            "f1_micro": float(val_metrics["f1_micro"]),
-                            "f1_macro": float(val_metrics["f1_macro"]),
-                            "precision_micro": float(val_metrics["precision_micro"]),
-                            "recall_micro": float(val_metrics["recall_micro"]),
-                            "per_class_f1": np.asarray(val_metrics["per_class_f1"], dtype=np.float32),
-                        },
-                        "thresholds": best_thresholds,
-                        "split_path": str(split_path),
-                    },
-                    checkpoint_path,
-                )
+                best_thresholds = current_thresholds.astype(np.float32, copy=True)
+                torch.save(model.state_dict(), checkpoint_path)
                 write_threshold_artifact(
-                    threshold_path=threshold_path,
-                    label_names=label_names,
-                    thresholds=best_thresholds,
-                    threshold_mode=args.threshold_mode,
-                    threshold_target_metric=args.threshold_target_metric,
-                    best_epoch=best_epoch,
+                    threshold_path,
+                    label_names,
+                    best_thresholds,
+                    args.threshold_mode,
+                    args.threshold_target_metric,
+                    best_epoch,
                 )
 
-            if epoch >= args.min_epochs_before_stopping and early_stopping(early_stopping_score):
+            if epoch >= args.min_epochs_before_stopping and early_stopping.step(early_stopping_score):
                 print(f"Stopping early at epoch {epoch}.")
                 break
+            if epoch >= args.min_epochs_before_stopping and early_stopping.counter > 0:
+                print(f"EarlyStopping counter: {early_stopping.counter}/{early_stopping.patience}")
 
-    if best_epoch == 0:
-        raise RuntimeError("Training finished without recording a best checkpoint.")
+    print("\nTraining complete.")
 
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    model = model.to(device)
-    final_thresholds = np.asarray(checkpoint["thresholds"], dtype=np.float32)
+    best_state = torch.load(checkpoint_path, map_location=device)
+    model.load_state_dict(best_state)
+
     test_loss, test_labels, test_probs = evaluate_with_probs_amp(
         model,
         test_loader,
@@ -630,10 +600,17 @@ def main() -> None:
         device,
         use_amp=use_amp,
     )
-    test_preds = threshold_predictions(test_probs, final_thresholds)
+    test_preds = threshold_predictions(test_probs, best_thresholds)
     test_metrics = compute_metrics(test_labels, test_preds)
 
     elapsed_seconds = time.time() - start_time
+    print(f"Best epoch:      {best_epoch}")
+    print(f"Best score:      {best_score:.4f} ({args.early_stopping_metric})")
+    print(f"Best val loss:   {best_val_loss:.4f}")
+    print(f"Test loss:       {test_loss:.4f}")
+    print(f"Test f1_micro:   {test_metrics['f1_micro']:.4f}")
+    print(f"Test f1_macro:   {test_metrics['f1_macro']:.4f}")
+
     write_summary(
         summary_path=summary_path,
         elapsed_seconds=elapsed_seconds,
@@ -648,16 +625,8 @@ def main() -> None:
         best_val_loss=best_val_loss,
         test_loss=test_loss,
         test_metrics=test_metrics,
-        final_thresholds=final_thresholds,
+        final_thresholds=best_thresholds,
     )
-
-    print("\nTraining complete.")
-    print(f"Best epoch:      {best_epoch}")
-    print(f"Best score:      {best_score:.4f} ({args.early_stopping_metric})")
-    print(f"Best val loss:   {best_val_loss:.4f}")
-    print(f"Test loss:       {test_loss:.4f}")
-    print(f"Test f1_micro:   {float(test_metrics['f1_micro']):.4f}")
-    print(f"Test f1_macro:   {float(test_metrics['f1_macro']):.4f}")
     print(f"Summary:         {summary_path}")
 
 
