@@ -1,0 +1,19 @@
+TTN IR Experiment10 Summary
+================================================================================
+Leaf encoder:              none (segments enter TTN directly)
+Feature channels:          raw + first_derivative + second_derivative
+Elapsed seconds:           20315.69
+Epochs completed:          51/200
+Data files used:           245/245
+Fixed split artifact:      src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results/data_split_seed42_all.npz
+Best epoch:                31
+Best early-stop score:     0.740312
+Best score metric:         blended_f1
+Best val loss:             0.316374
+Threshold mean:            0.544054
+Threshold std:             0.245031
+Test loss:                 0.403492
+Test f1_micro:             0.850121
+Test f1_macro:             0.581328
+Test precision_micro:      0.842417
+Test recall_micro:         0.857967
