@@ -1,4 +1,4 @@
-"""Tests for experiments 10.2, 10.3, and 10.4 feature maps and models.
+"""Tests for experiments 10.2, 10.3, 10.4, and 10.5 feature maps and models.
 
 Covers the invariants that were previously unprotected:
   - Zero/flat input produces near-zero derivative channels (pos_emb fix).
@@ -23,6 +23,10 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_3.model imp
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_4.model import (
     SavitzkyGolayFeatureMap,
     TTNIRClassifier10_4,
+)
+from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_5.model import (
+    SavitzkyGolayFeatureMapNoNorm,
+    TTNIRClassifier10_5,
 )
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import (
     SpectralDerivativeFeatureMap,
@@ -164,12 +168,48 @@ class TestSavitzkyGolayFeatureMap:
         assert torch.isfinite(SavitzkyGolayFeatureMap()(torch.randn(4, 1800))).all()
 
 
+class TestSavitzkyGolayFeatureMapNoNorm:
+    def test_output_shape(self) -> None:
+        fm = SavitzkyGolayFeatureMapNoNorm()
+        assert fm(torch.randn(4, 1800)).shape == (4, 1800, 3)
+
+    def test_zero_input_derivatives_near_zero(self) -> None:
+        fm = SavitzkyGolayFeatureMapNoNorm(window_length=11, polyorder=3)
+        x = torch.zeros(1, 1800)
+        d1 = fm._apply_kernel(x, fm._k1)
+        d2 = fm._apply_kernel(x, fm._k2)
+        assert d1.abs().max().item() < 1e-5
+        assert d2.abs().max().item() < 1e-5
+
+    def test_leaves_channels_unscaled_after_filtering(self) -> None:
+        fm = SavitzkyGolayFeatureMapNoNorm(window_length=11, polyorder=3)
+        x = torch.randn(2, 1800)
+        out = fm(x)
+        assert torch.allclose(out[:, :, 0], fm._apply_kernel(x, fm._k0))
+        assert torch.allclose(out[:, :, 1], fm._apply_kernel(x, fm._k1))
+        assert torch.allclose(out[:, :, 2], fm._apply_kernel(x, fm._k2))
+
+    def test_ramp_d1_positive(self) -> None:
+        fm = SavitzkyGolayFeatureMapNoNorm(window_length=11, polyorder=3)
+        x = torch.linspace(0.0, 1.0, 1800).unsqueeze(0)
+        d1 = fm._apply_kernel(x, fm._k1)
+        assert d1[0, 100:-100].mean().item() > 0
+
+    def test_invalid_even_window_raises(self) -> None:
+        with pytest.raises(ValueError, match="odd"):
+            SavitzkyGolayFeatureMapNoNorm(window_length=10)
+
+    def test_all_finite(self) -> None:
+        assert torch.isfinite(SavitzkyGolayFeatureMapNoNorm()(torch.randn(4, 1800))).all()
+
+
 # ── Model forward pass tests ──────────────────────────────────────────────────
 
 @pytest.mark.parametrize("ModelCls,kwargs", [
     (TTNIRClassifier10_2, {}),
     (TTNIRClassifier10_3, {}),
     (TTNIRClassifier10_4, {}),
+    (TTNIRClassifier10_5, {}),
 ])
 def test_model_forward_shape_and_finite(ModelCls, kwargs) -> None:
     model = ModelCls(num_labels=5, chi=8, input_dim=1800, **kwargs)
@@ -183,6 +223,7 @@ def test_model_forward_shape_and_finite(ModelCls, kwargs) -> None:
     TTNIRClassifier10_2,
     TTNIRClassifier10_3,
     TTNIRClassifier10_4,
+    TTNIRClassifier10_5,
 ])
 def test_zero_spectrum_derivative_channels_not_dominated_by_pos_emb(ModelCls) -> None:
     """After the pos_emb fix: derivative channels (ch 1, ch 2) for zero input must
@@ -204,6 +245,7 @@ def test_zero_spectrum_derivative_channels_not_dominated_by_pos_emb(ModelCls) ->
     TTNIRClassifier10_2,
     TTNIRClassifier10_3,
     TTNIRClassifier10_4,
+    TTNIRClassifier10_5,
 ])
 def test_sigmoid_output_in_unit_interval(ModelCls) -> None:
     model = ModelCls(num_labels=5, chi=8, input_dim=1800)

@@ -130,7 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--loss-type", choices=["bce"], default="bce")
+    parser.add_argument("--loss-type", choices=["bce", "focal"], default="bce")
+    parser.add_argument("--focal-gamma", type=float, default=2.0)
     parser.add_argument("--pos-weight-power", type=float, default=0.5)
     parser.add_argument("--pos-weight-max", type=float, default=None)
     parser.add_argument("--threshold-mode", choices=["global", "per_class"], default="per_class")
@@ -320,7 +321,7 @@ def main() -> None:
         f"mean={pos_weight.mean().item():.2f}"
     )
 
-    criterion = build_loss(args.loss_type, pos_weight=pos_weight)
+    criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
     run_real_batch_preflight(model, train_loader, device, criterion)
 
     if args.check_only:

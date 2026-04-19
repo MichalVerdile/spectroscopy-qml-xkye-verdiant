@@ -1,4 +1,4 @@
-"""Training entry point for experiment 10.2."""
+"""Training entry point for experiment 10.5."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from torch.amp import GradScaler, autocast
+from torch.amp import GradScaler
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -45,34 +45,29 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     write_epoch_details,
     write_threshold_artifact,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_2.model import (  # noqa: E402
-    DEFAULT_SEGMENT_STRIDE,
-    DEFAULT_SEGMENT_WINDOW_SIZE,
-    TTNIRClassifier10_2,
-)
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
-    ensure_finite_tensor,
     evaluate_with_probs_amp,
     resolve_cache_path,
     resolve_compile_enabled,
-    sanitize_binary_targets_and_probs,
     train_epoch_amp,
     write_summary,
+)
+from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_5.model import (  # noqa: E402
+    DEFAULT_SEGMENT_STRIDE,
+    DEFAULT_SEGMENT_WINDOW_SIZE,
+    TTNIRClassifier10_5,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description=(
-            "Train experiment10.2: TTN IR classifier with Lorentzian-smoothed feature "
-            "channels, direct segmented states, and linear readout."
-        )
+        description="Train experiment10.5: TTN IR classifier with unnormalised Savitzky-Golay feature channels."
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results"),
+        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_5/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
@@ -88,20 +83,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--merge-residual-weight", type=float, default=0.1)
     parser.add_argument("--merge-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
-        "--lorentz-gamma",
-        type=float,
-        default=3.0,
-        help="Half-width at half-maximum of the Lorentzian smoothing kernel (in data points).",
+        "--sg-window-length", type=int, default=11,
+        help="SG filter window length (odd number). Larger = more smoothing.",
     )
     parser.add_argument(
-        "--lorentz-kernel-half-width",
-        type=int,
-        default=15,
-        help="Kernel half-width in data points (kernel is truncated at ±this value).",
-    )
-    parser.add_argument(
-        "--lorentz-norm-mode", choices=["max_abs", "z_score", "percentile"], default="max_abs",
-        help="Per-channel normalisation: max_abs (original), z_score (÷std), percentile (÷99th pct).",
+        "--sg-polyorder", type=int, default=3,
+        help="SG polynomial order. Higher = sharper features preserved.",
     )
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--cache-path", type=Path, default=None)
@@ -136,35 +123,20 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["f1_micro", "f1_macro", "blended_f1"],
         default="blended_f1",
     )
-    parser.add_argument(
-        "--early-stopping-blend-alpha",
-        type=float,
-        default=0.5,
-        help="Macro weight for blended_f1; micro uses (1 - alpha).",
-    )
+    parser.add_argument("--early-stopping-blend-alpha", type=float, default=0.5)
     parser.add_argument("--early-stopping-patience", type=int, default=20)
     parser.add_argument("--early-stopping-min-delta", type=float, default=1e-4)
     parser.add_argument("--min-epochs-before-stopping", type=int, default=30)
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--check-only", action="store_true")
     parser.add_argument("--preflight-batch-size", type=int, default=4)
-    parser.add_argument(
-        "--amp",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Enable mixed-precision (AMP) training for ~2x speedup.",
-    )
-    parser.add_argument(
-        "--compile",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Use torch.compile to fuse ops (requires PyTorch 2.0+).",
-    )
+    parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--compile", action=argparse.BooleanOptionalAction, default=True)
     return parser
 
 
-def build_model(args: argparse.Namespace) -> TTNIRClassifier10_2:
-    return TTNIRClassifier10_2(
+def build_model(args: argparse.Namespace) -> TTNIRClassifier10_5:
+    return TTNIRClassifier10_5(
         num_labels=args.num_labels,
         chi=args.chi,
         input_dim=args.input_dim,
@@ -176,15 +148,14 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier10_2:
         merge_mode=args.merge_mode,
         merge_residual_weight=args.merge_residual_weight,
         merge_renormalize_output=args.merge_renormalize_output,
-        lorentz_gamma=args.lorentz_gamma,
-        lorentz_kernel_half_width=args.lorentz_kernel_half_width,
-        lorentz_norm_mode=args.lorentz_norm_mode,
+        sg_window_length=args.sg_window_length,
+        sg_polyorder=args.sg_polyorder,
     )
 
 
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
-    print("TTN IR Experiment10.2 Training")
+    print("TTN IR Experiment10.5 Training")
     print("=" * 80)
     print(f"Data dir:                 {args.data_dir}")
     print(f"Output dir:               {args.output_dir}")
@@ -193,31 +164,25 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Num labels:               {args.num_labels}")
     print(f"Chi:                      {args.chi}")
     print("Leaf encoder:             none (segments enter TTN directly)")
-    print("Readout:                  linear (chi -> num_labels, no hidden expansion)")
+    print("Readout:                  linear (chi -> num_labels)")
+    print("Feature channels:         sg_smooth + sg_d1 + sg_d2 (unnormalised)")
+    print(f"SG window length:         {args.sg_window_length}")
+    print(f"SG polynomial order:      {args.sg_polyorder}")
     print(f"Segment state normalize:  {args.segment_state_normalize}")
-    print(f"Feature channels:         raw + lorentz_d1 + lorentz_d2")
-    print(f"Lorentz gamma:            {args.lorentz_gamma}")
-    print(f"Lorentz kernel half-width:{args.lorentz_kernel_half_width}")
     print(f"Window size:              {args.segment_window_size}")
     print(f"Stride:                   {args.segment_stride}")
     print(f"Segment mode:             {args.segment_mode}")
-    print(f"Segment offset:           {args.segment_offset}")
     print(f"Merge mode:               {args.merge_mode}")
     print(f"Merge residual weight:    {args.merge_residual_weight}")
-    print(f"Merge renormalize output: {args.merge_renormalize_output}")
     print(f"Threshold mode:           {args.threshold_mode}")
-    print(f"Threshold target metric:  {args.threshold_target_metric}")
     print(f"Early stop metric:        {args.early_stopping_metric}")
-    print(f"Min epochs before stop:   {args.min_epochs_before_stopping}")
     print(f"Loss type:                {args.loss_type}")
     print(f"Apply SNV:                {args.apply_snv}")
     print(f"Cache path:               {resolve_cache_path(args)}")
     print(f"Batch size:               {args.batch_size}")
     print(f"Epochs:                   {args.epochs}")
-    print(f"Max files:                {args.max_files}")
     print(f"Mixed precision (AMP):    {args.amp}")
     print(f"torch.compile:            {args.compile}")
-    print(f"Num workers:              {args.num_workers}")
 
 
 def main() -> None:
@@ -225,11 +190,11 @@ def main() -> None:
     args = parser.parse_args()
 
     if abs(args.train_ratio + args.val_ratio + args.test_ratio - 1.0) > 1e-6:
-        raise ValueError("train_ratio + val_ratio + test_ratio must sum to 1.0.")
+        raise ValueError("train/val/test ratios must sum to 1.0.")
     if args.threshold_mode == "per_class" and args.threshold_target_metric == "f1_micro":
-        raise ValueError("--threshold-mode per_class is incompatible with --threshold-target-metric f1_micro.")
+        raise ValueError("per_class threshold incompatible with f1_micro target.")
     if not args.data_dir.exists():
-        raise FileNotFoundError(f"Data directory does not exist: {args.data_dir}")
+        raise FileNotFoundError(f"Data directory not found: {args.data_dir}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     cache_path = resolve_cache_path(args)
@@ -239,14 +204,12 @@ def main() -> None:
     split_path = args.split_path or (args.output_dir / f"data_split_seed{args.seed}_{split_suffix}.npz")
     describe_args(args, split_path)
 
-    config_path = args.output_dir / "run_config.json"
+    (args.output_dir / "run_config.json").write_text(json.dumps(vars(args), indent=2, default=str) + "\n")
     checkpoint_path = args.output_dir / "ttn_ir_best.pt"
     log_path = args.output_dir / "training_log.csv"
     details_path = args.output_dir / "training_details.jsonl"
     summary_path = args.output_dir / "summary.txt"
     threshold_path = args.output_dir / "selected_thresholds.json"
-
-    config_path.write_text(json.dumps(vars(args), indent=2, default=str) + "\n")
 
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
@@ -269,10 +232,6 @@ def main() -> None:
         cache_path=cache_path,
         overwrite_cache=args.overwrite_cache,
     )
-    if X.shape[1] != args.input_dim:
-        raise RuntimeError(f"Loaded spectra have width {X.shape[1]}, expected {args.input_dim}.")
-    if y.shape[1] != args.num_labels:
-        raise RuntimeError(f"Loaded labels have width {y.shape[1]}, expected {args.num_labels}.")
 
     split_indices = load_or_create_split_indices(
         labels=y,
@@ -285,51 +244,26 @@ def main() -> None:
         overwrite=args.overwrite_split,
     )
     train_loader, val_loader, test_loader = prepare_dataloaders_from_split_indices(
-        X,
-        y,
-        split_indices,
+        X, y, split_indices,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         pin_memory=device.type == "cuda",
     )
 
     train_labels = y[split_indices["train"]]
-    pos_weight = get_pos_weight(
-        train_labels,
-        device,
-        power=args.pos_weight_power,
-        max_value=args.pos_weight_max,
-    )
-    print(
-        "Class weights: "
-        f"min={pos_weight.min().item():.2f}, "
-        f"max={pos_weight.max().item():.2f}, "
-        f"mean={pos_weight.mean().item():.2f}"
-    )
+    pos_weight = get_pos_weight(train_labels, device, power=args.pos_weight_power, max_value=args.pos_weight_max)
+    print(f"Class weights: min={pos_weight.min():.2f}, max={pos_weight.max():.2f}, mean={pos_weight.mean():.2f}")
 
-    criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
-    run_real_batch_preflight(model, train_loader, device, criterion)
+    model = model.to(device)
+    run_real_batch_preflight(model, train_loader, args, device)
 
     if args.check_only:
-        print("\nCheck-only mode finished successfully.")
+        print("\nCheck-only mode complete.")
         return
 
-    use_amp = args.amp and device.type == "cuda"
-    scaler = GradScaler() if use_amp else None
-    if use_amp:
-        print("Mixed precision (AMP) enabled.")
-    elif args.amp and device.type != "cuda":
-        print(f"AMP requested but device is {device.type}; falling back to fp32.")
-
-    compile_enabled = resolve_compile_enabled(args.compile, device)
-    if args.compile and not compile_enabled:
-        print(f"torch.compile requested but disabled on device {device.type}; using eager mode.")
-
-    if compile_enabled:
-        print("Compiling model with torch.compile...")
-        model = torch.compile(model)
-        print("Compilation done.")
-
+    use_amp = bool(args.amp and device.type in {"cuda", "mps"})
+    amp_device_type = "cuda" if device.type == "cuda" else "cpu"
+    scaler = GradScaler(amp_device_type, enabled=use_amp and device.type == "cuda")
     optimizer = Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     scheduler = ReduceLROnPlateau(
         optimizer,
@@ -338,175 +272,147 @@ def main() -> None:
         patience=args.lr_scheduler_patience,
         min_lr=args.lr_scheduler_min_lr,
     )
+    criterion = build_loss(
+        loss_type=args.loss_type,
+        pos_weight=pos_weight,
+        focal_gamma=args.focal_gamma,
+    )
+    compile_enabled = resolve_compile_enabled(args.compile, device)
+    if compile_enabled:
+        model = torch.compile(model)
+
+    threshold_grid = build_threshold_grid(args.threshold_grid_step)
     early_stopping = EarlyStopping(
         patience=args.early_stopping_patience,
         min_delta=args.early_stopping_min_delta,
-        mode="max",
     )
-    threshold_grid = build_threshold_grid(args.threshold_grid_step)
-    label_names = list(FUNCTIONAL_GROUPS.keys())
-    model = model.to(device)
 
-    print("\nStarting training...")
-    start_time = time.time()
-    best_score = -1.0
-    best_val_loss = float("inf")
-    best_epoch = 0
-    completed_epochs = 0
-    best_thresholds = np.full(args.num_labels, 0.5, dtype=np.float32)
+    best_state_dict = None
+    best_thresholds = None
+    best_val_metrics = None
 
-    with log_path.open("w", newline="") as log_handle, details_path.open("w") as details_handle:
-        writer = csv.writer(log_handle)
-        writer.writerow(
-            [
-                "epoch",
-                "train_loss",
-                "train_f1_micro",
-                "train_f1_macro",
-                "val_loss",
-                "val_f1_micro",
-                "val_f1_macro",
-                "early_stopping_score",
-                "threshold_mean",
-                "threshold_std",
-                "lr",
-            ]
-        )
+    with log_path.open("w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow([
+            "epoch", "train_loss", "val_loss", "f1_micro", "f1_macro",
+            "precision_micro", "recall_micro", "lr", "epoch_time_sec",
+        ])
 
         for epoch in range(1, args.epochs + 1):
-            train_loss, train_metrics = train_epoch_amp(
-                model,
-                train_loader,
-                criterion,
-                optimizer,
-                device,
-                grad_clip_norm=args.grad_clip_norm,
+            start_time = time.time()
+            train_loss = train_epoch_amp(
+                model=model,
+                loader=train_loader,
+                optimizer=optimizer,
+                criterion=criterion,
+                device=device,
                 scaler=scaler,
-            )
-            val_loss, val_labels, val_probs = evaluate_with_probs_amp(
-                model,
-                val_loader,
-                criterion,
-                device,
+                grad_clip_norm=args.grad_clip_norm,
                 use_amp=use_amp,
+                amp_device_type=amp_device_type,
             )
-            current_thresholds = tune_thresholds(
-                val_labels,
-                val_probs,
+
+            val_loss, val_probs, val_targets = evaluate_with_probs_amp(
+                model=model,
+                loader=val_loader,
+                criterion=criterion,
+                device=device,
+                use_amp=use_amp,
+                amp_device_type=amp_device_type,
+            )
+
+            thresholds = tune_thresholds(
+                probs=val_probs,
+                targets=val_targets,
                 threshold_mode=args.threshold_mode,
                 target_metric=args.threshold_target_metric,
                 threshold_grid=threshold_grid,
             )
-            val_preds = threshold_predictions(val_probs, current_thresholds)
-            val_metrics = compute_metrics(val_labels, val_preds)
-            early_stopping_score = select_early_stopping_score(
+            val_preds = threshold_predictions(val_probs, thresholds)
+            val_metrics = compute_metrics(val_targets, val_preds, val_probs)
+            epoch_time = time.time() - start_time
+            score = select_early_stopping_score(
                 val_metrics,
                 metric_name=args.early_stopping_metric,
                 blend_alpha=args.early_stopping_blend_alpha,
             )
 
-            scheduler.step(early_stopping_score)
-            current_lr = optimizer.param_groups[0]["lr"]
+            writer.writerow([
+                epoch,
+                train_loss,
+                val_loss,
+                val_metrics["f1_micro"],
+                val_metrics["f1_macro"],
+                val_metrics["precision_micro"],
+                val_metrics["recall_micro"],
+                optimizer.param_groups[0]["lr"],
+                epoch_time,
+            ])
 
-            writer.writerow(
-                [
-                    epoch,
-                    train_loss,
-                    float(train_metrics["f1_micro"]),
-                    float(train_metrics["f1_macro"]),
-                    val_loss,
-                    float(val_metrics["f1_micro"]),
-                    float(val_metrics["f1_macro"]),
-                    early_stopping_score,
-                    float(np.mean(current_thresholds)),
-                    float(np.std(current_thresholds)),
-                    current_lr,
-                ]
-            )
-            log_handle.flush()
             write_epoch_details(
-                details_handle,
+                details_path=details_path,
                 epoch=epoch,
-                label_names=label_names,
-                thresholds=current_thresholds,
-                train_metrics=train_metrics,
+                train_loss=train_loss,
+                val_loss=val_loss,
                 val_metrics=val_metrics,
-                early_stopping_score=early_stopping_score,
+                selected_thresholds=thresholds,
+                epoch_time_sec=epoch_time,
+                learning_rate=optimizer.param_groups[0]["lr"],
             )
-            details_handle.flush()
 
             print(
                 f"Epoch {epoch:03d} | "
-                f"train_loss={train_loss:.4f} | "
-                f"val_loss={val_loss:.4f} | "
-                f"val_f1_micro={val_metrics['f1_micro']:.4f} | "
-                f"val_f1_macro={val_metrics['f1_macro']:.4f} | "
-                f"score={early_stopping_score:.4f} | "
-                f"lr={current_lr:.2e}"
+                f"train_loss={train_loss:.4f} val_loss={val_loss:.4f} "
+                f"f1_micro={val_metrics['f1_micro']:.4f} f1_macro={val_metrics['f1_macro']:.4f}"
             )
 
-            completed_epochs = epoch
-            if early_stopping_score > best_score:
-                best_score = early_stopping_score
-                best_val_loss = val_loss
-                best_epoch = epoch
-                best_thresholds = current_thresholds.astype(np.float32, copy=True)
-                torch.save(model.state_dict(), checkpoint_path)
-                write_threshold_artifact(
-                    threshold_path,
-                    label_names,
-                    best_thresholds,
-                    args.threshold_mode,
-                    args.threshold_target_metric,
-                    best_epoch,
-                )
+            scheduler.step(score)
 
-            if epoch >= args.min_epochs_before_stopping and early_stopping(early_stopping_score):
-                print(f"Stopping early at epoch {epoch}.")
+            if best_val_metrics is None or score > select_early_stopping_score(
+                best_val_metrics,
+                metric_name=args.early_stopping_metric,
+                blend_alpha=args.early_stopping_blend_alpha,
+            ):
+                best_state_dict = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                best_thresholds = thresholds
+                best_val_metrics = val_metrics
+                torch.save(best_state_dict, checkpoint_path)
+                write_threshold_artifact(threshold_path, best_thresholds)
+
+            if epoch >= args.min_epochs_before_stopping and early_stopping.step(score):
+                print(f"Early stopping triggered at epoch {epoch}.")
                 break
-            if epoch >= args.min_epochs_before_stopping and early_stopping.counter > 0:
-                print(f"EarlyStopping counter: {early_stopping.counter}/{early_stopping.patience}")
 
-    print("\nTraining complete.")
+    if best_state_dict is None or best_thresholds is None or best_val_metrics is None:
+        raise RuntimeError("Training finished without a best checkpoint.")
 
-    best_state = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(best_state)
-
-    test_loss, test_labels, test_probs = evaluate_with_probs_amp(
-        model,
-        test_loader,
-        criterion,
-        device,
+    model.load_state_dict(best_state_dict)
+    test_loss, test_probs, test_targets = evaluate_with_probs_amp(
+        model=model,
+        loader=test_loader,
+        criterion=criterion,
+        device=device,
         use_amp=use_amp,
+        amp_device_type=amp_device_type,
     )
     test_preds = threshold_predictions(test_probs, best_thresholds)
-    test_metrics = compute_metrics(test_labels, test_preds)
-
-    elapsed_seconds = time.time() - start_time
-    print(f"Best epoch:      {best_epoch}")
-    print(f"Best score:      {best_score:.4f} ({args.early_stopping_metric})")
-    print(f"Best val loss:   {best_val_loss:.4f}")
-    print(f"Test loss:       {test_loss:.4f}")
-    print(f"Test f1_micro:   {test_metrics['f1_micro']:.4f}")
-    print(f"Test f1_macro:   {test_metrics['f1_macro']:.4f}")
+    test_metrics = compute_metrics(test_targets, test_preds, test_probs)
 
     write_summary(
         summary_path=summary_path,
-        elapsed_seconds=elapsed_seconds,
-        completed_epochs=completed_epochs,
-        requested_epochs=args.epochs,
+        args=args,
         used_data_files=used_data_files,
-        total_data_files=total_data_files,
-        split_path=split_path,
-        best_epoch=best_epoch,
-        best_score=best_score,
-        best_metric_name=args.early_stopping_metric,
-        best_val_loss=best_val_loss,
+        train_size=len(split_indices["train"]),
+        val_size=len(split_indices["val"]),
+        test_size=len(split_indices["test"]),
+        best_val_metrics=best_val_metrics,
         test_loss=test_loss,
         test_metrics=test_metrics,
-        final_thresholds=best_thresholds,
+        thresholds=best_thresholds,
     )
-    print(f"Summary:         {summary_path}")
+    print("\nTraining complete.")
+    print(f"Best validation f1_micro: {best_val_metrics['f1_micro']:.4f}")
+    print(f"Test f1_micro:            {test_metrics['f1_micro']:.4f}")
 
 
 if __name__ == "__main__":
