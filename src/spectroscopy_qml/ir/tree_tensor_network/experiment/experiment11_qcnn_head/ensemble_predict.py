@@ -35,6 +35,10 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment11_qcnn_head.m
 ALL_LABEL_NAMES = list(FUNCTIONAL_GROUPS.keys())
 
 
+def parse_indices(value: str) -> list[int]:
+    return [int(x.strip()) for x in value.split(",") if x.strip()]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Evaluate CNN + specialist-head ensemble on hard classes."
@@ -57,6 +61,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--alpha", type=float, default=1.0,
                         help="Blend factor: 1.0 = hard replace with specialist probs.")
+    parser.add_argument(
+        "--override-indices",
+        type=parse_indices,
+        default=None,
+        help=(
+            "Optional comma-separated global class indices to override/blend. "
+            "Must be a subset of the specialist classes. Defaults to all specialists."
+        ),
+    )
     return parser
 
 
@@ -133,6 +146,16 @@ def main() -> None:
     specialist_map = json.loads((args.specialist_dir / "specialist_map.json").read_text())
     specialist_indices = specialist_map["specialist_indices"]
     specialist_names = specialist_map["specialist_names"]
+    specialist_local_by_global = {idx: local for local, idx in enumerate(specialist_indices)}
+    override_indices = specialist_indices if args.override_indices is None else args.override_indices
+    unknown_override_indices = sorted(set(override_indices) - set(specialist_indices))
+    if unknown_override_indices:
+        raise ValueError(
+            "--override-indices must be a subset of specialist classes. "
+            f"Unknown for this run: {unknown_override_indices}; "
+            f"available: {specialist_indices}."
+        )
+    override_names = [ALL_LABEL_NAMES[i] for i in override_indices]
     head_type = specialist_map.get("head_type", "qcnn")
     device = resolve_head_device(args.device, head_type)
     thresholds = load_thresholds(args.specialist_dir)
@@ -176,7 +199,8 @@ def main() -> None:
 
     cnn_preds = (cnn_probs >= 0.5).astype(np.int32)
     ensemble_probs = cnn_probs.copy()
-    for local_idx, global_idx in enumerate(specialist_indices):
+    for global_idx in override_indices:
+        local_idx = specialist_local_by_global[global_idx]
         ensemble_probs[:, global_idx] = (
             args.alpha * specialist_probs[:, local_idx]
             + (1.0 - args.alpha) * ensemble_probs[:, global_idx]
@@ -194,6 +218,8 @@ def main() -> None:
     payload = {
         "specialist_names": specialist_names,
         "specialist_indices": specialist_indices,
+        "override_names": override_names,
+        "override_indices": override_indices,
         "alpha": args.alpha,
         "cnn_metrics": {
             k: (np.asarray(v).tolist() if isinstance(v, np.ndarray) else float(v))
@@ -214,6 +240,7 @@ def main() -> None:
     print(f"CNN f1_micro:      {cnn_metrics['f1_micro']:.4f}")
     print(f"Ensemble f1_micro: {ensemble_metrics['f1_micro']:.4f}")
     print(f"Ensemble f1_macro: {ensemble_metrics['f1_macro']:.4f}")
+    print(f"Override classes:  {', '.join(override_names)}")
     print(f"Saved ensemble report to {out_path}")
 
 
