@@ -5,15 +5,17 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
 import sys
 import time
+import zipfile
 from pathlib import Path
 
 import numpy as np
 import torch
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 
 CURRENT_DIR = Path(__file__).resolve().parent
 SRC_DIR = Path(__file__).resolve().parents[5]
@@ -80,6 +82,25 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--qcnn-projection-hidden-dim", type=int, default=64)
     parser.add_argument("--dropout", type=float, default=0.2)
     parser.add_argument("--batch-size", type=int, default=1024)
+    parser.add_argument(
+        "--memmap-features",
+        action="store_true",
+        help=(
+            "Use disk-backed .npy arrays extracted from the feature .npz. "
+            "Recommended for full-dataset feature files."
+        ),
+    )
+    parser.add_argument(
+        "--memmap-dir",
+        type=Path,
+        default=None,
+        help="Directory for extracted .npy feature/label arrays used by --memmap-features.",
+    )
+    parser.add_argument(
+        "--no-feature-normalize",
+        action="store_true",
+        help="Disable z-score normalization of CNN features.",
+    )
     parser.add_argument("--epochs", type=int, default=120)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--weight-decay", type=float, default=1e-5)
@@ -125,6 +146,94 @@ def resolve_head_device(requested_device: str, head_type: str) -> torch.device:
     return device
 
 
+class IndexedFeatureDataset(Dataset):
+    """Lazy feature dataset that avoids materializing split tensors."""
+
+    def __init__(
+        self,
+        features: np.ndarray,
+        labels: np.ndarray,
+        indices: np.ndarray,
+        label_indices: list[int],
+        feature_mean: np.ndarray | None = None,
+        feature_std: np.ndarray | None = None,
+    ) -> None:
+        self.features = features
+        self.labels = labels
+        self.indices = np.asarray(indices, dtype=np.int64)
+        self.label_indices = np.asarray(label_indices, dtype=np.int64)
+        self.feature_mean = feature_mean
+        self.feature_std = feature_std
+
+    def __len__(self) -> int:
+        return int(self.indices.shape[0])
+
+    def _make_item(self, row_index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        x = np.asarray(self.features[row_index], dtype=np.float32)
+        if self.feature_mean is not None and self.feature_std is not None:
+            x = (x - self.feature_mean) / self.feature_std
+        x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32, copy=False)
+        y = np.asarray(self.labels[row_index, self.label_indices], dtype=np.float32)
+        return torch.from_numpy(np.array(x, copy=True)), torch.from_numpy(np.array(y, copy=True))
+
+    def __getitem__(self, item: int) -> tuple[torch.Tensor, torch.Tensor]:
+        return self._make_item(int(self.indices[item]))
+
+    def __getitems__(self, items: list[int]) -> list[tuple[torch.Tensor, torch.Tensor]]:
+        # PyTorch's map-style fetcher uses this batched path when available.
+        row_indices = self.indices[np.asarray(items, dtype=np.int64)]
+        x = np.asarray(self.features[row_indices], dtype=np.float32)
+        if self.feature_mean is not None and self.feature_std is not None:
+            x = (x - self.feature_mean) / self.feature_std
+        x = np.nan_to_num(x, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32, copy=False)
+        y = np.asarray(self.labels[row_indices[:, None], self.label_indices], dtype=np.float32)
+        return [
+            (torch.from_numpy(np.array(x_i, copy=True)), torch.from_numpy(np.array(y_i, copy=True)))
+            for x_i, y_i in zip(x, y, strict=False)
+        ]
+
+
+def extract_npz_arrays_for_memmap(features_path: Path, memmap_dir: Path) -> tuple[Path, Path]:
+    """Extract features.npy and labels.npy from an .npz without loading them into RAM."""
+    memmap_dir.mkdir(parents=True, exist_ok=True)
+    feature_npy = memmap_dir / f"{features_path.stem}_features.npy"
+    labels_npy = memmap_dir / f"{features_path.stem}_labels.npy"
+    if feature_npy.exists() and labels_npy.exists():
+        return feature_npy, labels_npy
+
+    print(f"Extracting {features_path} to memmap arrays in {memmap_dir} ...")
+    with zipfile.ZipFile(features_path) as archive:
+        members = set(archive.namelist())
+        if "features.npy" not in members or "labels.npy" not in members:
+            raise KeyError(f"{features_path} must contain features.npy and labels.npy.")
+        with archive.open("features.npy") as source, feature_npy.open("wb") as target:
+            shutil.copyfileobj(source, target, length=1024 * 1024 * 32)
+        with archive.open("labels.npy") as source, labels_npy.open("wb") as target:
+            shutil.copyfileobj(source, target, length=1024 * 1024 * 32)
+    return feature_npy, labels_npy
+
+
+def load_feature_arrays(args: argparse.Namespace) -> tuple[np.ndarray, np.ndarray]:
+    if not args.memmap_features:
+        data = np.load(args.features_path)
+        return data["features"].astype(np.float32), data["labels"].astype(np.int32)
+
+    if args.features_path.suffix != ".npz":
+        raise ValueError("--memmap-features currently expects a .npz file with features and labels.")
+    memmap_dir = args.memmap_dir or (args.features_path.parent / f"{args.features_path.stem}_memmap")
+    feature_npy, labels_npy = extract_npz_arrays_for_memmap(args.features_path, memmap_dir)
+    features = np.load(feature_npy, mmap_mode="r")
+    labels = np.load(labels_npy, mmap_mode="r")
+    return features, labels
+
+
+def compute_feature_normalization(features: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    mean = np.asarray(features.mean(axis=0), dtype=np.float32)
+    std = np.asarray(features.std(axis=0), dtype=np.float32)
+    std = np.maximum(std, 1e-8).astype(np.float32, copy=False)
+    return mean, std
+
+
 def make_feature_dataloaders(
     features: np.ndarray,
     labels: np.ndarray,
@@ -146,6 +255,41 @@ def make_feature_dataloaders(
 
     return (
         loader(split_indices["train"], shuffle=True),
+        loader(split_indices["val"], shuffle=False),
+        loader(split_indices["test"], shuffle=False),
+    )
+
+
+def make_lazy_feature_dataloaders(
+    features: np.ndarray,
+    labels: np.ndarray,
+    split_indices: dict[str, np.ndarray],
+    label_indices: list[int],
+    batch_size: int,
+    num_workers: int,
+    pin_memory: bool,
+    feature_mean: np.ndarray | None,
+    feature_std: np.ndarray | None,
+) -> tuple[DataLoader, DataLoader, DataLoader]:
+    def loader(idx: np.ndarray, shuffle: bool) -> DataLoader:
+        return DataLoader(
+            IndexedFeatureDataset(
+                features=features,
+                labels=labels,
+                indices=idx,
+                label_indices=label_indices,
+                feature_mean=feature_mean,
+                feature_std=feature_std,
+            ),
+            batch_size=batch_size,
+            shuffle=shuffle,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+        )
+
+    # Sequential training batches are intentional for memmap locality.
+    return (
+        loader(split_indices["train"], shuffle=False),
         loader(split_indices["val"], shuffle=False),
         loader(split_indices["test"], shuffle=False),
     )
@@ -290,13 +434,22 @@ def main() -> None:
     print(f"Device: {device}")
     print(f"Specialist classes: {specialist_names}")
 
-    data = np.load(args.features_path)
-    features = data["features"].astype(np.float32)
-    labels_full = data["labels"].astype(np.int32)
-    specialist_labels = labels_full[:, specialist_indices]
+    features, labels_full = load_feature_arrays(args)
+    labels_for_split = np.asarray(labels_full, dtype=np.int32)
+
+    feature_mean = None
+    feature_std = None
+    if not args.no_feature_normalize:
+        feature_mean, feature_std = compute_feature_normalization(features)
+        print(
+            "Features z-score normalised lazily: "
+            f"mean≈{float(feature_mean.mean()):.3f}, std≈{float(feature_std.mean()):.3f}"
+        )
+
+    specialist_labels = labels_for_split[:, specialist_indices]
 
     split_indices = load_or_create_split_indices(
-        labels=labels_full,
+        labels=labels_for_split,
         split_path=split_path,
         train_ratio=args.train_ratio,
         val_ratio=args.val_ratio,
@@ -305,14 +458,33 @@ def main() -> None:
         stratify_multilabel=True,
         overwrite=args.overwrite_split,
     )
-    train_loader, val_loader, test_loader = make_feature_dataloaders(
-        features,
-        specialist_labels,
-        split_indices,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
-    )
+    if args.memmap_features:
+        train_loader, val_loader, test_loader = make_lazy_feature_dataloaders(
+            features,
+            labels_full,
+            split_indices,
+            specialist_indices,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+            feature_mean=feature_mean,
+            feature_std=feature_std,
+        )
+    else:
+        if feature_mean is not None and feature_std is not None:
+            nan_count = np.isnan(features).sum()
+            if nan_count > 0:
+                print(f"WARNING: {nan_count} NaN values in CNN features — replacing with 0.")
+                features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
+            features = ((features - feature_mean) / feature_std).astype(np.float32)
+        train_loader, val_loader, test_loader = make_feature_dataloaders(
+            features,
+            specialist_labels,
+            split_indices,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+        )
 
     train_labels = specialist_labels[split_indices["train"]]
     pos_weight = get_pos_weight(
