@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -56,6 +57,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-files", type=int, default=None,
                         help="Limit number of parquet files loaded (for quick tests).")
     parser.add_argument("--batch-size", type=int, default=2048)
+    parser.add_argument(
+        "--chunked",
+        action="store_true",
+        help="Write extracted features batch-by-batch via memmap to avoid high RAM usage.",
+    )
+    parser.add_argument(
+        "--no-compress",
+        action="store_true",
+        help="Use uncompressed .npz output. Recommended for full-dataset extraction.",
+    )
+    parser.add_argument(
+        "--temp-dir",
+        type=Path,
+        default=None,
+        help="Directory for temporary memmap files used with --chunked.",
+    )
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--cache-path", type=Path, default=None)
     return parser
@@ -131,45 +148,73 @@ def main() -> None:
     )
     print(f"Loaded X shape: {X_1800.shape}, y shape: {y.shape}")
 
-    # CNN was trained on 600-point spectra
-    print(f"Resampling {X_1800.shape[1]} → 600 points ...")
-    X_600 = resample_to_600(X_1800)
-    print(f"Resampled shape: {X_600.shape}")
-
-    # CNN input: (N, 600, 1)
-    X_cnn = X_600.reshape(-1, 600, 1).astype(np.float32)
-
     # ── Extract features in batches ─────────────────────────────────────────────
     print(f"\nExtracting features (batch_size={args.batch_size}) ...")
-    n = X_cnn.shape[0]
+    n = X_1800.shape[0]
     num_batches = (n + args.batch_size - 1) // args.batch_size
-    feature_list = []
+
+    feature_dim = int(feature_layer.units)
+    temp_feature_path: Path | None = None
+    if args.chunked:
+        temp_parent = args.temp_dir or args.output_path.parent
+        temp_parent.mkdir(parents=True, exist_ok=True)
+        temp_file = tempfile.NamedTemporaryFile(
+            prefix=f"{args.output_path.stem}_features_",
+            suffix=".npy",
+            dir=temp_parent,
+            delete=False,
+        )
+        temp_file.close()
+        temp_feature_path = Path(temp_file.name)
+        features_out = np.lib.format.open_memmap(
+            temp_feature_path,
+            mode="w+",
+            dtype=np.float32,
+            shape=(n, feature_dim),
+        )
+        print(f"Using chunked memmap: {temp_feature_path}")
+    else:
+        feature_list = []
 
     for i in range(num_batches):
         start = i * args.batch_size
         end = min(start + args.batch_size, n)
-        batch = X_cnn[start:end]
-        feats = extractor(batch, training=False).numpy()
-        feature_list.append(feats)
+        batch_600 = resample_to_600(X_1800[start:end])
+        batch_cnn = batch_600.reshape(-1, args.cnn_input_dim, 1).astype(np.float32)
+        feats = extractor(batch_cnn, training=False).numpy().astype(np.float32)
+        if np.isnan(feats).any():
+            print(f"WARNING: NaN values in batch {i+1}; replacing with 0.")
+            feats = np.nan_to_num(feats, nan=0.0, posinf=0.0, neginf=0.0)
+        if args.chunked:
+            features_out[start:end] = feats
+            if (i + 1) % 10 == 0:
+                features_out.flush()
+        else:
+            feature_list.append(feats)
         if (i + 1) % 10 == 0 or (i + 1) == num_batches:
             print(f"  Batch {i+1}/{num_batches}  ({end}/{n} samples)")
 
-    features = np.concatenate(feature_list, axis=0).astype(np.float32)
-    nan_count = np.isnan(features).sum()
-    if nan_count > 0:
-        print(f"WARNING: {nan_count} NaN values in extracted features (likely zero-variance spectra). Replacing with 0.")
-        features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
+    if args.chunked:
+        features_out.flush()
+        features = features_out
+    else:
+        features = np.concatenate(feature_list, axis=0).astype(np.float32)
+        nan_count = np.isnan(features).sum()
+        if nan_count > 0:
+            print(f"WARNING: {nan_count} NaN values in extracted features (likely zero-variance spectra). Replacing with 0.")
+            features = np.nan_to_num(features, nan=0.0, posinf=0.0, neginf=0.0)
     print(f"\nExtracted features shape: {features.shape}")
 
     # ── Save ────────────────────────────────────────────────────────────────────
-    np.savez_compressed(
-        args.output_path,
-        features=features,
-        labels=y.astype(np.int32),
-    )
+    save_fn = np.savez if args.no_compress else np.savez_compressed
+    save_fn(args.output_path, features=features, labels=y.astype(np.int32))
     print(f"\nSaved to {args.output_path}")
     print(f"  features : {features.shape}  float32")
     print(f"  labels   : {y.shape}  int32")
+
+    if temp_feature_path is not None:
+        del features
+        temp_feature_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
