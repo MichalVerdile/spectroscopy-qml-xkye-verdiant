@@ -272,6 +272,10 @@ def make_lazy_feature_dataloaders(
     feature_std: np.ndarray | None,
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     def loader(idx: np.ndarray, shuffle: bool) -> DataLoader:
+        idx = np.asarray(idx, dtype=np.int64)
+        # Keep memmap reads mostly sequential; random row access makes full-dataset
+        # training several orders slower on large feature files.
+        idx = np.sort(idx)
         return DataLoader(
             IndexedFeatureDataset(
                 features=features,
