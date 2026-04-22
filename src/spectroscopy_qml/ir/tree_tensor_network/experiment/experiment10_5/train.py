@@ -284,11 +284,16 @@ def main() -> None:
         min_delta=args.early_stopping_min_delta,
     )
 
-    best_state_dict = None
-    best_thresholds = None
+    label_names = list(FUNCTIONAL_GROUPS)
+    best_score = -float("inf")
+    best_epoch = 0
+    best_val_loss = float("inf")
+    best_thresholds: np.ndarray | None = None
     best_val_metrics = None
+    completed_epochs = 0
+    start_time_total = time.time()
 
-    with log_path.open("w", newline="") as csv_file:
+    with log_path.open("w", newline="") as csv_file, details_path.open("w") as details_handle:
         writer = csv.writer(csv_file)
         writer.writerow([
             "epoch", "train_loss", "val_loss", "f1_micro", "f1_macro",
@@ -297,36 +302,33 @@ def main() -> None:
 
         for epoch in range(1, args.epochs + 1):
             start_time = time.time()
-            train_loss = train_epoch_amp(
-                model=model,
-                loader=train_loader,
-                optimizer=optimizer,
-                criterion=criterion,
-                device=device,
+            train_loss, train_metrics = train_epoch_amp(
+                model,
+                train_loader,
+                criterion,
+                optimizer,
+                device,
                 scaler=scaler,
                 grad_clip_norm=args.grad_clip_norm,
-                use_amp=use_amp,
-                amp_device_type=amp_device_type,
             )
 
-            val_loss, val_probs, val_targets = evaluate_with_probs_amp(
-                model=model,
-                loader=val_loader,
-                criterion=criterion,
-                device=device,
+            val_loss, val_targets, val_probs = evaluate_with_probs_amp(
+                model,
+                val_loader,
+                criterion,
+                device,
                 use_amp=use_amp,
-                amp_device_type=amp_device_type,
             )
 
             thresholds = tune_thresholds(
-                probs=val_probs,
-                targets=val_targets,
+                val_targets,
+                val_probs,
                 threshold_mode=args.threshold_mode,
                 target_metric=args.threshold_target_metric,
                 threshold_grid=threshold_grid,
             )
             val_preds = threshold_predictions(val_probs, thresholds)
-            val_metrics = compute_metrics(val_targets, val_preds, val_probs)
+            val_metrics = compute_metrics(val_targets, val_preds)
             epoch_time = time.time() - start_time
             score = select_early_stopping_score(
                 val_metrics,
@@ -345,16 +347,16 @@ def main() -> None:
                 optimizer.param_groups[0]["lr"],
                 epoch_time,
             ])
+            csv_file.flush()
 
             write_epoch_details(
-                details_path=details_path,
+                details_handle,
                 epoch=epoch,
-                train_loss=train_loss,
-                val_loss=val_loss,
+                label_names=label_names,
+                thresholds=thresholds,
+                train_metrics=train_metrics,
                 val_metrics=val_metrics,
-                selected_thresholds=thresholds,
-                epoch_time_sec=epoch_time,
-                learning_rate=optimizer.param_groups[0]["lr"],
+                early_stopping_score=score,
             )
 
             print(
@@ -364,48 +366,58 @@ def main() -> None:
             )
 
             scheduler.step(score)
+            completed_epochs = epoch
 
-            if best_val_metrics is None or score > select_early_stopping_score(
-                best_val_metrics,
-                metric_name=args.early_stopping_metric,
-                blend_alpha=args.early_stopping_blend_alpha,
-            ):
-                best_state_dict = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            if score > best_score:
+                best_score = score
+                best_epoch = epoch
+                best_val_loss = val_loss
                 best_thresholds = thresholds
                 best_val_metrics = val_metrics
-                torch.save(best_state_dict, checkpoint_path)
-                write_threshold_artifact(threshold_path, best_thresholds)
+                torch.save(model.state_dict(), checkpoint_path)
+                write_threshold_artifact(
+                    threshold_path,
+                    label_names,
+                    best_thresholds,
+                    args.threshold_mode,
+                    args.threshold_target_metric,
+                    best_epoch,
+                )
 
-            if epoch >= args.min_epochs_before_stopping and early_stopping.step(score):
+            if epoch >= args.min_epochs_before_stopping and early_stopping(score):
                 print(f"Early stopping triggered at epoch {epoch}.")
                 break
 
-    if best_state_dict is None or best_thresholds is None or best_val_metrics is None:
+    if best_thresholds is None or best_val_metrics is None:
         raise RuntimeError("Training finished without a best checkpoint.")
 
-    model.load_state_dict(best_state_dict)
-    test_loss, test_probs, test_targets = evaluate_with_probs_amp(
-        model=model,
-        loader=test_loader,
-        criterion=criterion,
-        device=device,
+    best_state = torch.load(checkpoint_path, map_location=device, weights_only=True)
+    model.load_state_dict(best_state)
+    test_loss, test_targets, test_probs = evaluate_with_probs_amp(
+        model,
+        test_loader,
+        criterion,
+        device,
         use_amp=use_amp,
-        amp_device_type=amp_device_type,
     )
     test_preds = threshold_predictions(test_probs, best_thresholds)
-    test_metrics = compute_metrics(test_targets, test_preds, test_probs)
+    test_metrics = compute_metrics(test_targets, test_preds)
 
     write_summary(
         summary_path=summary_path,
-        args=args,
+        elapsed_seconds=time.time() - start_time_total,
+        completed_epochs=completed_epochs,
+        requested_epochs=args.epochs,
         used_data_files=used_data_files,
-        train_size=len(split_indices["train"]),
-        val_size=len(split_indices["val"]),
-        test_size=len(split_indices["test"]),
-        best_val_metrics=best_val_metrics,
+        total_data_files=total_data_files,
+        split_path=split_path,
+        best_epoch=best_epoch,
+        best_score=best_score,
+        best_metric_name=args.early_stopping_metric,
+        best_val_loss=best_val_loss,
         test_loss=test_loss,
         test_metrics=test_metrics,
-        thresholds=best_thresholds,
+        final_thresholds=best_thresholds,
     )
     print("\nTraining complete.")
     print(f"Best validation f1_micro: {best_val_metrics['f1_micro']:.4f}")
