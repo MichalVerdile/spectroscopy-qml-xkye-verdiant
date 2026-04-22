@@ -1,4 +1,4 @@
-"""Training entry point for C-NMR experiment 10.2 with quantile normalization."""
+"""Training entry point for C-NMR experiment 10.2 with SNV preprocessing."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Train experiment10.2 for C-NMR: TTN classifier with Lorentzian-smoothed feature "
-            "channels, direct segmented states, linear readout, and quantile normalization."
+            "channels, direct segmented states, linear readout, and configurable preprocessing."
         )
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
@@ -110,8 +110,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--lorentz-norm-mode", choices=["max_abs", "z_score", "percentile"], default="max_abs",
         help="Per-channel normalisation: max_abs (original), z_score (÷std), percentile (÷99th pct).",
     )
-    parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=False,
-        help="Apply SNV normalization (C-NMR uses quantile normalization, so this is False by default).")
+    parser.add_argument(
+        "--apply-snv",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Apply SNV normalization. Enabled by default for faster C-NMR checks.",
+    )
+    parser.add_argument(
+        "--apply-quantile-norm",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Apply quantile normalization. Disabled by default because it is slower.",
+    )
     parser.add_argument("--cache-path", type=Path, default=None)
     parser.add_argument("--overwrite-cache", action="store_true")
     parser.add_argument("--max-files", type=int, default=None)
@@ -196,7 +206,12 @@ def resolve_cnmr_cache_path(args: argparse.Namespace) -> Path:
 
     cache_dir = Path("data/cache")
     file_suffix = "all" if args.max_files is None else f"files{int(args.max_files)}"
-    norm_suffix = "quantile" if not args.apply_snv else "snv_quantile"
+    norm_parts: list[str] = []
+    if args.apply_snv:
+        norm_parts.append("snv")
+    if args.apply_quantile_norm:
+        norm_parts.append("quantile")
+    norm_suffix = "_".join(norm_parts) if norm_parts else "raw"
     return cache_dir / f"cnmr_spectra_len{args.input_dim}_{norm_suffix}_{file_suffix}.npz"
 
 
@@ -228,7 +243,12 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Early stop metric:        {args.early_stopping_metric}")
     print(f"Min epochs before stop:   {args.min_epochs_before_stopping}")
     print(f"Loss type:                {args.loss_type}")
-    print(f"Preprocessing:            Quantile normalization (no SNV applied)")
+    preprocessing = []
+    if args.apply_snv:
+        preprocessing.append("SNV")
+    if args.apply_quantile_norm:
+        preprocessing.append("quantile normalization")
+    print(f"Preprocessing:            {' + '.join(preprocessing) if preprocessing else 'raw'}")
     print(f"Cache path:               {resolve_cnmr_cache_path(args)}")
     print(f"Batch size:               {args.batch_size}")
     print(f"Epochs:                   {args.epochs}")
@@ -281,13 +301,13 @@ def main() -> None:
     model = build_model(args)
     run_synthetic_preflight(model, args, device)
 
-    print("\nLoading C-NMR data with quantile normalization preprocessing...")
+    print("\nLoading C-NMR data...")
     X, y = load_cnmr_data(
         data_dir=args.data_dir,
         target_length=args.input_dim,
         max_files=args.max_files,
-        apply_snv=False,  # C-NMR uses quantile normalization in preprocessing, not SNV
-        apply_quantile_norm=True,  # Quantile normalization now applied
+        apply_snv=args.apply_snv,
+        apply_quantile_norm=args.apply_quantile_norm,
         cache_path=cache_path,
         overwrite_cache=args.overwrite_cache,
     )

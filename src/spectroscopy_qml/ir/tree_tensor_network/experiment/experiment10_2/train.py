@@ -130,6 +130,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--focal-gamma", type=float, default=2.0)
     parser.add_argument("--pos-weight-power", type=float, default=0.5)
     parser.add_argument("--pos-weight-max", type=float, default=None)
+    parser.add_argument("--hard-class-boost", type=float, default=1.0,
+                        help="Multiply pos_weight of hard classes by this factor.")
+    parser.add_argument("--hard-class-indices", type=str, default=None,
+                        help="Comma-separated class indices to boost, e.g. '1,13,14'.")
     parser.add_argument("--threshold-mode", choices=["global", "per_class"], default="per_class")
     parser.add_argument(
         "--threshold-target-metric",
@@ -318,6 +322,11 @@ def main() -> None:
         power=args.pos_weight_power,
         max_value=args.pos_weight_max,
     )
+    if args.hard_class_boost != 1.0 and args.hard_class_indices:
+        hard_indices = [int(i) for i in args.hard_class_indices.split(",")]
+        for idx in hard_indices:
+            pos_weight[idx] = pos_weight[idx] * args.hard_class_boost
+        print(f"Hard class boost x{args.hard_class_boost} applied to indices: {hard_indices}")
     print(
         "Class weights: "
         f"min={pos_weight.min().item():.2f}, "
