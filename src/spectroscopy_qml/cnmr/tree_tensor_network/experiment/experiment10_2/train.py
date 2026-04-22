@@ -343,14 +343,17 @@ def main() -> None:
         num_workers=args.num_workers,
         pin_memory=device.type == "cuda",
     )
+    del X  # free ~30GB numpy array — tensors are already copied into the Dataset
 
     train_labels = y[split_indices["train"]]
+    del y
     pos_weight = get_pos_weight(
         train_labels,
         device,
         power=args.pos_weight_power,
         max_value=args.pos_weight_max,
     )
+    del train_labels
     print(
         "Class weights: "
         f"min={pos_weight.min().item():.2f}, "
