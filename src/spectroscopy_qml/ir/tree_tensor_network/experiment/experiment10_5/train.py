@@ -273,11 +273,7 @@ def main() -> None:
         patience=args.lr_scheduler_patience,
         min_lr=args.lr_scheduler_min_lr,
     )
-    criterion = build_loss(
-        loss_type=args.loss_type,
-        pos_weight=pos_weight,
-        focal_gamma=args.focal_gamma,
-    )
+    criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
     compile_enabled = resolve_compile_enabled(args.compile, device)
     if compile_enabled:
         model = torch.compile(model)
