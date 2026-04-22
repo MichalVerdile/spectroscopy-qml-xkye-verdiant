@@ -335,7 +335,12 @@ class TTNCNMRClassifier10_2(nn.Module):
 
             if num_nodes % 2 == 1:
                 carry = node_states[:, -1:, :]
-                node_states = torch.cat((merged, carry), dim=1)
+                # The first TTN level maps segment_state_dim -> chi.  For odd
+                # node counts, the leftover node must pass through the same
+                # level merge as well, otherwise its feature dimension no
+                # longer matches the merged pairs.
+                projected_carry = merge(carry, carry)
+                node_states = torch.cat((merged, projected_carry), dim=1)
             else:
                 node_states = merged
 

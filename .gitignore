@@ -88,3 +88,24 @@ docs/.doctrees/
 # Local experiment artifacts
 data/cache/
 src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment6/results/
+
+# PyTorch checkpoints and data archives (too large for git)
+*.pt
+*.npz
+*.zip
+
+# Benchmark features and export archives
+benchmark/
+experiment10_2_export/
+
+# Analysis outputs in root dir
+CNN_error_analysis*.csv
+CNN_error_analysis*.png
+TTN_error_analysis*.csv
+TTN_error_analysis*.png
+CNN_vs_TTN_error_comparison.csv
+error_analysis_comparison_CNN_vs_TTN.png
+top_problems_CNN_vs_TTN.png
+
+# Training logs
+logs_*.txt
