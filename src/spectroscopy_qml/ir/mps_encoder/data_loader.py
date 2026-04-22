@@ -146,6 +146,25 @@ class IRSpectraDataset(Dataset):
         return self.spectra[idx], self.labels[idx]
 
 
+class CNMRSpectraDataset(Dataset):
+    """PyTorch Dataset for C-NMR spectra."""
+
+    def __init__(self, spectra: np.ndarray, labels: np.ndarray):
+        """
+        Args:
+            spectra: Array of shape (n_samples, spectrum_length)
+            labels: Array of shape (n_samples, num_classes)
+        """
+        self.spectra = torch.FloatTensor(spectra)
+        self.labels = torch.FloatTensor(labels)
+
+    def __len__(self) -> int:
+        return len(self.spectra)
+
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        return self.spectra[idx], self.labels[idx]
+
+
 def load_ir_data(
     data_dir: Path,
     target_length: int = 1800,
@@ -171,10 +190,18 @@ def load_ir_data(
     print(f"Loading IR spectra from {data_dir}")
 
     data_dir = Path(data_dir)
-    parquet_files = sorted(data_dir.glob("*.parquet"))
+    all_parquet_files = sorted(data_dir.glob("*.parquet"))
+    if not all_parquet_files:
+        raise FileNotFoundError(f"No parquet files found in {data_dir}")
 
-    if max_files:
-        parquet_files = parquet_files[:max_files]
+    if max_files is not None:
+        if int(max_files) <= 0:
+            raise ValueError("max_files must be positive when provided.")
+        parquet_files = all_parquet_files[: int(max_files)]
+    else:
+        parquet_files = all_parquet_files
+
+    print(f"Using {len(parquet_files)}/{len(all_parquet_files)} parquet files")
 
     cache_path = Path(cache_path) if cache_path is not None else None
     source_paths = np.asarray([str(path.resolve()) for path in parquet_files], dtype=str)
@@ -341,3 +368,128 @@ def prepare_dataloaders(
     )
 
     return train_loader, val_loader, test_loader
+
+
+def load_cnmr_data(
+    data_dir: Path,
+    target_length: int = 10000,
+    max_files: int | None = None,
+    apply_snv: bool = False,
+    cache_path: Path | None = None,
+    overwrite_cache: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Load C-NMR spectra data from parquet files.
+
+    Args:
+        data_dir: Directory containing parquet files
+        target_length: Target length for spectrum interpolation (default: 10000 for C-NMR)
+        max_files: Maximum number of files to load (for testing)
+        apply_snv: Whether to apply SNV normalization (default: False)
+        cache_path: Optional path to a preprocessed dataset cache (.npz)
+        overwrite_cache: Rebuild cache even if a matching cache already exists
+
+    Returns:
+        Tuple of (spectra, labels) as numpy arrays
+    """
+    print(f"Loading C-NMR spectra from {data_dir}")
+
+    data_dir = Path(data_dir)
+    all_parquet_files = sorted(data_dir.glob("*.parquet"))
+    if not all_parquet_files:
+        raise FileNotFoundError(f"No parquet files found in {data_dir}")
+
+    if max_files is not None:
+        if int(max_files) <= 0:
+            raise ValueError("max_files must be positive when provided.")
+        parquet_files = all_parquet_files[: int(max_files)]
+    else:
+        parquet_files = all_parquet_files
+
+    print(f"Using {len(parquet_files)}/{len(all_parquet_files)} parquet files")
+
+    cache_path = Path(cache_path) if cache_path is not None else None
+    source_paths = np.asarray([str(path.resolve()) for path in parquet_files], dtype=str)
+    source_mtimes = np.asarray([path.stat().st_mtime_ns for path in parquet_files], dtype=np.int64)
+
+    if cache_path is not None and cache_path.exists() and not overwrite_cache:
+        cache_payload = np.load(cache_path, allow_pickle=False)
+        cached_source_paths = cache_payload["source_paths"].astype(str, copy=False)
+        cached_source_mtimes = cache_payload["source_mtimes"].astype(np.int64, copy=False)
+        cache_matches = (
+            int(cache_payload["target_length"]) == int(target_length)
+            and bool(cache_payload["apply_snv"]) == bool(apply_snv)
+            and int(cache_payload["num_files"]) == len(parquet_files)
+            and np.array_equal(cached_source_paths, source_paths)
+            and np.array_equal(cached_source_mtimes, source_mtimes)
+        )
+        if cache_matches:
+            print(f"Loading cached preprocessed spectra from {cache_path}")
+            X = cache_payload["X"]
+            y = cache_payload["y"]
+            print(f"Total samples loaded: {len(X)}")
+            print(f"Spectra shape: {X.shape}")
+            print(f"Labels shape: {y.shape}")
+            print(f"Label distribution: {y.sum(axis=0)}")
+            if apply_snv:
+                print("SNV normalization applied")
+            return X, y
+        print(f"Ignoring stale cache at {cache_path}")
+
+    all_spectra = []
+    all_labels = []
+
+    for i, parquet_file in enumerate(parquet_files):
+        # Load only necessary columns for C-NMR
+        df = pd.read_parquet(parquet_file, columns=["c_nmr_spectra", "smiles"])
+
+        # Extract functional groups
+        df["func_groups"] = df["smiles"].map(get_functional_groups)
+
+        # Filter out invalid entries
+        df = df[df["func_groups"].notna()]
+        df = df[df["c_nmr_spectra"].notna()]
+
+        # Interpolate spectra
+        spectra = np.stack(
+            [interpolate_spectrum(spec, target_length) for spec in df["c_nmr_spectra"].values]
+        )
+
+        # Apply SNV normalization if requested
+        if apply_snv:
+            spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
+
+        labels = np.stack(df["func_groups"].values)
+
+        all_spectra.append(spectra)
+        all_labels.append(labels)
+
+        if (i + 1) % 10 == 0:
+            print(f"Loaded {i + 1}/{len(parquet_files)} files")
+
+    # Concatenate all data
+    X = np.vstack(all_spectra)
+    y = np.vstack(all_labels)
+
+    print(f"Total samples loaded: {len(X)}")
+    print(f"Spectra shape: {X.shape}")
+    print(f"Labels shape: {y.shape}")
+    print(f"Label distribution: {y.sum(axis=0)}")
+    if apply_snv:
+        print("SNV normalization applied")
+
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(
+            cache_path,
+            X=X,
+            y=y,
+            target_length=np.asarray(target_length, dtype=np.int64),
+            apply_snv=np.asarray(apply_snv, dtype=bool),
+            num_files=np.asarray(len(parquet_files), dtype=np.int64),
+            source_paths=source_paths,
+            source_mtimes=source_mtimes,
+        )
+        print(f"Saved preprocessed cache to {cache_path}")
+
+    return X, y
