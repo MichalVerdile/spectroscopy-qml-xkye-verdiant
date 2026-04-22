@@ -255,7 +255,8 @@ def main() -> None:
     print(f"Class weights: min={pos_weight.min():.2f}, max={pos_weight.max():.2f}, mean={pos_weight.mean():.2f}")
 
     model = model.to(device)
-    run_real_batch_preflight(model, train_loader, args, device)
+    criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
+    run_real_batch_preflight(model, train_loader, device, criterion)
 
     if args.check_only:
         print("\nCheck-only mode complete.")
