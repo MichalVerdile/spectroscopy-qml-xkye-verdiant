@@ -525,11 +525,19 @@ def load_cnmr_data(
     
     # Apply quantile normalization if requested
     if apply_quantile_norm:
+        print(f"[DEBUG] Starting quantile normalization on {X.shape} array...")
+        import sys
+        sys.stdout.flush()
+        import time
+        start = time.time()
         X = apply_quantile_normalization(X)
+        elapsed = time.time() - start
+        print(f"[DEBUG] Quantile normalization completed in {elapsed:.1f}s")
         print("Quantile normalization applied")
 
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
+        print(f"[DEBUG] Starting cache save to {cache_path}...")
         np.savez_compressed(
             cache_path,
             X=X,

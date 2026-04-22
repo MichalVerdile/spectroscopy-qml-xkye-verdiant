@@ -1,0 +1,17 @@
+{
+  "specialist_indices": [
+    5,
+    16,
+    17,
+    24,
+    28
+  ],
+  "specialist_names": [
+    "Alkene",
+    "Ether",
+    "Haloalkane",
+    "Ketone",
+    "Sulfide"
+  ],
+  "head_type": "qcnn"
+}

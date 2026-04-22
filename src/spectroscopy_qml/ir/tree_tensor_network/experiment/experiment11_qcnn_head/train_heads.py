@@ -78,6 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--head-type", choices=["linear", "mlp", "qcnn"], default="qcnn")
     parser.add_argument("--cnn-feature-dim", type=int, default=CNN_FEATURE_DIM)
     parser.add_argument("--mlp-hidden-dim", type=int, default=128)
+    parser.add_argument(
+        "--mlp-layers",
+        type=str,
+        default=None,
+        help="Comma-separated hidden dims, e.g. '512,128'. Overrides --mlp-hidden-dim.",
+    )
     parser.add_argument("--qcnn-qubits", type=int, default=8)
     parser.add_argument("--qcnn-projection-hidden-dim", type=int, default=64)
     parser.add_argument("--dropout", type=float, default=0.2)
@@ -498,11 +504,17 @@ def main() -> None:
         max_value=args.pos_weight_max,
     )
 
+    mlp_hidden_dims = (
+        [int(x) for x in args.mlp_layers.split(",")]
+        if args.mlp_layers is not None
+        else None
+    )
     model = SpecialistHeadEnsemble(
         num_specialist_classes=num_labels,
         head_type=args.head_type,
         input_dim=args.cnn_feature_dim,
         mlp_hidden_dim=args.mlp_hidden_dim,
+        mlp_hidden_dims=mlp_hidden_dims,
         qcnn_qubits=args.qcnn_qubits,
         qcnn_projection_hidden_dim=args.qcnn_projection_hidden_dim,
         dropout=args.dropout,

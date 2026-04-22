@@ -1,0 +1,20 @@
+Experiment11 QCNN Head Summary
+================================================================================
+Head type:                 mlp
+Specialist classes:        Enamine, Hydrazone, Imine, Sulfide, Sulfoxide
+Completed epochs:          61/150
+Elapsed seconds:           1076.92
+Best epoch:                45
+Best score:                0.324921
+Test loss:                 0.681737
+Test f1_micro:             0.388395
+Test f1_macro:             0.267961
+Test precision_micro:      0.371448
+Test recall_micro:         0.406964
+
+Per-class F1:
+  Enamine             : 0.299957
+  Hydrazone           : 0.112013
+  Imine               : 0.201164
+  Sulfide             : 0.418810
+  Sulfoxide           : 0.307863

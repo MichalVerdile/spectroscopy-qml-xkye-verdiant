@@ -82,22 +82,28 @@ class LinearBinaryHead(nn.Module):
 
 
 class MLPBinaryHead(nn.Module):
-    """One-vs-rest MLP classifier for a single specialist class."""
+    """One-vs-rest MLP classifier for a single specialist class.
+
+    Supports multiple hidden layers via ``hidden_dims`` list.
+    E.g. hidden_dims=[512, 128] → input→512→128→1.
+    """
 
     def __init__(
         self,
         input_dim: int = CNN_FEATURE_DIM,
         hidden_dim: int = 128,
         dropout: float = 0.2,
+        hidden_dims: list[int] | None = None,
     ) -> None:
         super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.LayerNorm(hidden_dim),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, 1),
-        )
+        dims = hidden_dims if hidden_dims is not None else [hidden_dim]
+        layers: list[nn.Module] = []
+        in_d = input_dim
+        for h in dims:
+            layers += [nn.Linear(in_d, h), nn.LayerNorm(h), nn.GELU(), nn.Dropout(dropout)]
+            in_d = h
+        layers.append(nn.Linear(in_d, 1))
+        self.net = nn.Sequential(*layers)
 
     def forward(self, x: Tensor) -> Tensor:
         return self.net(x)
@@ -148,6 +154,7 @@ def _head_factory(
     *,
     input_dim: int,
     mlp_hidden_dim: int,
+    mlp_hidden_dims: list[int] | None = None,
     qcnn_qubits: int,
     qcnn_projection_hidden_dim: int,
     dropout: float,
@@ -158,6 +165,7 @@ def _head_factory(
         return lambda: MLPBinaryHead(
             input_dim=input_dim,
             hidden_dim=mlp_hidden_dim,
+            hidden_dims=mlp_hidden_dims,
             dropout=dropout,
         )
     if head_type == "qcnn":
@@ -180,6 +188,7 @@ class SpecialistHeadEnsemble(nn.Module):
         head_type: str = "qcnn",
         input_dim: int = CNN_FEATURE_DIM,
         mlp_hidden_dim: int = 128,
+        mlp_hidden_dims: list[int] | None = None,
         qcnn_qubits: int = 8,
         qcnn_projection_hidden_dim: int = 64,
         dropout: float = 0.2,
@@ -192,6 +201,7 @@ class SpecialistHeadEnsemble(nn.Module):
             head_type,
             input_dim=input_dim,
             mlp_hidden_dim=mlp_hidden_dim,
+            mlp_hidden_dims=mlp_hidden_dims,
             qcnn_qubits=qcnn_qubits,
             qcnn_projection_hidden_dim=qcnn_projection_hidden_dim,
             dropout=dropout,

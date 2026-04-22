@@ -1,0 +1,27 @@
+{
+  "specialist_indices": [
+    0,
+    1,
+    10,
+    13,
+    19,
+    21,
+    27,
+    28,
+    33,
+    34
+  ],
+  "specialist_names": [
+    "Acid anhydride",
+    "Acyl halide",
+    "Azo compound",
+    "Enamine",
+    "Hydrazone",
+    "Imine",
+    "Phosphine",
+    "Sulfide",
+    "Sulfoxide",
+    "Thial"
+  ],
+  "head_type": "mlp"
+}

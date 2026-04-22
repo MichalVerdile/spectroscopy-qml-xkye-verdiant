@@ -1,0 +1,14 @@
+{
+  "best_epoch": 1,
+  "threshold_mode": "per_class",
+  "threshold_target_metric": "per_class_f1",
+  "threshold_mean": 0.019999999552965164,
+  "threshold_std": 0.0,
+  "thresholds": {
+    "Enamine": 0.019999999552965164,
+    "Hydrazone": 0.019999999552965164,
+    "Imine": 0.019999999552965164,
+    "Ketone": 0.019999999552965164,
+    "Sulfoxide": 0.019999999552965164
+  }
+}

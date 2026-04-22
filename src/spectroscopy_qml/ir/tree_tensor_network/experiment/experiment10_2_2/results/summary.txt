@@ -1,0 +1,25 @@
+Experiment 10.2.2 — TTN 10.2 Combined Specialist Head Summary
+================================================================================
+Specialist classes:    Acyl halide, Enamine, Enol, Hydrazine, Hydrazone, Imine, Ketone, Sulfide, Sulfoxide, Thioamide
+Hidden dims:           [128, 64]
+Window proj dim:       32
+Oversampling:          True
+Completed epochs:      36/150
+Elapsed seconds:       7135.00
+Best epoch:            6
+Best score:            0.437451
+Test loss:             1.355516
+Test f1_micro:         0.449187
+Test f1_macro:         0.380861
+
+Per-class F1:
+  Acyl halide         : 0.298289
+  Enamine             : 0.403557
+  Enol                : 0.397400
+  Hydrazine           : 0.484635
+  Hydrazone           : 0.212048
+  Imine               : 0.341724
+  Ketone              : 0.465093
+  Sulfide             : 0.469592
+  Sulfoxide           : 0.333672
+  Thioamide           : 0.402597

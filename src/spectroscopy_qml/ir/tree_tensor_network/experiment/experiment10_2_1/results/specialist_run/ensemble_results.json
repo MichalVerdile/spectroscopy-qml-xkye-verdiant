@@ -1,0 +1,17 @@
+{
+  "ttn_macro": 0.594452941905153,
+  "ttn_micro": 0.8284491388313213,
+  "specialist_macro": 0.3771885933124243,
+  "specialist_micro": 0.4549116387257822,
+  "ensemble_macro": 0.5974664318957509,
+  "ensemble_micro": 0.8248086055263655,
+  "overridden_classes": [
+    "Hydrazine",
+    "Hydrazone",
+    "Imine",
+    "Ketone",
+    "Sulfide",
+    "Sulfoxide",
+    "Thioamide"
+  ]
+}

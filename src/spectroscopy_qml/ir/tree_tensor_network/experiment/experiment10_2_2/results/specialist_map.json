@@ -1,0 +1,26 @@
+{
+  "specialist_indices": [
+    1,
+    13,
+    14,
+    18,
+    19,
+    21,
+    24,
+    28,
+    33,
+    35
+  ],
+  "specialist_names": [
+    "Acyl halide",
+    "Enamine",
+    "Enol",
+    "Hydrazine",
+    "Hydrazone",
+    "Imine",
+    "Ketone",
+    "Sulfide",
+    "Sulfoxide",
+    "Thioamide"
+  ]
+}

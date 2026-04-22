@@ -1,0 +1,14 @@
+{
+  "best_epoch": 20,
+  "threshold_mode": "per_class",
+  "threshold_target_metric": "per_class_f1",
+  "threshold_mean": 0.47199997305870056,
+  "threshold_std": 0.09346656501293182,
+  "thresholds": {
+    "Alkene": 0.5600000023841858,
+    "Ether": 0.3400000035762787,
+    "Haloalkane": 0.3799999952316284,
+    "Ketone": 0.5600000023841858,
+    "Sulfide": 0.5199999809265137
+  }
+}

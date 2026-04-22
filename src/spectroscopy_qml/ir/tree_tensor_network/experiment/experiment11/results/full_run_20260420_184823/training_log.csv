@@ -1,0 +1,3 @@
+epoch,train_loss,train_f1_micro,train_f1_macro,val_loss,val_f1_micro,val_f1_macro,early_stopping_score,threshold_mean,threshold_std,lr
+1,nan,0.04377890735906947,0.01861692111461593,nan,0.0,0.0,0.0,0.019999999552965164,0.0,0.0003
+2,nan,0.0,0.0,nan,0.0,0.0,0.0,0.019999999552965164,0.0,0.0003

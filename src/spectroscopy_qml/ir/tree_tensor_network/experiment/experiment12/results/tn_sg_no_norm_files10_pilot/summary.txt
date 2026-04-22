@@ -1,0 +1,57 @@
+Experiment12 Summary
+================================================================================
+Model type:                tn
+Feature source:            sg_no_norm
+Include raw channel:       False
+Apply SNV:                 True
+Data files used:           10/245
+Split path:                src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment12/results/tn_sg_no_norm_files10_pilot/data_split_seed42_files10.npz
+Completed epochs:          30/30
+Elapsed seconds:           139.48
+Best epoch:                28
+Best early-stop score:     0.633092
+Best val loss:             0.333845
+Test loss:                 0.387972
+Test f1_micro:             0.782838
+Test f1_macro:             0.455834
+Test precision_micro:      0.724311
+Test recall_micro:         0.851656
+
+Per-class F1:
+  Acid anhydride      : 0.000000
+  Acyl halide         : 0.035088
+  Alcohol             : 0.974297
+  Aldehyde            : 0.287081
+  Alkane              : 0.998921
+  Alkene              : 0.375887
+  Alkyne              : 0.340741
+  Amide               : 0.708349
+  Amine               : 0.843164
+  Arene               : 0.984625
+  Azo compound        : 0.005698
+  Carbamate           : 0.730570
+  Carboxylic acid     : 0.966173
+  Enamine             : 0.108333
+  Enol                : 0.108108
+  Ester               : 0.580114
+  Ether               : 0.869473
+  Haloalkane          : 0.787238
+  Hydrazine           : 0.203390
+  Hydrazone           : 0.046512
+  Imide               : 0.417266
+  Imine               : 0.047619
+  Isocyanate          : 1.000000
+  Isothiocyanate      : 0.160000
+  Ketone              : 0.334218
+  Nitrile             : 0.908772
+  Phenol              : 0.633914
+  Phosphine           : 0.000000
+  Sulfide             : 0.327645
+  Sulfonamide         : 0.720183
+  Sulfonate           : 0.750000
+  Sulfone             : 0.558491
+  Sulfonic acid       : 0.000000
+  Sulfoxide           : 0.062780
+  Thial               : 0.000000
+  Thioamide           : 0.076923
+  Thiol               : 0.914286

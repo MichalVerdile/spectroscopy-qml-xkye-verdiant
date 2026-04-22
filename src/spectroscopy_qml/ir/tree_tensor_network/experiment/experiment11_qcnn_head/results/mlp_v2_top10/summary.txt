@@ -1,0 +1,25 @@
+Experiment11 QCNN Head Summary
+================================================================================
+Head type:                 mlp
+Specialist classes:        Acid anhydride, Acyl halide, Azo compound, Enamine, Hydrazone, Imine, Phosphine, Sulfide, Sulfoxide, Thial
+Completed epochs:          50/150
+Elapsed seconds:           3860.58
+Best epoch:                34
+Best score:                0.314988
+Test loss:                 0.800879
+Test f1_micro:             0.383190
+Test f1_macro:             0.223130
+Test precision_micro:      0.378701
+Test recall_micro:         0.387787
+
+Per-class F1:
+  Acid anhydride      : 0.143885
+  Acyl halide         : 0.306011
+  Azo compound        : 0.082645
+  Enamine             : 0.298179
+  Hydrazone           : 0.117962
+  Imine               : 0.225352
+  Phosphine           : 0.341176
+  Sulfide             : 0.419369
+  Sulfoxide           : 0.296716
+  Thial               : 0.000000

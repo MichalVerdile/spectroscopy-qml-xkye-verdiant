@@ -1,0 +1,20 @@
+Experiment11 QCNN Head Summary
+================================================================================
+Head type:                 mlp
+Specialist classes:        Alkene, Ether, Haloalkane, Ketone, Sulfide
+Completed epochs:          36/150
+Elapsed seconds:           666.81
+Best epoch:                20
+Best score:                0.662326
+Test loss:                 0.331429
+Test f1_micro:             0.746029
+Test f1_macro:             0.595556
+Test precision_micro:      0.700422
+Test recall_micro:         0.797988
+
+Per-class F1:
+  Alkene              : 0.459910
+  Ether               : 0.883485
+  Haloalkane          : 0.789475
+  Ketone              : 0.417931
+  Sulfide             : 0.426976

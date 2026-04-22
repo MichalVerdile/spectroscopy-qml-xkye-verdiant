@@ -78,6 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--overwrite-split", action="store_true")
     parser.add_argument("--input-dim", type=int, default=1800)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
+    parser.add_argument(
+        "--specialist-indices",
+        type=str,
+        default=None,
+        help="Comma-separated class indices to train on (e.g. '19,33,21,13,28'). Subsets labels.",
+    )
     parser.add_argument("--chi", type=int, default=64)
     parser.add_argument("--segment-window-size", type=int, default=DEFAULT_SEGMENT_WINDOW_SIZE)
     parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
@@ -253,6 +259,9 @@ def main() -> None:
     device = resolve_device(args.device)
     print(f"Device: {device}")
 
+    if args.specialist_indices is not None:
+        args.num_labels = len(args.specialist_indices.split(","))
+
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True
         torch.set_float32_matmul_precision("high")
@@ -271,8 +280,9 @@ def main() -> None:
     )
     if X.shape[1] != args.input_dim:
         raise RuntimeError(f"Loaded spectra have width {X.shape[1]}, expected {args.input_dim}.")
-    if y.shape[1] != args.num_labels:
-        raise RuntimeError(f"Loaded labels have width {y.shape[1]}, expected {args.num_labels}.")
+    specialist_indices = None
+    if args.specialist_indices is not None:
+        specialist_indices = [int(i) for i in args.specialist_indices.split(",")]
 
     split_indices = load_or_create_split_indices(
         labels=y,
@@ -284,6 +294,14 @@ def main() -> None:
         stratify_multilabel=True,
         overwrite=args.overwrite_split,
     )
+    if specialist_indices is not None:
+        y = y[:, specialist_indices]
+        args.num_labels = len(specialist_indices)
+        print(f"Specialist mode: using {args.num_labels} classes at indices {specialist_indices}")
+
+    if y.shape[1] != args.num_labels:
+        raise RuntimeError(f"Loaded labels have width {y.shape[1]}, expected {args.num_labels}.")
+
     train_loader, val_loader, test_loader = prepare_dataloaders_from_split_indices(
         X,
         y,
@@ -344,7 +362,12 @@ def main() -> None:
         mode="max",
     )
     threshold_grid = build_threshold_grid(args.threshold_grid_step)
-    label_names = list(FUNCTIONAL_GROUPS.keys())
+    _all_label_names = list(FUNCTIONAL_GROUPS.keys())
+    label_names = (
+        [_all_label_names[i] for i in specialist_indices]
+        if specialist_indices is not None
+        else _all_label_names
+    )
     model = model.to(device)
 
     print("\nStarting training...")

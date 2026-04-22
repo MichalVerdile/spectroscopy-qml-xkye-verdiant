@@ -348,15 +348,16 @@ def run_synthetic_preflight(model: TTNIRClassifier5, args: argparse.Namespace, d
 
     optimizer = Adam(model.parameters(), lr=args.learning_rate)
     criterion = build_loss(args.loss_type)
-    optimizer.zero_grad(set_to_none=True)
-    logits = model(spectra)
-    loss = criterion(logits, labels)
-    if logits.shape != labels.shape:
-        raise RuntimeError(f"Synthetic preflight shape mismatch: {tuple(logits.shape)} != {tuple(labels.shape)}")
-    if not torch.isfinite(logits).all() or not torch.isfinite(loss):
-        raise RuntimeError("Synthetic preflight produced non-finite outputs.")
-    loss.backward()
-    optimizer.step()
+    
+    # Use no_grad to prevent preflight from modifying model weights before training
+    with torch.no_grad():
+        optimizer.zero_grad(set_to_none=True)
+        logits = model(spectra)
+        loss = criterion(logits, labels)
+        if logits.shape != labels.shape:
+            raise RuntimeError(f"Synthetic preflight shape mismatch: {tuple(logits.shape)} != {tuple(labels.shape)}")
+        if not torch.isfinite(logits).all() or not torch.isfinite(loss):
+            raise RuntimeError("Synthetic preflight produced non-finite outputs.")
     print(f"  OK - logits {tuple(logits.shape)}, loss={loss.item():.4f}")
 
 
@@ -372,15 +373,14 @@ def run_real_batch_preflight(
     labels = labels.to(device)
 
     model = model.to(device)
-    model.train()
-    optimizer = Adam(model.parameters(), lr=1e-4)
-    optimizer.zero_grad(set_to_none=True)
-    logits = model(spectra)
-    loss = criterion(logits, labels)
-    if not torch.isfinite(logits).all() or not torch.isfinite(loss):
-        raise RuntimeError("Real-data preflight produced non-finite outputs.")
-    loss.backward()
-    optimizer.step()
+    model.eval()
+    
+    # Use no_grad to prevent preflight from modifying model weights before training
+    with torch.no_grad():
+        logits = model(spectra)
+        loss = criterion(logits, labels)
+        if not torch.isfinite(logits).all() or not torch.isfinite(loss):
+            raise RuntimeError("Real-data preflight produced non-finite outputs.")
     print(f"  OK - batch={tuple(spectra.shape)}, labels={tuple(labels.shape)}, loss={loss.item():.4f}")
 
 

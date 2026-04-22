@@ -143,7 +143,9 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     cache_dir = Path("data/cache")
     file_suffix = "all" if args.max_files is None else f"files{int(args.max_files)}"
     snv_suffix = "snv" if args.apply_snv else "raw"
-    return cache_dir / f"ir_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
+    # Distinguish between IR (input_dim≤1800) and C-NMR (input_dim≥10000) to avoid cache collision
+    spectrum_type = "cnmr_spectra" if args.input_dim > 5000 else "ir_spectra"
+    return cache_dir / f"{spectrum_type}_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
 
 
 def build_model(args: argparse.Namespace) -> TTNIRClassifier10:

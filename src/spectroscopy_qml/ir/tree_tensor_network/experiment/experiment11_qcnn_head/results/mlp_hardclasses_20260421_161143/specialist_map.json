@@ -1,0 +1,17 @@
+{
+  "specialist_indices": [
+    13,
+    19,
+    21,
+    28,
+    33
+  ],
+  "specialist_names": [
+    "Enamine",
+    "Hydrazone",
+    "Imine",
+    "Sulfide",
+    "Sulfoxide"
+  ],
+  "head_type": "mlp"
+}

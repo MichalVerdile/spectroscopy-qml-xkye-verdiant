@@ -1,0 +1,17 @@
+{
+  "specialist_indices": [
+    13,
+    19,
+    21,
+    24,
+    33
+  ],
+  "specialist_names": [
+    "Enamine",
+    "Hydrazone",
+    "Imine",
+    "Ketone",
+    "Sulfoxide"
+  ],
+  "head_type": "qcnn"
+}

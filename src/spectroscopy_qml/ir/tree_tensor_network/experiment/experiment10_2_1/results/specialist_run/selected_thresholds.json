@@ -1,0 +1,19 @@
+{
+  "best_epoch": 35,
+  "threshold_mode": "per_class",
+  "threshold_target_metric": "per_class_f1",
+  "threshold_mean": 0.5539999604225159,
+  "threshold_std": 0.15415574610233307,
+  "thresholds": {
+    "Acyl halide": 0.35999998450279236,
+    "Enamine": 0.5,
+    "Enol": 0.2800000011920929,
+    "Hydrazine": 0.6399999856948853,
+    "Hydrazone": 0.7599999904632568,
+    "Imine": 0.7999999523162842,
+    "Ketone": 0.5399999618530273,
+    "Sulfide": 0.5199999809265137,
+    "Sulfoxide": 0.6399999856948853,
+    "Thioamide": 0.5
+  }
+}
