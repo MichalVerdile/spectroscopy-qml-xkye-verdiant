@@ -193,14 +193,14 @@ class CNMRSpectraDataset(Dataset):
             spectra: Array of shape (n_samples, spectrum_length)
             labels: Array of shape (n_samples, num_classes)
         """
-        self.spectra = torch.FloatTensor(spectra)
+        self.spectra = torch.HalfTensor(spectra)  # float16 — halves RAM (~15GB vs ~30GB)
         self.labels = torch.FloatTensor(labels)
 
     def __len__(self) -> int:
         return len(self.spectra)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.spectra[idx], self.labels[idx]
+        return self.spectra[idx].float(), self.labels[idx]
 
 
 def load_ir_data(
