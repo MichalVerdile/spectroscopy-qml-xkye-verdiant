@@ -55,7 +55,6 @@ from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10_2.model i
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
     ensure_finite_tensor,
     evaluate_with_probs_amp,
-    resolve_cache_path,
     resolve_compile_enabled,
     sanitize_binary_targets_and_probs,
     train_epoch_amp,
@@ -191,6 +190,16 @@ def build_model(args: argparse.Namespace) -> TTNCNMRClassifier10_2:
     )
 
 
+def resolve_cnmr_cache_path(args: argparse.Namespace) -> Path:
+    if args.cache_path is not None:
+        return args.cache_path
+
+    cache_dir = Path("data/cache")
+    file_suffix = "all" if args.max_files is None else f"files{int(args.max_files)}"
+    norm_suffix = "quantile" if not args.apply_snv else "snv_quantile"
+    return cache_dir / f"cnmr_spectra_len{args.input_dim}_{norm_suffix}_{file_suffix}.npz"
+
+
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
     print("TTN C-NMR Experiment10.2 Training")
@@ -220,7 +229,7 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Min epochs before stop:   {args.min_epochs_before_stopping}")
     print(f"Loss type:                {args.loss_type}")
     print(f"Preprocessing:            Quantile normalization (no SNV applied)")
-    print(f"Cache path:               {resolve_cache_path(args)}")
+    print(f"Cache path:               {resolve_cnmr_cache_path(args)}")
     print(f"Batch size:               {args.batch_size}")
     print(f"Epochs:                   {args.epochs}")
     print(f"Max files:                {args.max_files}")
@@ -241,7 +250,7 @@ def main() -> None:
         raise FileNotFoundError(f"Data directory does not exist: {args.data_dir}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = resolve_cache_path(args)
+    cache_path = resolve_cnmr_cache_path(args)
     total_data_files = count_available_data_files(args.data_dir)
     used_data_files = resolve_used_file_count(total_data_files, args.max_files)
     split_suffix = "all" if args.max_files is None else f"files{used_data_files}"
@@ -272,14 +281,13 @@ def main() -> None:
     model = build_model(args)
     run_synthetic_preflight(model, args, device)
 
-    print("\nLoading C-NMR data (interpolated, NOT quantile-normalized yet)...")
-    print("⚠️  WARNING: Quantile normalization should be applied during data preprocessing.")
-    print("⚠️  Currently using: linear interpolation only (no QN applied)")
+    print("\nLoading C-NMR data with quantile normalization preprocessing...")
     X, y = load_cnmr_data(
         data_dir=args.data_dir,
         target_length=args.input_dim,
         max_files=args.max_files,
         apply_snv=False,  # C-NMR uses quantile normalization in preprocessing, not SNV
+        apply_quantile_norm=True,  # Quantile normalization now applied
         cache_path=cache_path,
         overwrite_cache=args.overwrite_cache,
     )

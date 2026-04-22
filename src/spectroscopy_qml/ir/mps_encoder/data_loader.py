@@ -127,6 +127,44 @@ def apply_snv_normalization(spectrum: np.ndarray, eps: float = 1e-8) -> np.ndarr
     return (spectrum - mean) / std
 
 
+def apply_quantile_normalization_single_group(spectra: np.ndarray) -> np.ndarray:
+    """
+    Apply quantile normalization to a single group of spectra.
+
+    Quantile normalization ensures that all spectra have the same distribution
+    of intensity values, which is useful for removing technical variations.
+
+    Args:
+        spectra: 2D numpy array (n_samples, n_features)
+
+    Returns:
+        Quantile-normalized spectra as float32
+    """
+    sorted_values = np.sort(spectra, axis=1)
+    mean_ranks = np.mean(sorted_values, axis=0)
+
+    ranks = np.argsort(np.argsort(spectra, axis=1), axis=1)
+    normalized = mean_ranks[ranks]
+    return normalized.astype(np.float32)
+
+
+def apply_quantile_normalization(spectra: np.ndarray) -> np.ndarray:
+    """
+    Apply quantile normalization across all spectra.
+
+    Args:
+        spectra: 2D numpy array (n_samples, n_features)
+
+    Returns:
+        Quantile-normalized spectra
+    """
+    if spectra.ndim != 2:
+        raise ValueError("Quantile normalization expects a 2D array (n_samples, n_features).")
+
+    spectra = np.asarray(spectra, dtype=np.float32)
+    return apply_quantile_normalization_single_group(spectra)
+
+
 class IRSpectraDataset(Dataset):
     """PyTorch Dataset for IR spectra."""
 
@@ -375,6 +413,7 @@ def load_cnmr_data(
     target_length: int = 10000,
     max_files: int | None = None,
     apply_snv: bool = False,
+    apply_quantile_norm: bool = True,
     cache_path: Path | None = None,
     overwrite_cache: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -386,6 +425,7 @@ def load_cnmr_data(
         target_length: Target length for spectrum interpolation (default: 10000 for C-NMR)
         max_files: Maximum number of files to load (for testing)
         apply_snv: Whether to apply SNV normalization (default: False)
+        apply_quantile_norm: Whether to apply quantile normalization (default: True for C-NMR)
         cache_path: Optional path to a preprocessed dataset cache (.npz)
         overwrite_cache: Rebuild cache even if a matching cache already exists
 
@@ -416,9 +456,12 @@ def load_cnmr_data(
         cache_payload = np.load(cache_path, allow_pickle=False)
         cached_source_paths = cache_payload["source_paths"].astype(str, copy=False)
         cached_source_mtimes = cache_payload["source_mtimes"].astype(np.int64, copy=False)
+        # Check if cache has QN metadata; if not, invalidate cache (assume old cache without QN)
+        cached_apply_qn = bool(cache_payload.get("apply_quantile_norm", False))
         cache_matches = (
             int(cache_payload["target_length"]) == int(target_length)
             and bool(cache_payload["apply_snv"]) == bool(apply_snv)
+            and cached_apply_qn == bool(apply_quantile_norm)
             and int(cache_payload["num_files"]) == len(parquet_files)
             and np.array_equal(cached_source_paths, source_paths)
             and np.array_equal(cached_source_mtimes, source_mtimes)
@@ -433,8 +476,10 @@ def load_cnmr_data(
             print(f"Label distribution: {y.sum(axis=0)}")
             if apply_snv:
                 print("SNV normalization applied")
+            if apply_quantile_norm:
+                print("Quantile normalization applied")
             return X, y
-        print(f"Ignoring stale cache at {cache_path}")
+        print(f"Ignoring stale cache at {cache_path} (mismatch in preprocessing options)")
 
     all_spectra = []
     all_labels = []
@@ -477,6 +522,11 @@ def load_cnmr_data(
     print(f"Label distribution: {y.sum(axis=0)}")
     if apply_snv:
         print("SNV normalization applied")
+    
+    # Apply quantile normalization if requested
+    if apply_quantile_norm:
+        X = apply_quantile_normalization(X)
+        print("Quantile normalization applied")
 
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -486,6 +536,7 @@ def load_cnmr_data(
             y=y,
             target_length=np.asarray(target_length, dtype=np.int64),
             apply_snv=np.asarray(apply_snv, dtype=bool),
+            apply_quantile_norm=np.asarray(apply_quantile_norm, dtype=bool),
             num_files=np.asarray(len(parquet_files), dtype=np.int64),
             source_paths=source_paths,
             source_mtimes=source_mtimes,
