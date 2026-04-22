@@ -190,17 +190,17 @@ class CNMRSpectraDataset(Dataset):
     def __init__(self, spectra: np.ndarray, labels: np.ndarray):
         """
         Args:
-            spectra: Array of shape (n_samples, spectrum_length)
+            spectra: Array of shape (n_samples, spectrum_length) — may be mmap'd
             labels: Array of shape (n_samples, num_classes)
         """
-        self.spectra = torch.HalfTensor(spectra)  # float16 — halves RAM (~15GB vs ~30GB)
+        self.spectra = spectra  # keep as numpy (mmap-compatible, no full RAM copy)
         self.labels = torch.FloatTensor(labels)
 
     def __len__(self) -> int:
         return len(self.spectra)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.spectra[idx].float(), self.labels[idx]
+        return torch.from_numpy(np.asarray(self.spectra[idx], dtype=np.float32)), self.labels[idx]
 
 
 def load_ir_data(
@@ -468,9 +468,12 @@ def load_cnmr_data(
         )
         if cache_matches:
             print(f"Loading cached preprocessed spectra from {cache_path}")
-            X = cache_payload["X"]
-            y = cache_payload["y"]
-            print(f"Total samples loaded: {len(X)}")
+            dat_path = cache_path.with_suffix(".dat")
+            meta = np.load(cache_path, allow_pickle=False)
+            total_samples = int(meta["total_samples"])
+            y = meta["y"].copy()
+            X = np.memmap(dat_path, dtype=np.float32, mode="r", shape=(total_samples, target_length))
+            print(f"Total samples loaded: {total_samples}")
             print(f"Spectra shape: {X.shape}")
             print(f"Labels shape: {y.shape}")
             print(f"Label distribution: {y.sum(axis=0)}")
@@ -481,67 +484,73 @@ def load_cnmr_data(
             return X, y
         print(f"Ignoring stale cache at {cache_path} (mismatch in preprocessing options)")
 
-    all_spectra = []
+    # --- Pass 1: count valid samples per file, collect labels (no spectra in RAM) ---
+    print("Pass 1/2: counting samples and collecting labels...")
+    sample_counts = []
     all_labels = []
-
     for i, parquet_file in enumerate(parquet_files):
-        # Load only necessary columns for C-NMR
         df = pd.read_parquet(parquet_file, columns=["c_nmr_spectra", "smiles"])
-
-        # Extract functional groups
         df["func_groups"] = df["smiles"].map(get_functional_groups)
+        df = df[df["func_groups"].notna() & df["c_nmr_spectra"].notna()]
+        sample_counts.append(len(df))
+        all_labels.append(np.stack(df["func_groups"].values))
+        if (i + 1) % 50 == 0:
+            print(f"  Counted {i + 1}/{len(parquet_files)} files")
 
-        # Filter out invalid entries
-        df = df[df["func_groups"].notna()]
-        df = df[df["c_nmr_spectra"].notna()]
+    total_samples = sum(sample_counts)
+    y = np.vstack(all_labels)
+    del all_labels
+    print(f"Total valid samples: {total_samples}")
 
-        # Interpolate spectra
+    # --- Allocate memmap on disk — no RAM cost for X ---
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        dat_path = cache_path.with_suffix(".dat")
+    else:
+        import tempfile
+        dat_path = Path(tempfile.mktemp(suffix=".dat"))
+
+    X = np.memmap(dat_path, dtype=np.float32, mode="w+", shape=(total_samples, target_length))
+
+    # --- Pass 2: load spectra file by file, write to memmap, delete immediately ---
+    print("Pass 2/2: loading and processing spectra...")
+    offset = 0
+    for i, (parquet_file, n_expected) in enumerate(zip(parquet_files, sample_counts)):
+        if n_expected == 0:
+            continue
+        df = pd.read_parquet(parquet_file, columns=["c_nmr_spectra", "smiles"])
+        df["func_groups"] = df["smiles"].map(get_functional_groups)
+        df = df[df["func_groups"].notna() & df["c_nmr_spectra"].notna()]
+
         spectra = np.stack(
             [interpolate_spectrum(spec, target_length) for spec in df["c_nmr_spectra"].values]
         )
-
-        # Apply SNV normalization if requested
         if apply_snv:
             spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
 
-        labels = np.stack(df["func_groups"].values)
-
-        all_spectra.append(spectra)
-        all_labels.append(labels)
+        n = spectra.shape[0]
+        X[offset : offset + n] = spectra  # write directly to disk via memmap
+        offset += n
+        del spectra, df
 
         if (i + 1) % 10 == 0:
             print(f"Loaded {i + 1}/{len(parquet_files)} files")
 
-    # Concatenate all data
-    X = np.vstack(all_spectra)
-    y = np.vstack(all_labels)
-
-    print(f"Total samples loaded: {len(X)}")
+    print(f"Total samples loaded: {total_samples}")
     print(f"Spectra shape: {X.shape}")
     print(f"Labels shape: {y.shape}")
     print(f"Label distribution: {y.sum(axis=0)}")
     if apply_snv:
         print("SNV normalization applied")
-    
-    # Apply quantile normalization if requested
+
     if apply_quantile_norm:
-        print(f"[DEBUG] Starting quantile normalization on {X.shape} array...")
-        import sys
-        sys.stdout.flush()
-        import time
-        start = time.time()
-        X = apply_quantile_normalization(X)
-        elapsed = time.time() - start
-        print(f"[DEBUG] Quantile normalization completed in {elapsed:.1f}s")
-        print("Quantile normalization applied")
+        raise NotImplementedError("Quantile normalization is not supported with streaming loader.")
 
     if cache_path is not None:
-        cache_path.parent.mkdir(parents=True, exist_ok=True)
-        print(f"[DEBUG] Starting cache save to {cache_path}...")
         np.savez_compressed(
             cache_path,
-            X=X,
             y=y,
+            total_samples=np.asarray(total_samples, dtype=np.int64),
             target_length=np.asarray(target_length, dtype=np.int64),
             apply_snv=np.asarray(apply_snv, dtype=bool),
             apply_quantile_norm=np.asarray(apply_quantile_norm, dtype=bool),
@@ -549,6 +558,6 @@ def load_cnmr_data(
             source_paths=source_paths,
             source_mtimes=source_mtimes,
         )
-        print(f"Saved preprocessed cache to {cache_path}")
+        print(f"Saved cache metadata to {cache_path}, spectra to {dat_path}")
 
     return X, y
