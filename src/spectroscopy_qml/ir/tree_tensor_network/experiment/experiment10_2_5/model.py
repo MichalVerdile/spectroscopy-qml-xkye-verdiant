@@ -103,7 +103,8 @@ class TTN102FeatureExtractor(nn.Module):
     def feature_dim(self) -> int:
         return self.ttn.output_norm.normalized_shape[0]
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:
+        """Returns (features [B, chi], logits [B, num_labels])."""
         ttn = self.ttn
         spectral_positions = torch.arange(ttn.input_dim, device=x.device)
         pos_emb = ttn.input_position_embedding(spectral_positions).squeeze(-1)
@@ -123,7 +124,9 @@ class TTN102FeatureExtractor(nn.Module):
             merged = merge(node_states[:, : 2 * p : 2], node_states[:, 1 : 2 * p : 2])
             node_states = torch.cat((merged, node_states[:, -1:]), 1) if n % 2 else merged
             level_index += 1
-        return ttn.output_norm(node_states[:, 0, :])
+        features = ttn.output_norm(node_states[:, 0, :])
+        logits = ttn.output_head(features)
+        return features, logits
 
 
 class QuanvolutionalSpecialistHead(nn.Module):
@@ -188,7 +191,7 @@ class QuanvolutionalSpecialistHead(nn.Module):
             nn.Linear(hidden_dim // 2, 1),
         )
 
-    def forward(self, ttn_feat: Tensor, x_raw: Tensor) -> Tensor:
+    def forward(self, ttn_feat: Tensor, x_raw: Tensor, ttn_logit: Tensor) -> Tensor:
         segs = [
             x_raw[:, int(lo.item()) : int(hi.item())]
             for lo, hi in zip(self.window_starts, self.window_ends)
@@ -197,7 +200,8 @@ class QuanvolutionalSpecialistHead(nn.Module):
         quanv_features = self.quanv(window)
         window_features = self.window_features(quanv_features)
         combined = torch.cat([ttn_feat, window_features], dim=-1)
-        return self.head(combined)
+        # residual: specialist corrects the frozen TTN logit
+        return self.head(combined) + ttn_logit
 
 
 class TTN102QuanvEnsemble(nn.Module):
@@ -240,8 +244,11 @@ class TTN102QuanvEnsemble(nn.Module):
         )
 
     def forward(self, x: Tensor, apply_sigmoid: bool = False) -> Tensor:
-        ttn_feat = self.backbone(x)
-        logits = torch.cat([h(ttn_feat, x) for h in self.heads], dim=-1)
+        ttn_feat, ttn_logits = self.backbone(x)
+        logits = torch.cat(
+            [h(ttn_feat, x, ttn_logits[:, [idx]]) for h, idx in zip(self.heads, self.specialist_indices)],
+            dim=-1,
+        )
         return torch.sigmoid(logits) if apply_sigmoid else logits
 
 
