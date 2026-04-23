@@ -136,11 +136,11 @@ class QuanvolutionalSpecialistHead(nn.Module):
         *,
         patch_size: int = 4,
         stride: int = 2,
-        n_filters: int = 8,
+        n_filters: int = 16,
         quanv_seed: int = 42,
         conv_channels: int = 32,
         pool_size: int = 4,
-        hidden_dim: int = 64,
+        hidden_dim: int = 128,
         dropout: float = 0.2,
     ) -> None:
         super().__init__()
@@ -168,8 +168,10 @@ class QuanvolutionalSpecialistHead(nn.Module):
         )
         self.window_features = nn.Sequential(
             nn.Conv1d(n_filters, conv_channels, kernel_size=3, padding=1),
+            nn.BatchNorm1d(conv_channels),
             nn.GELU(),
-            nn.Conv1d(conv_channels, conv_channels, kernel_size=3, padding=1),
+            nn.Conv1d(conv_channels, conv_channels, kernel_size=5, padding=2),
+            nn.BatchNorm1d(conv_channels),
             nn.GELU(),
             nn.AdaptiveAvgPool1d(pool_size),
             nn.Flatten(),
@@ -180,7 +182,10 @@ class QuanvolutionalSpecialistHead(nn.Module):
             nn.LayerNorm(hidden_dim),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim, 1),
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.GELU(),
+            nn.Dropout(dropout * 0.5),
+            nn.Linear(hidden_dim // 2, 1),
         )
 
     def forward(self, ttn_feat: Tensor, x_raw: Tensor) -> Tensor:
@@ -205,11 +210,11 @@ class TTN102QuanvEnsemble(nn.Module):
         *,
         patch_size: int = 4,
         stride: int = 2,
-        n_filters: int = 8,
+        n_filters: int = 16,
         quanv_seed: int = 42,
         conv_channels: int = 32,
         pool_size: int = 4,
-        hidden_dim: int = 64,
+        hidden_dim: int = 128,
         dropout: float = 0.2,
     ) -> None:
         super().__init__()
