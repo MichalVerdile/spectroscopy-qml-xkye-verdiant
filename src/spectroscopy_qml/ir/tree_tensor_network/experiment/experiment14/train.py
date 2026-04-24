@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import pickle
 import sys
@@ -76,6 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment14/results"),
     )
+    parser.add_argument("--feature-cache-path", type=Path, default=None)
+    parser.add_argument("--overwrite-feature-cache", action="store_true")
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
     parser.add_argument(
@@ -136,6 +139,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--early-stopping-min-delta", type=float, default=1e-4)
     parser.add_argument("--min-epochs-before-stopping", type=int, default=25)
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
+    parser.add_argument("--check-subset-size", type=int, default=2048)
     parser.add_argument("--check-only", action="store_true")
     return parser
 
@@ -170,6 +174,120 @@ def extract_sequence_features(
     return torch.cat(outputs, dim=0)
 
 
+def build_feature_cache_key(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "spectra_cache": str(args.spectra_cache.resolve()),
+        "feature_source": args.feature_source,
+        "include_raw_channel": bool(args.include_raw_channel),
+        "sg_window_length": int(args.sg_window_length),
+        "sg_polyorder": int(args.sg_polyorder),
+        "voigt_gamma_l": float(args.voigt_gamma_l),
+        "voigt_gamma_g": float(args.voigt_gamma_g),
+        "voigt_eta": float(args.voigt_eta),
+        "voigt_kernel_half_width": int(args.voigt_kernel_half_width),
+    }
+
+
+def resolve_feature_cache_path(args: argparse.Namespace) -> Path:
+    if args.feature_cache_path is not None:
+        return Path(args.feature_cache_path)
+
+    key = json.dumps(build_feature_cache_key(args), sort_keys=True).encode("utf-8")
+    digest = hashlib.sha1(key).hexdigest()[:12]
+    return args.spectra_cache.parent / f"{args.spectra_cache.stem}_experiment14_features_{digest}.pt"
+
+
+def load_or_extract_sequence_features(
+    extractor: Experiment14FeatureExtractor,
+    x_np: np.ndarray,
+    *,
+    device: torch.device,
+    batch_size: int,
+    cache_path: Path | None,
+    overwrite_cache: bool,
+    cache_key: dict[str, object],
+) -> Tensor:
+    expected_metadata = {
+        "cache_key": cache_key,
+        "x_shape": tuple(int(v) for v in x_np.shape),
+    }
+
+    if cache_path is not None and cache_path.exists() and not overwrite_cache:
+        payload = torch.load(cache_path, map_location="cpu")
+        if payload.get("metadata") == expected_metadata:
+            sequence_tensor = payload["sequence_tensor"].to(torch.float32).cpu()
+            print(f"Loaded feature cache: {cache_path}")
+            return sequence_tensor
+        print(f"Ignoring stale feature cache: {cache_path}")
+
+    sequence_tensor = extract_sequence_features(extractor, x_np, device, batch_size)
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({"metadata": expected_metadata, "sequence_tensor": sequence_tensor.cpu()}, cache_path)
+        print(f"Saved feature cache: {cache_path}")
+    return sequence_tensor
+
+
+def make_check_only_subset(
+    x_np: np.ndarray,
+    y_np: np.ndarray,
+    *,
+    subset_size: int,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    if subset_size <= 0:
+        raise ValueError("check-subset-size must be positive.")
+
+    num_samples = int(x_np.shape[0])
+    if subset_size >= num_samples:
+        return x_np, y_np
+
+    rng = np.random.default_rng(seed)
+    subset_indices = np.sort(rng.choice(num_samples, size=int(subset_size), replace=False))
+    return x_np[subset_indices], y_np[subset_indices]
+
+
+def make_check_only_split_indices(
+    num_samples: int,
+    *,
+    seed: int,
+    train_ratio: float,
+    val_ratio: float,
+    test_ratio: float,
+) -> dict[str, np.ndarray]:
+    if num_samples < 3:
+        raise ValueError("check-only needs at least 3 samples to form train/val/test splits.")
+
+    rng = np.random.default_rng(seed)
+    indices = np.arange(num_samples, dtype=np.int64)
+    rng.shuffle(indices)
+
+    test_count = max(1, int(round(num_samples * test_ratio)))
+    val_count = max(1, int(round(num_samples * val_ratio)))
+    train_count = num_samples - test_count - val_count
+    if train_count <= 0:
+        train_count = 1
+        remaining = num_samples - train_count
+        val_count = max(1, remaining // 2)
+        test_count = remaining - val_count
+    if test_count <= 0:
+        test_count = 1
+        train_count = max(1, train_count - 1)
+
+    train_end = train_count
+    val_end = train_end + val_count
+    return {
+        "train": np.sort(indices[:train_end]),
+        "val": np.sort(indices[train_end:val_end]),
+        "test": np.sort(indices[val_end:]),
+    }
+
+
+def _train_indices_digest(train_indices: np.ndarray) -> str:
+    payload = np.asarray(train_indices, dtype=np.int64).tobytes()
+    return hashlib.sha1(payload).hexdigest()
+
+
 def fit_pca_compressor(
     train_sequence: Tensor,
     compression_dim: int,
@@ -185,10 +303,57 @@ def fit_pca_compressor(
     return PCACompressor.from_sklearn(pca), info
 
 
+def load_or_fit_pca_compressor(
+    train_sequence: Tensor,
+    compression_dim: int,
+    seed: int,
+    *,
+    train_indices: np.ndarray,
+    artifact_path: Path | None,
+) -> tuple[PCACompressor, dict[str, float]]:
+    train_signature = _train_indices_digest(train_indices)
+    expected_metadata = {
+        "compression_dim": int(compression_dim),
+        "seed": int(seed),
+        "train_indices_sha1": train_signature,
+        "train_shape": tuple(int(v) for v in train_sequence.shape),
+    }
+
+    if artifact_path is not None and artifact_path.exists():
+        with artifact_path.open("rb") as handle:
+            payload = pickle.load(handle)
+        if payload.get("metadata") == expected_metadata:
+            compressor = PCACompressor(
+                mean=torch.from_numpy(payload["mean"]),
+                components=torch.from_numpy(payload["components"]),
+            )
+            print(f"Loaded PCA artifact: {artifact_path}")
+            return compressor, payload["info"]
+        print(f"Ignoring stale PCA artifact: {artifact_path}")
+
+    compressor, info = fit_pca_compressor(train_sequence, compression_dim, seed)
+    if artifact_path is not None:
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        with artifact_path.open("wb") as handle:
+            pickle.dump(
+                {
+                    "metadata": expected_metadata,
+                    "mean": compressor.mean.cpu().numpy(),
+                    "components": compressor.components.cpu().numpy(),
+                    "info": info,
+                },
+                handle,
+            )
+        print(f"Saved PCA artifact: {artifact_path}")
+    return compressor, info
+
+
 def build_model(
     args: argparse.Namespace,
     sequence_tensor: Tensor,
     train_indices: np.ndarray,
+    *,
+    pca_artifact_path: Path | None = None,
 ) -> tuple[Experiment14Classifier, dict[str, float] | None]:
     sequence_length = int(sequence_tensor.shape[1])
     feature_dim = int(sequence_tensor.shape[2])
@@ -208,7 +373,13 @@ def build_model(
             dropout=args.head_dropout,
         )
     elif variant == "pca_quantum":
-        compressor, pca_info = fit_pca_compressor(sequence_tensor[train_indices], compression_dim, args.seed)
+        compressor, pca_info = load_or_fit_pca_compressor(
+            sequence_tensor[train_indices],
+            compression_dim,
+            args.seed,
+            train_indices=train_indices,
+            artifact_path=pca_artifact_path,
+        )
         head = SharedQuantumHead(
             input_dim=compression_dim,
             num_labels=len(FUNCTIONAL_GROUPS),
@@ -382,6 +553,7 @@ def main() -> None:
     summary_path = args.output_dir / "summary.txt"
     threshold_path = args.output_dir / "selected_thresholds.json"
     pca_artifact_path = args.output_dir / "pca_artifact.pkl"
+    feature_cache_path = resolve_feature_cache_path(args)
 
     config_path.write_text(json.dumps(vars(args), indent=2, default=str) + "\n")
 
@@ -399,25 +571,51 @@ def main() -> None:
     y_np = cache["y"].astype(np.int32)
     print(f"Loaded cache X={x_np.shape}, y={y_np.shape}")
 
-    split_indices = load_or_create_split_indices(
-        labels=y_np,
-        split_path=split_path,
-        train_ratio=args.train_ratio,
-        val_ratio=args.val_ratio,
-        test_ratio=args.test_ratio,
-        random_seed=args.seed,
-        stratify_multilabel=True,
-        overwrite=args.overwrite_split,
-    )
+    if args.check_only:
+        x_np, y_np = make_check_only_subset(
+            x_np,
+            y_np,
+            subset_size=max(args.check_subset_size, args.batch_size, args.compression_dim + 8),
+            seed=args.seed,
+        )
+        print(f"Check-only subset: X={x_np.shape}, y={y_np.shape}")
+        split_indices = make_check_only_split_indices(
+            x_np.shape[0],
+            seed=args.seed,
+            train_ratio=args.train_ratio,
+            val_ratio=args.val_ratio,
+            test_ratio=args.test_ratio,
+        )
+    else:
+        split_indices = load_or_create_split_indices(
+            labels=y_np,
+            split_path=split_path,
+            train_ratio=args.train_ratio,
+            val_ratio=args.val_ratio,
+            test_ratio=args.test_ratio,
+            random_seed=args.seed,
+            stratify_multilabel=True,
+            overwrite=args.overwrite_split,
+        )
 
     sequence_extractor = build_feature_extractor(args)
-    sequence_tensor = extract_sequence_features(sequence_extractor, x_np, device, args.feature_batch_size)
+    sequence_tensor = load_or_extract_sequence_features(
+        sequence_extractor,
+        x_np,
+        device=device,
+        batch_size=args.feature_batch_size,
+        cache_path=None if args.check_only else feature_cache_path,
+        overwrite_cache=args.overwrite_feature_cache,
+        cache_key=build_feature_cache_key(args),
+    )
     print(f"Extracted sequence tensor: {tuple(sequence_tensor.shape)}")
 
-    model, pca_info = build_model(args, sequence_tensor, split_indices["train"])
-    if pca_info is not None:
-        with pca_artifact_path.open("wb") as handle:
-            pickle.dump(pca_info, handle)
+    model, pca_info = build_model(
+        args,
+        sequence_tensor,
+        split_indices["train"],
+        pca_artifact_path=None if args.check_only else pca_artifact_path,
+    )
 
     train_loader = make_loader(
         sequence_tensor,
