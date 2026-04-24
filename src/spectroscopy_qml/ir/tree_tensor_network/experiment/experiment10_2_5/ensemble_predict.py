@@ -133,7 +133,6 @@ def main():
         n_filters=spec_config.get("n_filters", 8),
         quanv_seed=spec_config.get("quanv_seed", 42),
         conv_channels=spec_config.get("conv_channels", 32),
-        pool_size=spec_config.get("pool_size", 4),
         hidden_dim=spec_config.get("hidden_dim", 64),
         dropout=0.0,
     ).to(device)

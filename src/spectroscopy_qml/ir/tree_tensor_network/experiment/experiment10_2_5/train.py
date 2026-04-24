@@ -86,14 +86,16 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Seed for deterministic fixed quanvolution filters.")
     parser.add_argument("--conv-channels", type=int, default=32,
                         help="Trainable Conv1d channels after the fixed quanvolution layer.")
-    parser.add_argument("--pool-size", type=int, default=4,
-                        help="AdaptiveAvgPool output size.")
     parser.add_argument("--hidden-dim", type=int, default=64,
                         help="Hidden dimension for each binary specialist readout.")
     parser.add_argument("--dropout", type=float, default=0.2)
     parser.add_argument("--oversample", action="store_true", default=True)
     parser.add_argument("--no-oversample", dest="oversample", action="store_false")
     parser.add_argument("--oversample-epoch-multiplier", type=float, default=1.0)
+    parser.add_argument("--balanced-sampling", action="store_true", default=False,
+                        help="50/50 per-class balanced dataset: all positives + equal negatives.")
+    parser.add_argument("--use-trainable-conv", action="store_true", default=False,
+                        help="Replace fixed quanvolution with trainable Conv1d (ablation).")
     parser.add_argument("--batch-size", type=int, default=1024)
     parser.add_argument("--epochs", type=int, default=150)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
@@ -139,6 +141,27 @@ def make_oversampled_weights(labels: np.ndarray) -> np.ndarray:
         else:
             sample_weights[i] = class_weights.min()
     return sample_weights
+
+
+def make_balanced_train_loader(X, y, train_idx, batch_size, num_workers, pin_memory, rng_seed=42):
+    """50/50 balanced dataset per class: all positives + equal number of negatives."""
+    rng = np.random.default_rng(rng_seed)
+    selected: set[int] = set()
+    for c in range(y.shape[1]):
+        pos = train_idx[y[train_idx, c] == 1]
+        neg = train_idx[y[train_idx, c] == 0]
+        selected.update(pos.tolist())
+        n_sample = min(len(pos), len(neg))
+        if n_sample > 0:
+            selected.update(rng.choice(neg, size=n_sample, replace=False).tolist())
+    balanced_idx = np.array(sorted(selected))
+    print(f"Balanced dataset: {len(balanced_idx):,} samples (from {len(train_idx):,} train)")
+    dataset = TensorDataset(
+        torch.from_numpy(X[balanced_idx]).float(),
+        torch.from_numpy(y[balanced_idx]).float(),
+    )
+    return DataLoader(dataset, batch_size=batch_size, shuffle=True,
+                      num_workers=num_workers, pin_memory=pin_memory)
 
 
 def make_train_loader(X, y, train_idx, batch_size, num_workers, pin_memory,
@@ -216,7 +239,6 @@ def write_summary(path, *, specialist_names, best_epoch, best_score,
         f"Quanv stride:          {args.stride}",
         f"Quanv filters:         {args.n_filters}",
         f"Conv channels:         {args.conv_channels}",
-        f"Pool size:             {args.pool_size}",
         f"Hidden dim:            {args.hidden_dim}",
         f"Dropout:               {args.dropout}",
         f"Oversampling:          {args.oversample}",
@@ -283,13 +305,20 @@ def main():
         stratify_multilabel=True, overwrite=args.overwrite_split,
     )
 
-    train_loader = make_train_loader(
-        X, specialist_labels, split_indices["train"],
-        batch_size=args.batch_size, num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
-        oversample=args.oversample,
-        epoch_multiplier=args.oversample_epoch_multiplier,
-    )
+    if args.balanced_sampling:
+        train_loader = make_balanced_train_loader(
+            X, specialist_labels, split_indices["train"],
+            batch_size=args.batch_size, num_workers=args.num_workers,
+            pin_memory=device.type == "cuda", rng_seed=args.seed,
+        )
+    else:
+        train_loader = make_train_loader(
+            X, specialist_labels, split_indices["train"],
+            batch_size=args.batch_size, num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+            oversample=args.oversample,
+            epoch_multiplier=args.oversample_epoch_multiplier,
+        )
     val_loader  = make_eval_loader(X, specialist_labels, split_indices["val"],
                                    args.batch_size, args.num_workers, device.type == "cuda")
     test_loader = make_eval_loader(X, specialist_labels, split_indices["test"],
@@ -308,9 +337,9 @@ def main():
         n_filters=args.n_filters,
         quanv_seed=args.quanv_seed,
         conv_channels=args.conv_channels,
-        pool_size=args.pool_size,
         hidden_dim=args.hidden_dim,
         dropout=args.dropout,
+        use_quanv=not args.use_trainable_conv,
     ).to(device)
 
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)

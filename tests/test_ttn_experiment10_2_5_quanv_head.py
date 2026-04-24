@@ -26,12 +26,11 @@ def test_quanvolutional_specialist_head_forward_shape() -> None:
         stride=2,
         n_filters=3,
         conv_channels=4,
-        pool_size=2,
         hidden_dim=8,
         dropout=0.0,
     )
 
-    logits = head(torch.randn(2, 8), torch.randn(2, 1800))
+    logits = head(torch.randn(2, 8), torch.randn(2, 1800), torch.randn(2, 1))
 
     assert logits.shape == (2, 1)
     assert torch.isfinite(logits).all()

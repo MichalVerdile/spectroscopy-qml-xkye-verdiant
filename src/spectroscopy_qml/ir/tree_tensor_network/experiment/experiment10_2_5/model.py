@@ -142,12 +142,13 @@ class QuanvolutionalSpecialistHead(nn.Module):
         n_filters: int = 16,
         quanv_seed: int = 42,
         conv_channels: int = 32,
-        pool_size: int = 4,
         hidden_dim: int = 128,
         dropout: float = 0.2,
+        use_quanv: bool = True,
     ) -> None:
         super().__init__()
         self.class_idx = int(class_idx)
+        self.use_quanv = use_quanv
 
         win_indices = get_window_indices(class_idx)
         self.register_buffer(
@@ -161,14 +162,20 @@ class QuanvolutionalSpecialistHead(nn.Module):
         if patch_size > win_dim:
             raise ValueError(f"patch_size={patch_size} is larger than window size {win_dim}.")
 
-        self.quanv = Quanvolution1D(
-            input_dim=win_dim,
-            patch_size=patch_size,
-            stride=stride,
-            n_filters=n_filters,
-            seed=quanv_seed + class_idx,
-            decode="count_normalized",
-        )
+        if use_quanv:
+            self.quanv = Quanvolution1D(
+                input_dim=win_dim,
+                patch_size=patch_size,
+                stride=stride,
+                n_filters=n_filters,
+                seed=quanv_seed + class_idx,
+                decode="count_normalized",
+            )
+        else:
+            self.quanv = nn.Sequential(
+                nn.Conv1d(1, n_filters, kernel_size=patch_size, stride=stride),
+                nn.GELU(),
+            )
         self.window_features = nn.Sequential(
             nn.Conv1d(n_filters, conv_channels, kernel_size=3, padding=1),
             nn.BatchNorm1d(conv_channels),
@@ -176,19 +183,16 @@ class QuanvolutionalSpecialistHead(nn.Module):
             nn.Conv1d(conv_channels, conv_channels, kernel_size=5, padding=2),
             nn.BatchNorm1d(conv_channels),
             nn.GELU(),
-            nn.AdaptiveAvgPool1d(pool_size),
+            nn.AdaptiveAvgPool1d(1),  # global avg pool — MPS compatible
             nn.Flatten(),
         )
-        in_dim = ttn_dim + conv_channels * pool_size
+        in_dim = ttn_dim + conv_channels
         self.head = nn.Sequential(
             nn.Linear(in_dim, hidden_dim),
             nn.LayerNorm(hidden_dim),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.GELU(),
-            nn.Dropout(dropout * 0.5),
-            nn.Linear(hidden_dim // 2, 1),
+            nn.Linear(hidden_dim, 1),
         )
 
     def forward(self, ttn_feat: Tensor, x_raw: Tensor, ttn_logit: Tensor) -> Tensor:
@@ -197,7 +201,10 @@ class QuanvolutionalSpecialistHead(nn.Module):
             for lo, hi in zip(self.window_starts, self.window_ends)
         ]
         window = torch.cat(segs, dim=-1)
-        quanv_features = self.quanv(window)
+        if self.use_quanv:
+            quanv_features = self.quanv(window)
+        else:
+            quanv_features = self.quanv(window.unsqueeze(1))
         window_features = self.window_features(quanv_features)
         combined = torch.cat([ttn_feat, window_features], dim=-1)
         # residual: specialist corrects the frozen TTN logit
@@ -217,9 +224,9 @@ class TTN102QuanvEnsemble(nn.Module):
         n_filters: int = 16,
         quanv_seed: int = 42,
         conv_channels: int = 32,
-        pool_size: int = 4,
         hidden_dim: int = 128,
         dropout: float = 0.2,
+        use_quanv: bool = True,
     ) -> None:
         super().__init__()
         self.specialist_indices = list(specialist_indices)
@@ -235,9 +242,9 @@ class TTN102QuanvEnsemble(nn.Module):
                     n_filters=n_filters,
                     quanv_seed=quanv_seed,
                     conv_channels=conv_channels,
-                    pool_size=pool_size,
                     hidden_dim=hidden_dim,
                     dropout=dropout,
+                    use_quanv=use_quanv,
                 )
                 for idx in specialist_indices
             ]

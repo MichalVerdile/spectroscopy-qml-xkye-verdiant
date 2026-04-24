@@ -1,0 +1,38 @@
+{
+  "specialist_indices": [
+    0,
+    1,
+    3,
+    5,
+    10,
+    13,
+    14,
+    18,
+    19,
+    21,
+    24,
+    27,
+    28,
+    33,
+    34,
+    35
+  ],
+  "specialist_names": [
+    "Acid anhydride",
+    "Acyl halide",
+    "Aldehyde",
+    "Alkene",
+    "Azo compound",
+    "Enamine",
+    "Enol",
+    "Hydrazine",
+    "Hydrazone",
+    "Imine",
+    "Ketone",
+    "Phosphine",
+    "Sulfide",
+    "Sulfoxide",
+    "Thial",
+    "Thioamide"
+  ]
+}
