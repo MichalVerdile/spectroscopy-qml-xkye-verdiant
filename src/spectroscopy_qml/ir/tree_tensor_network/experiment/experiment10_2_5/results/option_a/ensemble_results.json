@@ -1,0 +1,19 @@
+{
+  "ttn_macro": 0.594452941905153,
+  "ttn_micro": 0.8284491388313213,
+  "specialist_macro": 0.3443339974276368,
+  "specialist_micro": 0.4746523729138024,
+  "ensemble_macro": 0.5968757547831308,
+  "ensemble_micro": 0.8254507542185285,
+  "overridden_classes": [
+    "Acid anhydride",
+    "Acyl halide",
+    "Enamine",
+    "Hydrazone",
+    "Imine",
+    "Phosphine",
+    "Sulfide",
+    "Sulfoxide",
+    "Thioamide"
+  ]
+}
