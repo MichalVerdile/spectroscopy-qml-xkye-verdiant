@@ -95,15 +95,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/ir/mps_encoder/models"
-    results_dir: str = "src/spectroscopy_qml/ir/mps_encoder/results"
+    model_dir: str = "src/spectroscopy_qml/ir/mps_encoder_final/models"
+    results_dir: str = "src/spectroscopy_qml/ir/mps_encoder_final/results"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/ir/mps_encoder/models/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/ir/mps_encoder/results/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/ir/mps_encoder/results/training_log.csv"
+    summary_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/results/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/results/training_log.csv"
 
 
 @dataclass
@@ -164,10 +164,10 @@ class GridSearchConfig:
 
     # Output
     grid_search_results_csv: str = (
-        "src/spectroscopy_qml/ir/mps_encoder/results/grid_search/grid_search_results.csv"
+        "src/spectroscopy_qml/ir/mps_encoder_final/results/grid_search/grid_search_results.csv"
     )
     grid_search_summary_path: str = (
-        "src/spectroscopy_qml/ir/mps_encoder/results/grid_search/grid_search_summary.txt"
+        "src/spectroscopy_qml/ir/mps_encoder_final/results/grid_search/grid_search_summary.txt"
     )
 
 

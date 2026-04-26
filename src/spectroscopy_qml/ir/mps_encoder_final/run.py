@@ -106,7 +106,7 @@ Examples:
 
         # Check model
         try:
-            from spectroscopy_qml.ir.mps_encoder import MPSFunctionalGroupClassifier
+            from spectroscopy_qml.ir.mps_encoder_final import MPSFunctionalGroupClassifier
 
             model = MPSFunctionalGroupClassifier()
             params = model.get_num_parameters()
@@ -132,7 +132,7 @@ Examples:
         print("=" * 80 + "\n")
 
         try:
-            from spectroscopy_qml.ir.mps_encoder.train import train_model
+            from spectroscopy_qml.ir.mps_encoder_final.train import train_model
 
             train_model()
         except Exception as e:
@@ -149,7 +149,7 @@ Examples:
         print("=" * 80 + "\n")
 
         try:
-            from spectroscopy_qml.ir.mps_encoder.grid_search import run_grid_search
+            from spectroscopy_qml.ir.mps_encoder_final.grid_search import run_grid_search
 
             run_grid_search()
         except Exception as e:
@@ -169,7 +169,7 @@ Examples:
             # Call evaluate with default args
             import click
 
-            from spectroscopy_qml.ir.mps_encoder.evaluate import main as evaluate_main
+            from spectroscopy_qml.ir.mps_encoder_final.evaluate import main as evaluate_main
 
             ctx = click.Context(evaluate_main)
             ctx.invoke(evaluate_main)

@@ -19,15 +19,15 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.ir.mps_encoder.config import (
+from spectroscopy_qml.ir.mps_encoder_final.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     THRESHOLD_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder.data_loader import IRSpectraDataset, load_ir_data
-from spectroscopy_qml.ir.mps_encoder.model import (
+from spectroscopy_qml.ir.mps_encoder_final.data_loader import IRSpectraDataset, load_ir_data
+from spectroscopy_qml.ir.mps_encoder_final.model import (
     MPSFunctionalGroupClassifier,
     QUANTUM_LABEL_INDICES,
     NUM_QUANTUM_LABELS,
@@ -102,10 +102,11 @@ def _resolve_training_device(requested_device: str) -> torch.device:
         return torch.device("cpu")
 
     if not torch.cuda.is_available():
-        raise RuntimeError(
-            "CUDA was requested but torch.cuda.is_available() is False. "
-            "Check NVIDIA driver, CUDA runtime, and PyTorch CUDA build."
+        print(
+            "CUDA requested but not available; falling back to CPU. "
+            "Check NVIDIA driver, CUDA runtime, and PyTorch CUDA build if this was unexpected."
         )
+        return torch.device("cpu")
 
     try:
         # Smoke test a real CUDA kernel to catch 'no kernel image' early.
@@ -127,6 +128,18 @@ def _resolve_training_device(requested_device: str) -> torch.device:
 
     print(f"Using device: CUDA ({torch.cuda.get_device_name(0)})")
     return torch.device("cuda")
+
+
+def _effective_dataloader_settings(device: torch.device) -> tuple[int, bool]:
+    """Return safe DataLoader settings for the active runtime.
+
+    On CPU runtimes, especially macOS, worker spawning is fragile once the
+    training loop also introduces fold-level concurrency. Keep DataLoader
+    execution in-process there and disable pin_memory.
+    """
+    if device.type != "cuda":
+        return 0, False
+    return TRAINING_CONFIG.num_workers, TRAINING_CONFIG.pin_memory
 
 
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
@@ -513,15 +526,16 @@ def _create_model(device: torch.device) -> MPSFunctionalGroupClassifier:
     return model.to(device)
 
 
-def _create_dataloader(dataset: IRSpectraDataset, shuffle: bool) -> DataLoader:
+def _create_dataloader(dataset: IRSpectraDataset, shuffle: bool, device: torch.device) -> DataLoader:
     """Create a dataloader using the configured performance settings."""
+    num_workers, pin_memory = _effective_dataloader_settings(device)
     return DataLoader(
         dataset,
         batch_size=TRAINING_CONFIG.batch_size,
         shuffle=shuffle,
-        num_workers=TRAINING_CONFIG.num_workers,
-        pin_memory=TRAINING_CONFIG.pin_memory,
-        persistent_workers=True if TRAINING_CONFIG.num_workers > 0 else False,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        persistent_workers=True if num_workers > 0 else False,
     )
 
 
@@ -574,6 +588,9 @@ def _build_fold_splits(
 
 def _resolve_parallel_fold_devices(base_device: torch.device, n_folds: int) -> list[torch.device]:
     """Resolve device assignments for concurrent fold training."""
+    if base_device.type != "cuda":
+        return []
+
     requested_workers = min(TRAINING_CONFIG.parallel_fold_workers, n_folds)
     if requested_workers <= 1:
         return []
@@ -602,7 +619,7 @@ def _resolve_parallel_fold_devices(base_device: torch.device, n_folds: int) -> l
 
         return [torch.device(f"cuda:{index}") for index in range(requested_workers)]
 
-    return [torch.device("cpu") for _ in range(requested_workers)]
+    return []
 
 
 def _write_training_log(log_file: Path, training_log: list[dict]) -> None:
@@ -700,8 +717,8 @@ def _train_single_fold(
 
     train_dataset = IRSpectraDataset(X_train_fold, y_train_fold)
     val_dataset = IRSpectraDataset(X_val_fold, y_val_fold)
-    fold_train_loader = _create_dataloader(train_dataset, shuffle=True)
-    fold_val_loader = _create_dataloader(val_dataset, shuffle=False)
+    fold_train_loader = _create_dataloader(train_dataset, shuffle=True, device=device)
+    fold_val_loader = _create_dataloader(val_dataset, shuffle=False, device=device)
 
     fold_best_val_f1 = -1.0
     fold_best_state = None
@@ -931,10 +948,14 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
 
     # Create fixed test dataloader
     test_dataset = IRSpectraDataset(X_test, y_test)
+    test_num_workers, test_pin_memory = _effective_dataloader_settings(device)
     test_loader = DataLoader(
-        test_dataset, batch_size=TRAINING_CONFIG.batch_size, shuffle=False,
-        num_workers=TRAINING_CONFIG.num_workers, pin_memory=TRAINING_CONFIG.pin_memory,
-        persistent_workers=True if TRAINING_CONFIG.num_workers > 0 else False,
+        test_dataset,
+        batch_size=TRAINING_CONFIG.batch_size,
+        shuffle=False,
+        num_workers=test_num_workers,
+        pin_memory=test_pin_memory,
+        persistent_workers=True if test_num_workers > 0 else False,
     )
 
     print(f"\nData split:")
@@ -945,8 +966,8 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
 
     print("\nDataLoader optimization:")
     print(f"  Batch size: {TRAINING_CONFIG.batch_size}")
-    print(f"  Num workers: {TRAINING_CONFIG.num_workers}")
-    print(f"  Pin memory: {TRAINING_CONFIG.pin_memory}")
+    print(f"  Num workers: {test_num_workers}")
+    print(f"  Pin memory: {test_pin_memory}")
     print(f"  Mixed precision (AMP): {TRAINING_CONFIG.use_amp}")
     print(f"  Cross-validation mode: {validation_mode}")
 

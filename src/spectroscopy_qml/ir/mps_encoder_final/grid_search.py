@@ -13,15 +13,15 @@ from pathlib import Path
 
 import torch
 
-from spectroscopy_qml.ir.mps_encoder.config import (
+from spectroscopy_qml.ir.mps_encoder_final.config import (
     DATA_CONFIG,
     GRID_SEARCH_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder.data_loader import load_ir_data
-from spectroscopy_qml.ir.mps_encoder.train import train_model
+from spectroscopy_qml.ir.mps_encoder_final.data_loader import load_ir_data
+from spectroscopy_qml.ir.mps_encoder_final.train import train_model
 
 
 def _set_attrs(target, updates: dict) -> None:
