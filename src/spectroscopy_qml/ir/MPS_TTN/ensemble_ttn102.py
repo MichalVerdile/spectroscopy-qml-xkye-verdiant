@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 import types
 from dataclasses import asdict, is_dataclass
@@ -18,7 +19,6 @@ from pathlib import Path
 import numpy as np
 import torch
 from sklearn.metrics import f1_score, precision_score, recall_score
-from sklearn.model_selection import KFold, train_test_split
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -27,7 +27,6 @@ SRC_DIR = Path(__file__).resolve().parents[4]
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.ir.mps_encoder_final.config import TRAINING_CONFIG as MPS_TRAINING_CONFIG  # noqa: E402
 from spectroscopy_qml.ir.mps_encoder_final.config import ModelConfig as LegacyMPSModelConfig  # noqa: E402
 from spectroscopy_qml.ir.mps_encoder_final.data_loader import FUNCTIONAL_GROUPS  # noqa: E402
 from spectroscopy_qml.ir.mps_encoder_final.model import MPSFunctionalGroupClassifier  # noqa: E402
@@ -51,7 +50,8 @@ DEFAULT_TTN_STRONGER_CLASS_NAMES = (
     "Sulfonic acid",
 )
 
-PRIMARY_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
+PRIMARY_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_classifier/models/mps_model_best.pt")
+ALT_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
 LEGACY_UPLOADED_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/MPS.pt")
 DEFAULT_TTN_CHECKPOINT = Path(
     "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
@@ -60,6 +60,11 @@ DEFAULT_TTN_CHECKPOINT = Path(
 DEFAULT_TTN_CONFIG = Path(
     "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
     "/results/full_dataset_run_20260417_173715_percentile/run_config.json"
+)
+# TTN saves its own split file — use it so both models are evaluated on TTN's held-out test set.
+DEFAULT_TTN_SPLIT = Path(
+    "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
+    "/results/full_dataset_run_20260417_173715_percentile/data_split_seed42_all.npz"
 )
 
 
@@ -142,11 +147,28 @@ def tune_thresholds(
 
 
 def resolve_default_mps_checkpoint() -> Path:
-    if PRIMARY_MPS_CHECKPOINT.exists():
-        return PRIMARY_MPS_CHECKPOINT
-    if LEGACY_UPLOADED_MPS_CHECKPOINT.exists():
-        return LEGACY_UPLOADED_MPS_CHECKPOINT
+    env_value = os.environ.get("MPS_CHECKPOINT")
+    if env_value:
+        candidate = Path(env_value).expanduser()
+        if candidate.exists():
+            return candidate
+
+    for candidate in (PRIMARY_MPS_CHECKPOINT, ALT_MPS_CHECKPOINT, LEGACY_UPLOADED_MPS_CHECKPOINT):
+        if candidate.exists():
+            return candidate
+
     return PRIMARY_MPS_CHECKPOINT
+
+
+def validate_mps_checkpoint_path(checkpoint_path: Path) -> Path:
+    resolved_path = checkpoint_path.expanduser()
+    if resolved_path.exists():
+        return resolved_path
+
+    raise FileNotFoundError(
+        "MPS checkpoint not found. Set --mps-checkpoint or MPS_CHECKPOINT to an existing .pt file. "
+        f"Looked for: {resolved_path}, {PRIMARY_MPS_CHECKPOINT}, {ALT_MPS_CHECKPOINT}, {LEGACY_UPLOADED_MPS_CHECKPOINT}"
+    )
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:
@@ -167,52 +189,13 @@ def parse_candidate_names(value: str | None) -> list[str]:
     return names
 
 
-def reconstruct_mps_checkpoint_splits(
-    num_samples: int,
-    checkpoint: dict,
-) -> dict[str, np.ndarray]:
-    dataset_indices = np.arange(num_samples, dtype=np.int64)
-    trainval_indices, test_indices = train_test_split(
-        dataset_indices,
-        test_size=MPS_TRAINING_CONFIG.test_ratio,
-        random_state=MPS_TRAINING_CONFIG.random_seed,
-        shuffle=True,
-    )
-
-    best_fold = int(checkpoint.get("best_fold", 1))
-    num_folds = int(checkpoint.get("cv_num_folds", MPS_TRAINING_CONFIG.num_folds))
-    if num_folds < 1:
-        raise ValueError(f"Checkpoint contains invalid cv_num_folds={num_folds}")
-
-    relative_trainval_indices = np.arange(len(trainval_indices), dtype=np.int64)
-    if num_folds == 1:
-        val_fraction = MPS_TRAINING_CONFIG.val_ratio / (
-            MPS_TRAINING_CONFIG.train_ratio + MPS_TRAINING_CONFIG.val_ratio
-        )
-        train_relative_indices, val_relative_indices = train_test_split(
-            relative_trainval_indices,
-            test_size=val_fraction,
-            random_state=MPS_TRAINING_CONFIG.random_seed,
-            shuffle=True,
-        )
-    else:
-        if best_fold < 1 or best_fold > num_folds:
-            raise ValueError(
-                f"Checkpoint best_fold={best_fold} is outside expected range 1..{num_folds}."
-            )
-        fold_splits = list(
-            KFold(
-                n_splits=num_folds,
-                shuffle=True,
-                random_state=MPS_TRAINING_CONFIG.random_seed,
-            ).split(relative_trainval_indices)
-        )
-        train_relative_indices, val_relative_indices = fold_splits[best_fold - 1]
-
+def load_ttn_split(split_path: Path) -> dict[str, np.ndarray]:
+    """Load the TTN split file so both models are evaluated on TTN's actual held-out test set."""
+    split = np.load(split_path)
     return {
-        "train": trainval_indices[np.asarray(train_relative_indices, dtype=np.int64)],
-        "val": trainval_indices[np.asarray(val_relative_indices, dtype=np.int64)],
-        "test": np.asarray(test_indices, dtype=np.int64),
+        "train": split["train_indices"].astype(np.int64),
+        "val": split["val_indices"].astype(np.int64),
+        "test": split["test_indices"].astype(np.int64),
     }
 
 
@@ -238,7 +221,9 @@ def make_loader(
     )
 
 
-def load_mps_model(checkpoint_path: Path, device: torch.device) -> tuple[nn.Module, dict]:
+def load_mps_model(
+    checkpoint_path: Path, device: torch.device
+) -> tuple[nn.Module, dict, np.ndarray]:
     legacy_package = "spectroscopy_qml.ir.mps_classifier"
     legacy_config_module = f"{legacy_package}.config"
     if legacy_config_module not in sys.modules:
@@ -253,7 +238,17 @@ def load_mps_model(checkpoint_path: Path, device: torch.device) -> tuple[nn.Modu
     model = MPSFunctionalGroupClassifier(**_get_model_config_kwargs(checkpoint["config"]))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
-    return model.to(device), checkpoint
+
+    raw_thresholds = checkpoint.get("thresholds")
+    if raw_thresholds is None:
+        n_classes = checkpoint["config"].num_classes if hasattr(checkpoint["config"], "num_classes") else 37
+        saved_thresholds = np.full(n_classes, 0.5, dtype=np.float32)
+        print("  Warning: no thresholds in checkpoint, defaulting to 0.5")
+    else:
+        saved_thresholds = np.asarray(raw_thresholds, dtype=np.float32)
+        print(f"  Loaded MPS thresholds from checkpoint (mean={saved_thresholds.mean():.3f})")
+
+    return model.to(device), checkpoint, saved_thresholds
 
 
 @torch.no_grad()
@@ -314,6 +309,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mps-checkpoint",
         type=Path,
         default=resolve_default_mps_checkpoint(),
+        help="Path to the MPS checkpoint .pt file. Can also be set via MPS_CHECKPOINT.",
     )
     parser.add_argument(
         "--ttn-checkpoint",
@@ -324,6 +320,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--ttn-config",
         type=Path,
         default=DEFAULT_TTN_CONFIG,
+    )
+    parser.add_argument(
+        "--ttn-split",
+        type=Path,
+        default=DEFAULT_TTN_SPLIT,
+        help="Path to the TTN split .npz file (keys: train_indices, val_indices, test_indices). "
+             "Both models are evaluated on this split to avoid data leakage.",
     )
     parser.add_argument(
         "--output-dir",
@@ -403,8 +406,12 @@ def main() -> None:
     print(f"Loaded cache X={x.shape}, y={y.shape}")
 
     print("Loading MPS final checkpoint...")
-    mps_model, mps_checkpoint = load_mps_model(args.mps_checkpoint, device)
-    split_indices = reconstruct_mps_checkpoint_splits(len(x), mps_checkpoint)
+    args.mps_checkpoint = validate_mps_checkpoint_path(args.mps_checkpoint)
+    mps_model, mps_checkpoint, mps_thresholds = load_mps_model(args.mps_checkpoint, device)
+
+    print(f"Loading TTN split from {args.ttn_split} ...")
+    split_indices = load_ttn_split(args.ttn_split)
+    print(f"  train={len(split_indices['train'])}  val={len(split_indices['val'])}  test={len(split_indices['test'])}")
 
     print("Loading TTN 10.2 checkpoint...")
     ttn_config = json.loads(args.ttn_config.read_text())
@@ -419,13 +426,9 @@ def main() -> None:
     if not np.array_equal(val_labels, val_labels_ttn):
         raise ValueError("MPS and TTN validation labels do not match.")
 
-    mps_thresholds = tune_thresholds(
-        val_labels,
-        mps_val_probs,
-        args.threshold_mode,
-        args.threshold_target_metric,
-        threshold_grid,
-    )
+    # MPS thresholds come directly from the checkpoint (already optimised during training).
+    print(f"Using MPS checkpoint thresholds (mean={mps_thresholds.mean():.3f}, no re-tuning).")
+
     ttn_thresholds = tune_thresholds(
         val_labels,
         ttn_val_probs,
