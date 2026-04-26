@@ -18,14 +18,14 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.ir.mps_classifier.config import (
+from spectroscopy_qml.ir.mps_encoder_final.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_classifier.data_loader import IRSpectraDataset, load_ir_data
-from spectroscopy_qml.ir.mps_classifier.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.ir.mps_encoder_final.data_loader import IRSpectraDataset, load_ir_data
+from spectroscopy_qml.ir.mps_encoder_final.model import MPSFunctionalGroupClassifier
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:
@@ -705,7 +705,11 @@ def _train_single_fold(
         gc.collect()
 
 
-def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
+def train_model(
+    X: np.ndarray | None = None,
+    y: np.ndarray | None = None,
+    split_path: Path | None = None,
+):
     """Main training function."""
     print("=" * 80)
     print("MPS Functional Group Classifier Training")
@@ -749,13 +753,28 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     else:
         print("Using preloaded dataset passed to train_model()")
 
-    # Split off test set first, then use 5-Fold CV on the remaining data
-    X_trainval, X_test, y_trainval, y_test = train_test_split(
-        X, y, test_size=TRAINING_CONFIG.test_ratio,
-        random_state=TRAINING_CONFIG.random_seed, shuffle=True,
-    )
-
-    fold_splits, validation_mode = _build_fold_splits(X_trainval, y_trainval)
+    # Split off test set — use an external split file if provided, else generate one.
+    if split_path is not None and Path(split_path).exists():
+        ext_split = np.load(split_path)
+        train_idx = ext_split["train_indices"]
+        val_idx   = ext_split["val_indices"]
+        test_idx  = ext_split["test_indices"]
+        X_trainval = X[np.concatenate([train_idx, val_idx])]
+        y_trainval = y[np.concatenate([train_idx, val_idx])]
+        X_test = X[test_idx]
+        y_test = y[test_idx]
+        # Present as a single pre-defined fold so the rest of the training loop is unchanged.
+        rel_val = np.arange(len(train_idx), len(train_idx) + len(val_idx))
+        rel_train = np.arange(len(train_idx))
+        fold_splits = [(rel_train, rel_val)]
+        validation_mode = f"external split ({Path(split_path).name})"
+        print(f"Using external split: train={len(train_idx)} val={len(val_idx)} test={len(test_idx)}")
+    else:
+        X_trainval, X_test, y_trainval, y_test = train_test_split(
+            X, y, test_size=TRAINING_CONFIG.test_ratio,
+            random_state=TRAINING_CONFIG.random_seed, shuffle=True,
+        )
+        fold_splits, validation_mode = _build_fold_splits(X_trainval, y_trainval)
     n_folds = len(fold_splits)
 
     # Create fixed test dataloader
@@ -1069,4 +1088,30 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
 
 
 if __name__ == "__main__":
-    train_model()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Train MPS Functional Group Classifier.")
+    parser.add_argument(
+        "--split-path",
+        type=Path,
+        default=None,
+        help="Path to a pre-existing split .npz file (keys: train_indices, val_indices, test_indices). "
+             "When provided the model trains on the same split as TTN for a fair ensemble comparison.",
+    )
+    parser.add_argument(
+        "--spectra-cache",
+        type=Path,
+        default=None,
+        help="Optional path to a pre-cached spectra .npz file (keys: X, y) to skip raw-data loading.",
+    )
+    cli_args = parser.parse_args()
+
+    X_preloaded = y_preloaded = None
+    if cli_args.spectra_cache is not None and cli_args.spectra_cache.exists():
+        print(f"Loading spectra from cache: {cli_args.spectra_cache}")
+        cache = np.load(cli_args.spectra_cache)
+        X_preloaded = cache["X"].astype(np.float32)
+        y_preloaded = cache["y"].astype(np.int32)
+        print(f"  X={X_preloaded.shape}  y={y_preloaded.shape}")
+
+    train_model(X=X_preloaded, y=y_preloaded, split_path=cli_args.split_path)
