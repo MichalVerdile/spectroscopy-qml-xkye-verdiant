@@ -1,0 +1,35 @@
+Experiment 10.2.5 — TTN 10.2 + Quanvolutional Specialist Head Summary
+================================================================================
+Specialist classes:    Acid anhydride, Acyl halide, Aldehyde, Alkene, Azo compound, Enamine, Enol, Hydrazine, Hydrazone, Imine, Ketone, Phosphine, Sulfide, Sulfoxide, Thial, Thioamide
+Quanv patch size:      4
+Quanv stride:          2
+Quanv filters:         8
+Conv channels:         32
+Hidden dim:            64
+Dropout:               0.2
+Oversampling:          True
+Completed epochs:      67/150
+Elapsed seconds:       40003.68
+Best epoch:            7
+Best score:            0.449270
+Test loss:             1.884223
+Test f1_micro:         0.483672
+Test f1_macro:         0.345803
+
+Per-class F1:
+  Acid anhydride      : 0.208696
+  Acyl halide         : 0.303571
+  Aldehyde            : 0.550927
+  Alkene              : 0.570821
+  Azo compound        : 0.047619
+  Enamine             : 0.399915
+  Enol                : 0.408896
+  Hydrazine           : 0.489964
+  Hydrazone           : 0.220921
+  Imine               : 0.335244
+  Ketone              : 0.463620
+  Phosphine           : 0.337500
+  Sulfide             : 0.468306
+  Sulfoxide           : 0.315240
+  Thial               : 0.000000
+  Thioamide           : 0.411602

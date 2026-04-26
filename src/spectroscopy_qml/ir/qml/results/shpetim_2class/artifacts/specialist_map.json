@@ -1,0 +1,26 @@
+{
+  "specialist_indices": [
+    10,
+    19,
+    21,
+    34,
+    1,
+    0,
+    13,
+    33,
+    27,
+    35
+  ],
+  "specialist_names": [
+    "Azo compound",
+    "Hydrazone",
+    "Imine",
+    "Thial",
+    "Acyl halide",
+    "Acid anhydride",
+    "Enamine",
+    "Sulfoxide",
+    "Phosphine",
+    "Thioamide"
+  ]
+}

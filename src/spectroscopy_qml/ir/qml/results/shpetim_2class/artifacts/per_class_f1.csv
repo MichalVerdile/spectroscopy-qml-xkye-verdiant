@@ -1,0 +1,3 @@
+class,f1,precision,recall,support,tp,fp,fn,tn
+Azo compound,0.0015,0.0008,0.5098,51,26,33673,25,45717
+Thial,0.0000,0.0000,0.0000,1,0,26666,1,52774

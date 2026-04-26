@@ -1,0 +1,26 @@
+Shpetim Specialist Quantum Training Summary
+==============================================
+samples        : 794403
+classes        : 10
+class_indices  : 10,19,21,34,1,0,13,33,27,35
+class_names    : Azo compound, Hydrazone, Imine, Thial, Acyl halide, Acid anhydride, Enamine, Sulfoxide, Phosphine, Thioamide
+batch_size     : 256
+epochs_run     : 40
+loss           : Focal(alpha=0.25, gamma=2.0)
+best_blended   : 0.1945
+test_f1_micro  : 0.2048
+test_f1_macro  : 0.1700
+test_loss      : 0.0393
+training_time  : 14616.3s
+
+Per-class test F1
+  Azo compound: 0.0201
+  Hydrazone: 0.1536
+  Imine: 0.1725
+  Thial: 0.0000
+  Acyl halide: 0.3448
+  Acid anhydride: 0.0401
+  Enamine: 0.2793
+  Sulfoxide: 0.2159
+  Phosphine: 0.0984
+  Thioamide: 0.3749

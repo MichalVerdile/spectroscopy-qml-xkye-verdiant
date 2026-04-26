@@ -1,0 +1,25 @@
+{
+  "best_epoch": 7,
+  "threshold_mode": "per_class",
+  "threshold_target_metric": "per_class_f1",
+  "threshold_mean": 0.59375,
+  "threshold_std": 0.234703928232193,
+  "thresholds": {
+    "Acid anhydride": 0.2800000011920929,
+    "Acyl halide": 0.6200000047683716,
+    "Aldehyde": 0.7599999904632568,
+    "Alkene": 0.5799999833106995,
+    "Azo compound": 0.1599999964237213,
+    "Enamine": 0.6399999856948853,
+    "Enol": 0.3199999928474426,
+    "Hydrazine": 0.8799999952316284,
+    "Hydrazone": 0.8399999737739563,
+    "Imine": 0.7999999523162842,
+    "Ketone": 0.5999999642372131,
+    "Phosphine": 0.17999999225139618,
+    "Sulfide": 0.5,
+    "Sulfoxide": 0.8799999952316284,
+    "Thial": 0.6800000071525574,
+    "Thioamide": 0.7799999713897705
+  }
+}

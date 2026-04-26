@@ -135,6 +135,7 @@ def main():
         conv_channels=spec_config.get("conv_channels", 32),
         hidden_dim=spec_config.get("hidden_dim", 64),
         dropout=0.0,
+        use_quanv=not spec_config.get("use_trainable_conv", False),
     ).to(device)
     state = torch.load(args.specialist_dir / "specialist_best.pt", map_location=device, weights_only=True)
     ensemble.load_state_dict(state)

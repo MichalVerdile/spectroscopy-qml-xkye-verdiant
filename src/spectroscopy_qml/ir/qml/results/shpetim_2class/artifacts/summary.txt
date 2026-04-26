@@ -1,0 +1,18 @@
+Shpetim Specialist Quantum Training Summary
+==============================================
+samples        : 794403
+classes        : 2
+class_indices  : 10,34
+class_names    : Azo compound, Thial
+batch_size     : 256
+epochs_run     : 19
+loss           : Focal(alpha=0.25, gamma=2.0)
+best_blended   : 0.0009
+test_f1_micro  : 0.0009
+test_f1_macro  : 0.0008
+test_loss      : 0.0076
+training_time  : 7056.7s
+
+Per-class test F1
+  Azo compound: 0.0015
+  Thial: 0.0000

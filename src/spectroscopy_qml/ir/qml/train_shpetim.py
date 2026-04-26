@@ -19,6 +19,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from spectroscopy_qml.ir.mps_encoder.data_loader import load_ir_data, prepare_dataloaders
 from spectroscopy_qml.ir.qml.diagnostics import run_diagnostics
 from spectroscopy_qml.ir.qml.quantum_model_shpetim import (
+    ALL_FUNCTIONAL_GROUP_NAMES,
     AngleEncodingClassifier,
     N_SPECIALIST_CLASSES,
     TTN10_2_HARD_CLASS_INDICES,
@@ -88,6 +89,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dropout", type=float, default=0.2)
     parser.add_argument("--n-qubits", type=int, default=4)
     parser.add_argument("--n-layers", type=int, default=6)
+    parser.add_argument("--specialist-indices", type=str, default=None,
+                        help="Comma-separated global class indices, e.g. '10,34'. "
+                             "Defaults to all 10 TTN-10.2 hard classes.")
     parser.add_argument("--check-only", action="store_true")
     return parser
 
@@ -238,12 +242,21 @@ def main() -> None:
     run_config_path = results_dir / "run_config.json"
     specialist_map_path = results_dir / "specialist_map.json"
 
+    # Resolve specialist indices and names
+    if args.specialist_indices is not None:
+        spec_indices = tuple(int(i.strip()) for i in args.specialist_indices.split(","))
+        spec_names   = tuple(ALL_FUNCTIONAL_GROUP_NAMES[i] for i in spec_indices)
+    else:
+        spec_indices = TTN10_2_HARD_CLASS_INDICES
+        spec_names   = TTN10_2_HARD_CLASS_NAMES
+    n_classes = len(spec_indices)
+
     print("=" * 72)
     print("Shpetim specialist quantum model")
     print("=" * 72)
     print(f"Device: {device}")
-    print(f"Specialist indices: {TTN10_2_HARD_CLASS_INDICES}")
-    print(f"Specialist names:   {', '.join(TTN10_2_HARD_CLASS_NAMES)}")
+    print(f"Specialist indices: {spec_indices}")
+    print(f"Specialist names:   {', '.join(spec_names)}")
 
     X, y_full = load_ir_data(
         args.data_dir,
@@ -253,7 +266,7 @@ def main() -> None:
         cache_path=args.cache_path,
         overwrite_cache=args.overwrite_cache,
     )
-    y_specialist = select_specialist_labels(torch.as_tensor(y_full, dtype=torch.float32)).numpy()
+    y_specialist = y_full[:, list(spec_indices)].astype(np.float32)
 
     print(f"Dataset: {X.shape[0]:,} samples | spectra shape={X.shape} | labels shape={y_specialist.shape}")
 
@@ -270,11 +283,12 @@ def main() -> None:
     )
 
     model = AngleEncodingClassifier(
-        num_classes=N_SPECIALIST_CLASSES,
+        num_classes=n_classes,
         n_qubits=args.n_qubits,
         n_layers=args.n_layers,
         n_scalars=6,
         dropout=args.dropout,
+        specialist_indices=spec_indices,
     ).to(device)
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Trainable parameters: {total_params:,}")
@@ -355,7 +369,7 @@ def main() -> None:
             ]
         )
 
-    thresholds = np.full(N_SPECIALIST_CLASSES, 0.5, dtype=np.float32)
+    thresholds = np.full(n_classes, 0.5, dtype=np.float32)
     best_score = -1.0
     best_state: dict[str, torch.Tensor] | None = None
     best_thresholds = thresholds.copy()
@@ -477,13 +491,13 @@ def main() -> None:
         test_preds,
         out_dir=results_dir,
         model_name="Shpetim specialist quantum model",
-        class_names=TTN10_2_HARD_CLASS_NAMES,
+        class_names=spec_names,
         benchmark_f1=None,
     )
 
     thresholds_payload = {
         name: float(threshold)
-        for name, threshold in zip(TTN10_2_HARD_CLASS_NAMES, thresholds, strict=False)
+        for name, threshold in zip(spec_names, thresholds, strict=False)
     }
     thresholds_path.write_text(json.dumps(thresholds_payload, indent=2) + "\n")
 
@@ -491,9 +505,9 @@ def main() -> None:
         handle.write("Shpetim Specialist Quantum Training Summary\n")
         handle.write("=" * 46 + "\n")
         handle.write(f"samples        : {X.shape[0]}\n")
-        handle.write(f"classes        : {N_SPECIALIST_CLASSES}\n")
-        handle.write(f"class_indices  : {','.join(str(i) for i in TTN10_2_HARD_CLASS_INDICES)}\n")
-        handle.write(f"class_names    : {', '.join(TTN10_2_HARD_CLASS_NAMES)}\n")
+        handle.write(f"classes        : {n_classes}\n")
+        handle.write(f"class_indices  : {','.join(str(i) for i in spec_indices)}\n")
+        handle.write(f"class_names    : {', '.join(spec_names)}\n")
         handle.write(f"batch_size     : {args.batch_size}\n")
         handle.write(f"epochs_run     : {last_epoch}\n")
         handle.write(f"loss           : {loss_name}\n")
