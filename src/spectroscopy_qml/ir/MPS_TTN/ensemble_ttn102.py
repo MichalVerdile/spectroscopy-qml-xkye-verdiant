@@ -19,6 +19,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -189,14 +190,42 @@ def parse_candidate_names(value: str | None) -> list[str]:
     return names
 
 
-def load_ttn_split(split_path: Path) -> dict[str, np.ndarray]:
-    """Load the TTN split file so both models are evaluated on TTN's actual held-out test set."""
-    split = np.load(split_path)
-    return {
-        "train": split["train_indices"].astype(np.int64),
-        "val": split["val_indices"].astype(np.int64),
-        "test": split["test_indices"].astype(np.int64),
-    }
+def load_ttn_split(
+    split_path: Path,
+    ttn_config: dict | None = None,
+    num_samples: int | None = None,
+) -> dict[str, np.ndarray]:
+    """Load the TTN split file so both models are evaluated on TTN's actual held-out test set.
+
+    Falls back to reconstructing the split from ttn_config if the file doesn't exist.
+    """
+    if split_path.exists():
+        split = np.load(split_path)
+        return {
+            "train": split["train_indices"].astype(np.int64),
+            "val": split["val_indices"].astype(np.int64),
+            "test": split["test_indices"].astype(np.int64),
+        }
+
+    if ttn_config is None or num_samples is None:
+        raise FileNotFoundError(
+            f"TTN split file not found: {split_path}. "
+            "Pass --ttn-split pointing to an existing data_split_seed42_all.npz file."
+        )
+
+    seed = int(ttn_config.get("seed", 42))
+    test_ratio = float(ttn_config.get("test_ratio", 0.1))
+    val_ratio = float(ttn_config.get("val_ratio", 0.1))
+    train_ratio = float(ttn_config.get("train_ratio", 0.8))
+
+    all_idx = np.arange(num_samples, dtype=np.int64)
+    trainval_idx, test_idx = train_test_split(all_idx, test_size=test_ratio, random_state=seed, shuffle=True)
+    val_fraction = val_ratio / (train_ratio + val_ratio)
+    train_idx, val_idx = train_test_split(trainval_idx, test_size=val_fraction, random_state=seed, shuffle=True)
+
+    print(f"  Split file not found — reconstructed from TTN config: "
+          f"train={len(train_idx)} val={len(val_idx)} test={len(test_idx)}")
+    return {"train": train_idx, "val": val_idx, "test": test_idx}
 
 
 def make_loader(
@@ -409,12 +438,12 @@ def main() -> None:
     args.mps_checkpoint = validate_mps_checkpoint_path(args.mps_checkpoint)
     mps_model, mps_checkpoint, mps_thresholds = load_mps_model(args.mps_checkpoint, device)
 
-    print(f"Loading TTN split from {args.ttn_split} ...")
-    split_indices = load_ttn_split(args.ttn_split)
-    print(f"  train={len(split_indices['train'])}  val={len(split_indices['val'])}  test={len(split_indices['test'])}")
-
     print("Loading TTN 10.2 checkpoint...")
     ttn_config = json.loads(args.ttn_config.read_text())
+
+    print(f"Loading TTN split from {args.ttn_split} ...")
+    split_indices = load_ttn_split(args.ttn_split, ttn_config=ttn_config, num_samples=len(x))
+    print(f"  train={len(split_indices['train'])}  val={len(split_indices['val'])}  test={len(split_indices['test'])}")
     ttn_model = load_ttn102(args.ttn_checkpoint, ttn_config, device)
 
     val_loader = make_loader(x, y, split_indices["val"], batch_size=args.batch_size, num_workers=args.num_workers)
