@@ -21,18 +21,18 @@ from sklearn.metrics import (
 from sklearn.model_selection import KFold, train_test_split
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.ir.mps_encoder_final.config import (
+from spectroscopy_qml.ir.mps_classifier.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder_final.data_loader import (
+from spectroscopy_qml.ir.mps_classifier.data_loader import (
     FUNCTIONAL_GROUPS,
     IRSpectraDataset,
     load_ir_data,
 )
-from spectroscopy_qml.ir.mps_encoder_final.model import MPSFunctionalGroupClassifier
+from spectroscopy_qml.ir.mps_classifier.model import MPSFunctionalGroupClassifier
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:

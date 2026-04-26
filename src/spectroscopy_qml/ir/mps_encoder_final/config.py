@@ -24,15 +24,6 @@ class ModelConfig:
     physical_dim_2: int = 450
     bond_dim_2: int = 128
 
-    # Quantum segment branch (third branch)
-    use_quantum_branch: bool = True
-    quantum_backend: str = "qiskit"          # "pennylane" or "qiskit"
-    quantum_num_qubits: int = 4                  # number of qubits per circuit
-    quantum_num_layers: int = 2                  # number of circuit layers
-    quantum_segment_length: int = 8             # must equal quantum_num_qubits * quantum_num_layers
-    quantum_segment_stride: int = 8             # < segment_length for overlap
-    quantum_measure_correlations: bool = True   # also measure <ZiZj> correlations
-
 
 @dataclass
 class DataConfig:
@@ -77,11 +68,8 @@ class TrainingConfig:
     train_ratio: float = 0.7
     val_ratio: float = 0.1
     test_ratio: float = 0.2
-    num_folds: int = 5
+    num_folds: int = 1
     random_seed: int = 42
-
-    # Quantum branch loss weight (competitive loss coefficient)
-    quantum_loss_weight: float = 0.5
 
     # Device
     device: str = "cuda"  # Will be set to "cpu" if CUDA not available
@@ -95,44 +83,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/ir/mps_encoder_final/models"
-    results_dir: str = "src/spectroscopy_qml/ir/mps_encoder_final/results"
+    model_dir: str = "src/spectroscopy_qml/ir/mps_classifier/models"
+    results_dir: str = "src/spectroscopy_qml/ir/mps_classifier/results"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/ir/mps_classifier/models/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/results/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/ir/mps_encoder_final/results/training_log.csv"
-
-
-@dataclass
-class ThresholdConfig:
-    """Threshold tuning configuration.
-
-    mode:
-        - "global"    – a single threshold is swept and applied to all classes.
-        - "per_class" – an independent threshold is selected for each class.
-
-    target_metric:
-        Metric maximised during the sweep on the validation set.
-        - "f1_micro"     – global micro-F1  (only valid with mode="global")
-        - "f1_macro"     – global macro-F1  (valid for both modes)
-        - "per_class_f1" – per-class F1     (only valid with mode="per_class")
-
-    grid_step:
-        Step size for the threshold candidate grid in [0, 1].
-
-    thresholds_filename:
-        Name of the JSON file written to the run/model directory that stores
-        the selected thresholds (mirrors ``selected_thresholds.json`` in
-        experiment10_2).
-    """
-
-    mode: str = "per_class"                # "global" | "per_class"
-    target_metric: str = "per_class_f1"    # "f1_micro" | "f1_macro" | "per_class_f1"
-    grid_step: float = 0.02
-    thresholds_filename: str = "selected_thresholds.json"
+    summary_path: str = "src/spectroscopy_qml/ir/mps_classifier/results/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/ir/mps_classifier/results/training_log.csv"
 
 
 @dataclass
@@ -164,10 +123,10 @@ class GridSearchConfig:
 
     # Output
     grid_search_results_csv: str = (
-        "src/spectroscopy_qml/ir/mps_encoder_final/results/grid_search/grid_search_results.csv"
+        "src/spectroscopy_qml/ir/mps_classifier/results/grid_search/grid_search_results.csv"
     )
     grid_search_summary_path: str = (
-        "src/spectroscopy_qml/ir/mps_encoder_final/results/grid_search/grid_search_summary.txt"
+        "src/spectroscopy_qml/ir/mps_classifier/results/grid_search/grid_search_summary.txt"
     )
 
 
@@ -176,5 +135,4 @@ MODEL_CONFIG = ModelConfig()
 DATA_CONFIG = DataConfig()
 TRAINING_CONFIG = TrainingConfig()
 PATH_CONFIG = PathConfig()
-THRESHOLD_CONFIG = ThresholdConfig()
 GRID_SEARCH_CONFIG = GridSearchConfig()

@@ -21,12 +21,6 @@ from .model import (
     LocalFeatureMap,
     MPSEncoder,
     MPSFunctionalGroupClassifier,
-    PennyLaneDataReuploadingCircuit,
-    QiskitDataReuploadingCircuit,
-    QuantumSegmentBranch,
-    QUANTUM_LABEL_NAMES,
-    QUANTUM_LABEL_INDICES,
-    NUM_QUANTUM_LABELS,
 )
 
 __version__ = "1.0.0"
@@ -35,12 +29,6 @@ __all__ = [
     "LocalFeatureMap",
     "MPSEncoder",
     "MPSFunctionalGroupClassifier",
-    "PennyLaneDataReuploadingCircuit",
-    "QiskitDataReuploadingCircuit",
-    "QuantumSegmentBranch",
-    "QUANTUM_LABEL_NAMES",
-    "QUANTUM_LABEL_INDICES",
-    "NUM_QUANTUM_LABELS",
     "ModelConfig",
     "DataConfig",
     "TrainingConfig",

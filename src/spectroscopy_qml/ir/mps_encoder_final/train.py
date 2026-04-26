@@ -12,26 +12,20 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import KFold, train_test_split
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.ir.mps_encoder_final.config import (
+from spectroscopy_qml.ir.mps_classifier.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
     PATH_CONFIG,
-    THRESHOLD_CONFIG,
     TRAINING_CONFIG,
 )
-from spectroscopy_qml.ir.mps_encoder_final.data_loader import IRSpectraDataset, load_ir_data
-from spectroscopy_qml.ir.mps_encoder_final.model import (
-    MPSFunctionalGroupClassifier,
-    QUANTUM_LABEL_INDICES,
-    NUM_QUANTUM_LABELS,
-)
+from spectroscopy_qml.ir.mps_classifier.data_loader import IRSpectraDataset, load_ir_data
+from spectroscopy_qml.ir.mps_classifier.model import MPSFunctionalGroupClassifier
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:
@@ -102,11 +96,10 @@ def _resolve_training_device(requested_device: str) -> torch.device:
         return torch.device("cpu")
 
     if not torch.cuda.is_available():
-        print(
-            "CUDA requested but not available; falling back to CPU. "
-            "Check NVIDIA driver, CUDA runtime, and PyTorch CUDA build if this was unexpected."
+        raise RuntimeError(
+            "CUDA was requested but torch.cuda.is_available() is False. "
+            "Check NVIDIA driver, CUDA runtime, and PyTorch CUDA build."
         )
-        return torch.device("cpu")
 
     try:
         # Smoke test a real CUDA kernel to catch 'no kernel image' early.
@@ -128,18 +121,6 @@ def _resolve_training_device(requested_device: str) -> torch.device:
 
     print(f"Using device: CUDA ({torch.cuda.get_device_name(0)})")
     return torch.device("cuda")
-
-
-def _effective_dataloader_settings(device: torch.device) -> tuple[int, bool]:
-    """Return safe DataLoader settings for the active runtime.
-
-    On CPU runtimes, especially macOS, worker spawning is fragile once the
-    training loop also introduces fold-level concurrency. Keep DataLoader
-    execution in-process there and disable pin_memory.
-    """
-    if device.type != "cuda":
-        return 0, False
-    return TRAINING_CONFIG.num_workers, TRAINING_CONFIG.pin_memory
 
 
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
@@ -197,166 +178,59 @@ def compute_pos_weight(y_train: np.ndarray, device: torch.device) -> torch.Tenso
 
 
 def tune_thresholds(
-    y_true: np.ndarray,
-    y_probs: np.ndarray,
-    metric: str = "f1_micro",
-    mode: str = "global",
-    grid_step: float = 0.02,
+    y_true: np.ndarray, y_probs: np.ndarray, metric: str = "f1_micro"
 ) -> np.ndarray:
     """
-    Find optimal thresholds that maximize the given metric.
+    Find optimal per-class thresholds that maximize the given metric.
+
+    Uses a simple grid search over thresholds for each class independently.
+    For micro F1, we optimize all thresholds jointly using a coarse grid.
 
     Args:
         y_true: Ground truth labels (n_samples, n_classes)
         y_probs: Predicted probabilities (n_samples, n_classes)
-        metric: Metric to optimise – "f1_micro", "f1_macro", or "per_class_f1".
-        mode: "global" sweeps a single threshold for all classes;
-              "per_class" tunes each class independently.
-              Note: mode="per_class" is incompatible with metric="f1_micro".
-        grid_step: Step size for the candidate threshold grid in [0.1, 0.9].
+        metric: Metric to optimize ("f1_micro" or "f1_macro")
 
     Returns:
         Array of optimal thresholds (n_classes,)
     """
-    if mode == "per_class" and metric == "f1_micro":
-        raise ValueError(
-            "threshold mode 'per_class' is incompatible with metric 'f1_micro'. "
-            "Use metric='f1_macro' or 'per_class_f1' for per-class tuning."
-        )
-
     n_classes = y_true.shape[1]
-    candidates = np.arange(0.1, 0.9 + grid_step / 2, grid_step)
 
-    if mode == "global":
-        # Sweep a single threshold and apply it to all classes
+    if metric == "f1_micro":
+        # For micro F1, try global thresholds (same for all classes)
+        # This is more efficient and often works well for micro averaging
         best_score = 0.0
         best_threshold = 0.5
-        avg = "micro" if metric == "f1_micro" else "macro"
-        for threshold in candidates:
+
+        for threshold in np.arange(0.1, 0.9, 0.01):
             y_pred = (y_probs >= threshold).astype(int)
-            score = f1_score(y_true, y_pred, average=avg, zero_division=0)
+            score = f1_score(y_true, y_pred, average="micro", zero_division=0)
             if score > best_score:
                 best_score = score
                 best_threshold = threshold
+
+        # Use same threshold for all classes (micro F1 optimization)
         thresholds = np.full(n_classes, best_threshold)
 
     else:
-        # per_class: tune each class independently against its own binary F1
-        thresholds = np.full(n_classes, 0.5)
+        # For macro F1 or per-class optimization, tune each class independently
+        thresholds = np.zeros(n_classes)
+
         for i in range(n_classes):
             best_score = 0.0
             best_threshold = 0.5
-            for threshold in candidates:
+
+            for threshold in np.arange(0.1, 0.9, 0.05):
                 y_pred_i = (y_probs[:, i] >= threshold).astype(int)
                 score = f1_score(y_true[:, i], y_pred_i, zero_division=0)
                 if score > best_score:
                     best_score = score
                     best_threshold = threshold
+
             thresholds[i] = best_threshold
 
     return thresholds
 
-
-# ---------------------------------------------------------------------------
-# Quantum branch training helpers
-# ---------------------------------------------------------------------------
-
-# Pre-built index tensor, created once per device when first needed.
-_QUANTUM_IDX_CACHE: dict[torch.device, torch.Tensor] = {}
-
-
-def _get_quantum_idx(device: torch.device) -> torch.Tensor:
-    """Return a long tensor of QUANTUM_LABEL_INDICES on *device* (cached)."""
-    if device not in _QUANTUM_IDX_CACHE:
-        _QUANTUM_IDX_CACHE[device] = torch.tensor(
-            QUANTUM_LABEL_INDICES, dtype=torch.long, device=device
-        )
-    return _QUANTUM_IDX_CACHE[device]
-
-
-def _compute_competitive_loss(
-    mps_logits: torch.Tensor,
-    qc_logits: torch.Tensor,
-    labels: torch.Tensor,
-    q_idx: torch.Tensor,
-) -> torch.Tensor:
-    """Per-sample competitive loss for the 16 quantum-branch labels.
-
-    For each sample in the batch, only the branch with the lower BCE loss
-    contributes gradient for those 16 labels.  Both branches are compared
-    using *unweighted* BCE so the selection is based on raw prediction quality
-    rather than class-imbalance correction.
-
-    Args:
-        mps_logits: ``(B, 37)`` full MPS logits.
-        qc_logits:  ``(B, 37)`` quantum branch logits (full label set).
-        labels:     ``(B, 37)`` ground-truth binary labels.
-        q_idx:      ``(16,)`` long tensor with the 16 quantum label column indices.
-
-    Returns:
-        Scalar competitive loss.
-    """
-    y_16 = labels[:, q_idx]                  # (B, 16)
-    mps_16 = mps_logits[:, q_idx]            # (B, 16)
-    qc_16 = qc_logits[:, q_idx]             # (B, 16) — comparison slice only
-
-    # Per-sample comparison BCE on the 16 quantum labels (no pos_weight, fair comparison)
-    loss_mps_cmp = F.binary_cross_entropy_with_logits(
-        mps_16, y_16, reduction="none"
-    ).mean(dim=1)                             # (B,)
-    loss_qc_cmp = F.binary_cross_entropy_with_logits(
-        qc_16, y_16, reduction="none"
-    ).mean(dim=1)                             # (B,)
-
-    # Select winner per sample (detach comparison so it doesn't create a
-    # second graph path through either branch).
-    mps_wins = (loss_mps_cmp.detach() <= loss_qc_cmp.detach()).float()  # (B,)
-
-    # Gradient: MPS on the 16 quantum labels (avoids double-counting with the
-    # main 37-label loss); QC on all 37 labels (trains every output neuron).
-    loss_qc_full = F.binary_cross_entropy_with_logits(
-        qc_logits, labels, reduction="none"
-    ).mean(dim=1)                             # (B,)
-    return (mps_wins * loss_mps_cmp + (1.0 - mps_wins) * loss_qc_full).mean()
-
-
-def _evaluate_quantum_branch(
-    model: nn.Module,
-    dataloader: DataLoader,
-    device: torch.device,
-) -> dict[str, float]:
-    """Evaluate the quantum branch on the 16 quantum labels (one full pass).
-
-    Returns a dict with ``f1_micro`` and ``f1_macro`` for the quantum branch.
-    Only called at fold-end for summary reporting; not every epoch.
-    """
-    model.eval()
-    q_idx = _get_quantum_idx(device)
-    all_qc_probs: list[np.ndarray] = []
-    all_y16: list[np.ndarray] = []
-
-    with torch.no_grad():
-        for spectra, labels in dataloader:
-            spectra = spectra.to(device)
-            labels = labels.to(device)
-            # Force float32: PennyLane backprop and Qiskit statevector require it
-            with torch.amp.autocast("cuda", enabled=False):
-                qc_logits = model.quantum_branch(spectra.float())  # type: ignore[union-attr]
-            all_qc_probs.append(torch.sigmoid(qc_logits[:, q_idx]).detach().cpu().numpy())
-            all_y16.append(labels[:, q_idx].cpu().numpy())
-
-    qc_probs = np.vstack(all_qc_probs)
-    y16 = np.vstack(all_y16)
-    qc_preds = (qc_probs >= 0.5).astype(float)
-    return {
-        "f1_micro": float(f1_score(y16, qc_preds, average="micro", zero_division=0)),
-        "f1_macro": float(f1_score(y16, qc_preds, average="macro", zero_division=0)),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Core epoch functions
-# ---------------------------------------------------------------------------
 
 def train_epoch(
     model: nn.Module,
@@ -374,9 +248,6 @@ def train_epoch(
     all_labels = []
     all_preds = []
 
-    has_quantum = getattr(model, "quantum_branch", None) is not None
-    q_idx = _get_quantum_idx(device) if has_quantum else None
-
     for spectra, labels in dataloader:
         spectra = spectra.to(device)
         labels = labels.to(device)
@@ -389,13 +260,6 @@ def train_epoch(
                 logits = model(spectra)
                 loss = criterion(logits, labels)
 
-            if has_quantum:
-                # Quantum circuit requires float32 — disable AMP for this call
-                with torch.amp.autocast("cuda", enabled=False):
-                    qc_logits = model.quantum_branch(spectra.float())  # type: ignore[union-attr]
-                comp = _compute_competitive_loss(logits, qc_logits, labels, q_idx)
-                loss = loss + TRAINING_CONFIG.quantum_loss_weight * comp
-
             scaler.scale(loss).backward()
             scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -405,12 +269,6 @@ def train_epoch(
             # Standard training
             logits = model(spectra)
             loss = criterion(logits, labels)
-
-            if has_quantum:
-                qc_logits = model.quantum_branch(spectra.float())  # type: ignore[union-attr]
-                comp = _compute_competitive_loss(logits, qc_logits, labels, q_idx)
-                loss = loss + TRAINING_CONFIG.quantum_loss_weight * comp
-
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
@@ -515,27 +373,19 @@ def _create_model(device: torch.device) -> MPSFunctionalGroupClassifier:
         num_sites_2=MODEL_CONFIG.num_sites_2,
         physical_dim_2=MODEL_CONFIG.physical_dim_2,
         bond_dim_2=MODEL_CONFIG.bond_dim_2,
-        use_quantum_branch=MODEL_CONFIG.use_quantum_branch,
-        quantum_backend=MODEL_CONFIG.quantum_backend,
-        quantum_num_qubits=MODEL_CONFIG.quantum_num_qubits,
-        quantum_num_layers=MODEL_CONFIG.quantum_num_layers,
-        quantum_segment_length=MODEL_CONFIG.quantum_segment_length,
-        quantum_segment_stride=MODEL_CONFIG.quantum_segment_stride,
-        quantum_measure_correlations=MODEL_CONFIG.quantum_measure_correlations,
     )
     return model.to(device)
 
 
-def _create_dataloader(dataset: IRSpectraDataset, shuffle: bool, device: torch.device) -> DataLoader:
+def _create_dataloader(dataset: IRSpectraDataset, shuffle: bool) -> DataLoader:
     """Create a dataloader using the configured performance settings."""
-    num_workers, pin_memory = _effective_dataloader_settings(device)
     return DataLoader(
         dataset,
         batch_size=TRAINING_CONFIG.batch_size,
         shuffle=shuffle,
-        num_workers=num_workers,
-        pin_memory=pin_memory,
-        persistent_workers=True if num_workers > 0 else False,
+        num_workers=TRAINING_CONFIG.num_workers,
+        pin_memory=TRAINING_CONFIG.pin_memory,
+        persistent_workers=True if TRAINING_CONFIG.num_workers > 0 else False,
     )
 
 
@@ -588,9 +438,6 @@ def _build_fold_splits(
 
 def _resolve_parallel_fold_devices(base_device: torch.device, n_folds: int) -> list[torch.device]:
     """Resolve device assignments for concurrent fold training."""
-    if base_device.type != "cuda":
-        return []
-
     requested_workers = min(TRAINING_CONFIG.parallel_fold_workers, n_folds)
     if requested_workers <= 1:
         return []
@@ -619,7 +466,7 @@ def _resolve_parallel_fold_devices(base_device: torch.device, n_folds: int) -> l
 
         return [torch.device(f"cuda:{index}") for index in range(requested_workers)]
 
-    return []
+    return [torch.device("cpu") for _ in range(requested_workers)]
 
 
 def _write_training_log(log_file: Path, training_log: list[dict]) -> None:
@@ -717,8 +564,8 @@ def _train_single_fold(
 
     train_dataset = IRSpectraDataset(X_train_fold, y_train_fold)
     val_dataset = IRSpectraDataset(X_val_fold, y_val_fold)
-    fold_train_loader = _create_dataloader(train_dataset, shuffle=True, device=device)
-    fold_val_loader = _create_dataloader(val_dataset, shuffle=False, device=device)
+    fold_train_loader = _create_dataloader(train_dataset, shuffle=True)
+    fold_val_loader = _create_dataloader(val_dataset, shuffle=False)
 
     fold_best_val_f1 = -1.0
     fold_best_state = None
@@ -763,9 +610,7 @@ def _train_single_fold(
                 tuned_thresholds = tune_thresholds(
                     fold_val_labels,
                     fold_val_probs,
-                    metric=THRESHOLD_CONFIG.target_metric,
-                    mode=THRESHOLD_CONFIG.mode,
-                    grid_step=THRESHOLD_CONFIG.grid_step,
+                    metric="f1_micro",
                 )
                 tuned_val_preds = (fold_val_probs >= tuned_thresholds).astype(float)
                 tuned_val_metrics = compute_metrics(fold_val_labels, tuned_val_preds)
@@ -833,38 +678,6 @@ def _train_single_fold(
             f"training_time={fold_time / 60:.1f} minutes"
         )
 
-        # ── Quantum branch vs MPS comparison (fold-end, best checkpoint) ──
-        quantum_val_metrics: dict[str, float] | None = None
-        if model.quantum_branch is not None:
-            log("Evaluating quantum branch on validation set (best weights)…")
-            # Restore best weights to compare fairly
-            model.load_state_dict({k: v.to(device) for k, v in fold_best_state.items()})
-            quantum_val_metrics = _evaluate_quantum_branch(model, fold_val_loader, device)
-            q_idx = _get_quantum_idx(device)
-            # MPS F1 on the same 16 quantum labels (at threshold 0.5)
-            model.eval()
-            all_mps_probs_16: list[np.ndarray] = []
-            all_y16: list[np.ndarray] = []
-            with torch.no_grad():
-                for spectra, labels in fold_val_loader:
-                    spectra, labels = spectra.to(device), labels.to(device)
-                    with torch.amp.autocast("cuda", enabled=False):
-                        mps_logits = model(spectra.float())
-                    all_mps_probs_16.append(
-                        torch.sigmoid(mps_logits[:, q_idx]).detach().cpu().numpy()
-                    )
-                    all_y16.append(labels[:, q_idx].cpu().numpy())
-            mps_probs_16 = np.vstack(all_mps_probs_16)
-            y16 = np.vstack(all_y16)
-            mps_f1_16 = f1_score(
-                y16, (mps_probs_16 >= 0.5).astype(float), average="micro", zero_division=0
-            )
-            log(
-                f"  Quantum labels (16)  –  MPS F1µ: {mps_f1_16:.4f}  |  "
-                f"QC F1µ: {quantum_val_metrics['f1_micro']:.4f}  "
-                f"({'QC wins' if quantum_val_metrics['f1_micro'] > mps_f1_16 else 'MPS wins'})"
-            )
-
         return {
             "fold": fold_idx,
             "best_epoch": fold_best_epoch,
@@ -880,7 +693,6 @@ def _train_single_fold(
             "best_thresholds": fold_best_thresholds,
             "pos_weight": fold_pos_weight.detach().cpu(),
             "training_log": fold_training_log,
-            "quantum_val_metrics": quantum_val_metrics,
         }
     finally:
         del model, optimizer, criterion, scheduler
@@ -948,14 +760,10 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
 
     # Create fixed test dataloader
     test_dataset = IRSpectraDataset(X_test, y_test)
-    test_num_workers, test_pin_memory = _effective_dataloader_settings(device)
     test_loader = DataLoader(
-        test_dataset,
-        batch_size=TRAINING_CONFIG.batch_size,
-        shuffle=False,
-        num_workers=test_num_workers,
-        pin_memory=test_pin_memory,
-        persistent_workers=True if test_num_workers > 0 else False,
+        test_dataset, batch_size=TRAINING_CONFIG.batch_size, shuffle=False,
+        num_workers=TRAINING_CONFIG.num_workers, pin_memory=TRAINING_CONFIG.pin_memory,
+        persistent_workers=True if TRAINING_CONFIG.num_workers > 0 else False,
     )
 
     print(f"\nData split:")
@@ -966,8 +774,8 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
 
     print("\nDataLoader optimization:")
     print(f"  Batch size: {TRAINING_CONFIG.batch_size}")
-    print(f"  Num workers: {test_num_workers}")
-    print(f"  Pin memory: {test_pin_memory}")
+    print(f"  Num workers: {TRAINING_CONFIG.num_workers}")
+    print(f"  Pin memory: {TRAINING_CONFIG.pin_memory}")
     print(f"  Mixed precision (AMP): {TRAINING_CONFIG.use_amp}")
     print(f"  Cross-validation mode: {validation_mode}")
 
@@ -991,11 +799,6 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     print(f"  Site dimension (MPS 2): {MODEL_CONFIG.input_dim // MODEL_CONFIG.num_sites_2}")
     print(f"  Physical dimension (MPS 2): {MODEL_CONFIG.physical_dim_2}")
     print(f"  Bond dimension (MPS 2): {MODEL_CONFIG.bond_dim_2}")
-    if MODEL_CONFIG.use_quantum_branch:
-        print(f"  Quantum branch: enabled (backend={MODEL_CONFIG.quantum_backend}, "
-              f"segment_length={MODEL_CONFIG.quantum_segment_length}, "
-              f"stride={MODEL_CONFIG.quantum_segment_stride})")
-        print(f"  Quantum loss weight: {TRAINING_CONFIG.quantum_loss_weight}")
     del model
 
     # Class weights are computed per fold to avoid leaking validation-label statistics.
@@ -1156,34 +959,6 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     print(f"  Precision Macro: {test_metrics['precision_macro']:.4f}")
     print(f"  Recall Micro: {test_metrics['recall_micro']:.4f}")
     print(f"  Recall Macro: {test_metrics['recall_macro']:.4f}")
-
-    # ── Quantum branch vs MPS on test set ────────────────────────────────
-    qc_test_metrics: dict[str, float] | None = None
-    if model.quantum_branch is not None:
-        print("\n--- Quantum Branch (16 labels) vs MPS on Test Set ---")
-        qc_test_metrics = _evaluate_quantum_branch(model, test_loader, device)
-        q_idx_test = _get_quantum_idx(device)
-        model.eval()
-        all_mps_probs_16_test: list[np.ndarray] = []
-        all_y16_test: list[np.ndarray] = []
-        with torch.no_grad():
-            for spectra, labels in test_loader:
-                spectra, labels = spectra.to(device), labels.to(device)
-                with torch.amp.autocast("cuda", enabled=False):
-                    mps_logits = model(spectra.float())
-                all_mps_probs_16_test.append(
-                    torch.sigmoid(mps_logits[:, q_idx_test]).detach().cpu().numpy()
-                )
-                all_y16_test.append(labels[:, q_idx_test].cpu().numpy())
-        mps_p16 = np.vstack(all_mps_probs_16_test)
-        y16_test = np.vstack(all_y16_test)
-        mps_f1_test = f1_score(
-            y16_test, (mps_p16 >= 0.5).astype(float), average="micro", zero_division=0
-        )
-        print(f"  MPS  F1 Micro (16 quantum labels): {mps_f1_test:.4f}")
-        print(f"  QC   F1 Micro (16 quantum labels): {qc_test_metrics['f1_micro']:.4f}")
-        winner = "QC wins" if qc_test_metrics["f1_micro"] > mps_f1_test else "MPS wins"
-        print(f"  → {winner} on the 16 quantum labels")
 
     # Save summary
     summary_path = Path(PATH_CONFIG.summary_path)

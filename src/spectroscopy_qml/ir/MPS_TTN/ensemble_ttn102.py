@@ -11,11 +11,13 @@ import argparse
 import csv
 import json
 import sys
+import types
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
 
 import numpy as np
 import torch
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import KFold, train_test_split
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -26,17 +28,11 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from spectroscopy_qml.ir.mps_encoder_final.config import TRAINING_CONFIG as MPS_TRAINING_CONFIG  # noqa: E402
+from spectroscopy_qml.ir.mps_encoder_final.config import ModelConfig as LegacyMPSModelConfig  # noqa: E402
+from spectroscopy_qml.ir.mps_encoder_final.data_loader import FUNCTIONAL_GROUPS  # noqa: E402
 from spectroscopy_qml.ir.mps_encoder_final.model import MPSFunctionalGroupClassifier  # noqa: E402
 from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_2_1.model import (  # noqa: E402
     load_ttn102,
-)
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.data_loader import FUNCTIONAL_GROUPS  # noqa: E402
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
-    build_threshold_grid,
-    compute_metrics,
-    resolve_device,
-    threshold_predictions,
-    tune_thresholds,
 )
 
 
@@ -55,7 +51,8 @@ DEFAULT_TTN_STRONGER_CLASS_NAMES = (
     "Sulfonic acid",
 )
 
-DEFAULT_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
+PRIMARY_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
+LEGACY_UPLOADED_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/MPS.pt")
 DEFAULT_TTN_CHECKPOINT = Path(
     "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
     "/results/full_dataset_run_20260417_173715_percentile/ttn_ir_best.pt"
@@ -64,6 +61,92 @@ DEFAULT_TTN_CONFIG = Path(
     "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
     "/results/full_dataset_run_20260417_173715_percentile/run_config.json"
 )
+
+
+def resolve_device(device_arg: str) -> torch.device:
+    if device_arg == "cpu":
+        return torch.device("cpu")
+    if device_arg == "cuda":
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested but is not available.")
+        return torch.device("cuda")
+    if device_arg == "mps":
+        if not torch.backends.mps.is_available():
+            raise RuntimeError("MPS was requested but is not available.")
+        return torch.device("mps")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
+def threshold_predictions(y_prob: np.ndarray, thresholds: float | np.ndarray = 0.5) -> np.ndarray:
+    return (y_prob >= thresholds).astype(np.int32)
+
+
+def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float | np.ndarray]:
+    return {
+        "f1_micro": float(f1_score(y_true, y_pred, average="micro", zero_division=0)),
+        "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
+        "precision_micro": float(precision_score(y_true, y_pred, average="micro", zero_division=0)),
+        "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
+        "recall_micro": float(recall_score(y_true, y_pred, average="micro", zero_division=0)),
+        "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
+        "per_class_f1": f1_score(y_true, y_pred, average=None, zero_division=0),
+    }
+
+
+def build_threshold_grid(step: float) -> np.ndarray:
+    if step <= 0 or step > 1:
+        raise ValueError(f"threshold step must be in (0, 1], got {step}")
+    return np.arange(0.1, 0.9 + step / 2, step, dtype=np.float32)
+
+
+def tune_thresholds(
+    y_true: np.ndarray,
+    y_probs: np.ndarray,
+    mode: str,
+    target_metric: str,
+    threshold_grid: np.ndarray,
+) -> np.ndarray:
+    n_classes = y_true.shape[1]
+
+    if mode == "global":
+        best_score = -1.0
+        best_threshold = 0.5
+        average = "micro" if target_metric == "f1_micro" else "macro"
+        for threshold in threshold_grid:
+            preds = (y_probs >= threshold).astype(np.int32)
+            score = f1_score(y_true, preds, average=average, zero_division=0)
+            if score > best_score:
+                best_score = float(score)
+                best_threshold = float(threshold)
+        return np.full(n_classes, best_threshold, dtype=np.float32)
+
+    if target_metric == "f1_micro":
+        raise ValueError("threshold mode 'per_class' is incompatible with target_metric 'f1_micro'")
+
+    thresholds = np.full(n_classes, 0.5, dtype=np.float32)
+    for class_index in range(n_classes):
+        best_score = -1.0
+        best_threshold = 0.5
+        for threshold in threshold_grid:
+            preds = (y_probs[:, class_index] >= threshold).astype(np.int32)
+            score = f1_score(y_true[:, class_index], preds, zero_division=0)
+            if score > best_score:
+                best_score = float(score)
+                best_threshold = float(threshold)
+        thresholds[class_index] = best_threshold
+    return thresholds
+
+
+def resolve_default_mps_checkpoint() -> Path:
+    if PRIMARY_MPS_CHECKPOINT.exists():
+        return PRIMARY_MPS_CHECKPOINT
+    if LEGACY_UPLOADED_MPS_CHECKPOINT.exists():
+        return LEGACY_UPLOADED_MPS_CHECKPOINT
+    return PRIMARY_MPS_CHECKPOINT
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:
@@ -156,6 +239,16 @@ def make_loader(
 
 
 def load_mps_model(checkpoint_path: Path, device: torch.device) -> tuple[nn.Module, dict]:
+    legacy_package = "spectroscopy_qml.ir.mps_classifier"
+    legacy_config_module = f"{legacy_package}.config"
+    if legacy_config_module not in sys.modules:
+        package_module = types.ModuleType(legacy_package)
+        package_module.__path__ = []  # type: ignore[attr-defined]
+        config_module = types.ModuleType(legacy_config_module)
+        config_module.ModelConfig = LegacyMPSModelConfig
+        sys.modules[legacy_package] = package_module
+        sys.modules[legacy_config_module] = config_module
+
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     model = MPSFunctionalGroupClassifier(**_get_model_config_kwargs(checkpoint["config"]))
     model.load_state_dict(checkpoint["model_state_dict"])
@@ -220,7 +313,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--mps-checkpoint",
         type=Path,
-        default=DEFAULT_MPS_CHECKPOINT,
+        default=resolve_default_mps_checkpoint(),
     )
     parser.add_argument(
         "--ttn-checkpoint",
