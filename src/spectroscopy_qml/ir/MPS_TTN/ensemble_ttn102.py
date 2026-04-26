@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 import types
 from dataclasses import asdict, is_dataclass
@@ -51,7 +52,8 @@ DEFAULT_TTN_STRONGER_CLASS_NAMES = (
     "Sulfonic acid",
 )
 
-PRIMARY_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
+PRIMARY_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_classifier/models/mps_model_best.pt")
+ALT_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/models/mps_model_best.pt")
 LEGACY_UPLOADED_MPS_CHECKPOINT = Path("src/spectroscopy_qml/ir/mps_encoder_final/MPS.pt")
 DEFAULT_TTN_CHECKPOINT = Path(
     "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2"
@@ -142,11 +144,28 @@ def tune_thresholds(
 
 
 def resolve_default_mps_checkpoint() -> Path:
-    if PRIMARY_MPS_CHECKPOINT.exists():
-        return PRIMARY_MPS_CHECKPOINT
-    if LEGACY_UPLOADED_MPS_CHECKPOINT.exists():
-        return LEGACY_UPLOADED_MPS_CHECKPOINT
+    env_value = os.environ.get("MPS_CHECKPOINT")
+    if env_value:
+        candidate = Path(env_value).expanduser()
+        if candidate.exists():
+            return candidate
+
+    for candidate in (PRIMARY_MPS_CHECKPOINT, ALT_MPS_CHECKPOINT, LEGACY_UPLOADED_MPS_CHECKPOINT):
+        if candidate.exists():
+            return candidate
+
     return PRIMARY_MPS_CHECKPOINT
+
+
+def validate_mps_checkpoint_path(checkpoint_path: Path) -> Path:
+    resolved_path = checkpoint_path.expanduser()
+    if resolved_path.exists():
+        return resolved_path
+
+    raise FileNotFoundError(
+        "MPS checkpoint not found. Set --mps-checkpoint or MPS_CHECKPOINT to an existing .pt file. "
+        f"Looked for: {resolved_path}, {PRIMARY_MPS_CHECKPOINT}, {ALT_MPS_CHECKPOINT}, {LEGACY_UPLOADED_MPS_CHECKPOINT}"
+    )
 
 
 def _get_model_config_kwargs(model_config) -> dict[str, object]:
@@ -314,6 +333,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--mps-checkpoint",
         type=Path,
         default=resolve_default_mps_checkpoint(),
+        help="Path to the MPS checkpoint .pt file. Can also be set via MPS_CHECKPOINT.",
     )
     parser.add_argument(
         "--ttn-checkpoint",
@@ -403,6 +423,7 @@ def main() -> None:
     print(f"Loaded cache X={x.shape}, y={y.shape}")
 
     print("Loading MPS final checkpoint...")
+    args.mps_checkpoint = validate_mps_checkpoint_path(args.mps_checkpoint)
     mps_model, mps_checkpoint = load_mps_model(args.mps_checkpoint, device)
     split_indices = reconstruct_mps_checkpoint_splits(len(x), mps_checkpoint)
 
