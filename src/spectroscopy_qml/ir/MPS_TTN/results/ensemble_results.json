@@ -1,0 +1,69 @@
+{
+  "candidate_names": [
+    "Arene",
+    "Alkane",
+    "Nitrile",
+    "Isocyanate",
+    "Ether",
+    "Haloalkane",
+    "Thial",
+    "Sulfonic acid"
+  ],
+  "candidate_indices": [
+    9,
+    4,
+    25,
+    22,
+    16,
+    17,
+    34,
+    32
+  ],
+  "override_names": [
+    "Nitrile",
+    "Isocyanate",
+    "Ether",
+    "Haloalkane",
+    "Thial"
+  ],
+  "override_indices": [
+    25,
+    22,
+    16,
+    17,
+    34
+  ],
+  "min_f1_gain": 0.02,
+  "min_support": 5,
+  "mps_threshold_mean": 0.42432427406311035,
+  "ttn_threshold_mean": 0.6972971558570862,
+  "ensemble_threshold_mean": 0.448648601770401,
+  "validation": {
+    "mps": {
+      "f1_micro": 0.8382434874069908,
+      "f1_macro": 0.6719649412705406
+    },
+    "ttn": {
+      "f1_micro": 0.8820684862696924,
+      "f1_macro": 0.8491487790054405
+    },
+    "ensemble": {
+      "f1_micro": 0.8478299658882184,
+      "f1_macro": 0.6975560315996535
+    }
+  },
+  "test": {
+    "mps": {
+      "f1_micro": 0.8385024955586412,
+      "f1_macro": 0.6580349260063404
+    },
+    "ttn": {
+      "f1_micro": 0.882428274688032,
+      "f1_macro": 0.8407452044880585
+    },
+    "ensemble": {
+      "f1_micro": 0.8482427632968639,
+      "f1_macro": 0.6776868584718709
+    }
+  }
+}
