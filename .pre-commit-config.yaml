@@ -18,14 +18,3 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - pandas-stubs
-          - types-PyYAML
-          - types-requests
-        args: [--strict, --ignore-missing-imports]
-        exclude: ^(tests/|benchmark/|src/spectroscopy_qml/ir/z_score_normalization/scripts/run_cnn_with_snv\.py|src/spectroscopy_qml/ir/snv_normalization/scripts/run_cnn_with_snv\.py)

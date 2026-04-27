@@ -585,6 +585,7 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
             )
 
         # Track best model based on validation micro F1 (not loss)
+        # Track best model based on validation micro F1 (not loss)
         if val_metrics["f1_micro"] > best_val_f1:
             best_val_f1 = val_metrics["f1_micro"]
             best_thresholds = tuned_thresholds  # Update best thresholds

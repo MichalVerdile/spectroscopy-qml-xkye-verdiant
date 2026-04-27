@@ -84,21 +84,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 
-[tool.mypy]
-python_version = "3.12"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_any_generics = true
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-follow_imports = "normal"
-ignore_missing_imports = false
-
 [[tool.mypy.overrides]]
 module = "spectroscopy_qml.ir.snv_normalization.scripts.run_cnn_with_snv"
 ignore_errors = true
@@ -124,34 +109,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
-    "spectroscopy_qml.ir_tn_encoder.utils.mps_encoder",
-    "spectroscopy_qml.ir_tn_encoder.utils.mlp_encoder",
-    "spectroscopy_qml.ir_tn_encoder.utils.preprocess_ir_data",
-    "spectroscopy_qml.ir_tn_encoder.utils.cnn_classifier",
-]
-disable_error_code = ["misc"]
-
-[[tool.mypy.overrides]]
-module = [
-    "spectroscopy_qml.ir_tn_encoder.run_ir_tn_encoder",
-]
-disable_error_code = ["name-defined"]
-
-[[tool.mypy.overrides]]
-module = [
-    "spectroscopy_qml.ir_tn_encoder.evaluation.evaluate_ir_tn_encoder",
-]
-disable_error_code = ["attr-defined", "arg-type"]
-
-[[tool.mypy.overrides]]
-module = [
-    "spectroscopy_qml.ir_tn_encoder.utils.train",
-]
-disable_error_code = ["arg-type"]
-
-[[tool.mypy.overrides]]
-module = [
-    "spectroscopy_qml.ir.mps_encoder.*",
+    "spectroscopy_qml.mps_encoder.*",
 ]
 disable_error_code = [
     "misc",

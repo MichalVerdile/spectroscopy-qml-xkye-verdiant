@@ -7,9 +7,9 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 1800
-    num_sites: int = 1800
-    physical_dim: int = 3
-    bond_dim: int = 25
+    num_sites: int = 5
+    physical_dim: int = 360
+    bond_dim: int = 256
     num_classes: int = 37
     dropout_rate: float = 0.0
 
@@ -30,6 +30,7 @@ class DataConfig:
 class TrainingConfig:
     """Training hyperparameters."""
 
+    batch_size: int = 2048
     batch_size: int = 2048
     num_epochs: int = 200
     learning_rate: float = 2.5e-4
