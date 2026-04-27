@@ -1,0 +1,67 @@
+================================================================================
+TTN IR Experiment 10.2 - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/ttn_ir_best.pt
+  Run config: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/run_config.json
+  Split artifact: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/data_split_seed42_all.npz
+  Parameters: 2,651,437
+  Thresholds: mean=0.680, std=0.000
+
+Test Set Performance:
+  accuracy: 0.2618
+  f1_micro: 0.8441
+  f1_macro: 0.6320
+  f1_weighted: 0.8370
+  f1_samples: 0.8387
+  precision_micro: 0.8996
+  precision_macro: 0.6416
+  precision_weighted: 0.8932
+  recall_micro: 0.7950
+  recall_macro: 0.6315
+  recall_weighted: 0.7950
+  hamming_accuracy: 0.9621
+
+Validation Set Performance:
+  accuracy: 0.2622
+  f1_micro: 0.8445
+  f1_macro: 0.6634
+  f1_weighted: 0.8374
+  f1_samples: 0.8385
+  precision_micro: 0.8998
+  precision_macro: 0.6721
+  precision_weighted: 0.8933
+  recall_micro: 0.7956
+  recall_macro: 0.6630
+  recall_weighted: 0.7956
+  hamming_accuracy: 0.9622
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alcohol: F1=0.9810 (support=21306)
+  Carboxylic acid: F1=0.9809 (support=7942)
+  Alkane: F1=0.9747 (support=76514)
+  Arene: F1=0.9603 (support=61509)
+  Isocyanate: F1=0.9574 (support=92)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=5)
+  Sulfonic acid: F1=0.0000 (support=1)
+  Azo compound: F1=0.1374 (support=54)
+  Phosphine: F1=0.3026 (support=65)
+  Imine: F1=0.3102 (support=595)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=21450, TP=19316, FP=4148, FN=17302, TN=38675, specificity=0.9031, example_fp_indices=[27, 35, 53, 70, 72, 75, 79, 93, 98, 130], example_fn_indices=[12, 13, 29, 30, 34, 40, 42, 47, 48, 50]
+  Ether: errors=20049, TP=29157, FP=4273, FN=15776, TN=30235, specificity=0.8762, example_fp_indices=[1, 7, 30, 37, 51, 72, 87, 96, 98, 108], example_fn_indices=[3, 5, 9, 10, 13, 14, 39, 43, 46, 48]
+  Sulfide: errors=9679, TP=3527, FP=2406, FN=7273, TN=66235, specificity=0.9649, example_fp_indices=[4, 9, 89, 131, 161, 199, 202, 222, 259, 290], example_fn_indices=[2, 6, 24, 27, 30, 39, 42, 43, 48, 50]
+  Amide: errors=8033, TP=16004, FP=3072, FN=4961, TN=55404, specificity=0.9475, example_fp_indices=[80, 91, 167, 182, 188, 224, 232, 248, 262, 267], example_fn_indices=[0, 71, 98, 108, 114, 116, 118, 124, 149, 150]
+  Amine: errors=7293, TP=28077, FP=1783, FN=5510, TN=44071, specificity=0.9611, example_fp_indices=[90, 103, 148, 150, 166, 180, 208, 210, 256, 270], example_fn_indices=[6, 7, 16, 37, 69, 72, 93, 113, 141, 157]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results/validation_error_analysis_detailed.png
