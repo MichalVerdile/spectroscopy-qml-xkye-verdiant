@@ -24,6 +24,9 @@ class ModelConfig:
     physical_dim_2: int = 450
     bond_dim_2: int = 128
 
+    # Set to False to disable the second encoder and use only the 5-site MPS.
+    use_second_encoder: bool = True
+
 
 @dataclass
 class DataConfig:
