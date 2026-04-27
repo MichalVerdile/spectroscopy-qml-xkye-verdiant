@@ -373,6 +373,7 @@ def _create_model(device: torch.device) -> MPSFunctionalGroupClassifier:
         num_sites_2=MODEL_CONFIG.num_sites_2,
         physical_dim_2=MODEL_CONFIG.physical_dim_2,
         bond_dim_2=MODEL_CONFIG.bond_dim_2,
+        use_second_encoder=getattr(MODEL_CONFIG, "use_second_encoder", True),
     )
     return model.to(device)
 
@@ -709,6 +710,7 @@ def train_model(
     X: np.ndarray | None = None,
     y: np.ndarray | None = None,
     split_path: Path | None = None,
+    split_indices: dict[str, np.ndarray] | None = None,
 ):
     """Main training function."""
     print("=" * 80)
@@ -753,12 +755,26 @@ def train_model(
     else:
         print("Using preloaded dataset passed to train_model()")
 
-    # Split off test set — use an external split file if provided, else generate one.
-    if split_path is not None and Path(split_path).exists():
+    # Split off test set — prefer in-memory shared indices, else external split file, else generate one.
+    if split_indices is not None:
+        train_idx = split_indices["train"]
+        val_idx = split_indices["val"]
+        test_idx = split_indices["test"]
+        X_trainval = X[np.concatenate([train_idx, val_idx])]
+        y_trainval = y[np.concatenate([train_idx, val_idx])]
+        X_test = X[test_idx]
+        y_test = y[test_idx]
+        # Present as a single pre-defined fold so the rest of the training loop is unchanged.
+        rel_val = np.arange(len(train_idx), len(train_idx) + len(val_idx))
+        rel_train = np.arange(len(train_idx))
+        fold_splits = [(rel_train, rel_val)]
+        validation_mode = "shared in-memory split"
+        print(f"Using shared split: train={len(train_idx)} val={len(val_idx)} test={len(test_idx)}")
+    elif split_path is not None and Path(split_path).exists():
         ext_split = np.load(split_path)
         train_idx = ext_split["train_indices"]
-        val_idx   = ext_split["val_indices"]
-        test_idx  = ext_split["test_indices"]
+        val_idx = ext_split["val_indices"]
+        test_idx = ext_split["test_indices"]
         X_trainval = X[np.concatenate([train_idx, val_idx])]
         y_trainval = y[np.concatenate([train_idx, val_idx])]
         X_test = X[test_idx]
