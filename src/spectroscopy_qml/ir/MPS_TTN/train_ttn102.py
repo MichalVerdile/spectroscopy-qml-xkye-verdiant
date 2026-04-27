@@ -592,6 +592,7 @@ def run_ttn102_training(
     criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
 
     model = build_model(args).to(device)
+    raw_model = model
 
     # Synthetic preflight
     print("\n[Preflight] Synthetic forward check")
@@ -723,7 +724,7 @@ def run_ttn102_training(
     print("\nTraining complete. Evaluating on test set...")
 
     best_state = torch.load(checkpoint_path, map_location=device, weights_only=True)
-    model.load_state_dict(best_state)
+    raw_model.load_state_dict(best_state)
 
     test_loss, test_labels, test_probs = evaluate_with_probs_amp(
         model, test_loader, criterion, device, use_amp=use_amp,
