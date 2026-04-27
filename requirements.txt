@@ -4,6 +4,7 @@
 numpy==2.4.2
 pandas==3.0.0
 pyarrow==23.0.0
+iterative-stratification==0.1.9
 scikit-learn==1.8.0
 torch>=2.8.0
 rdkit==2025.9.4
@@ -14,6 +15,9 @@ tqdm==4.67.2
 pydantic==2.12.5
 qiskit==2.3.0
 qiskit-machine-learning==0.9.0
+pennylane==0.41.0
+pennylane-lightning==0.41.0
+autoray==0.6.12
 keras==3.13.2
 tensorflow==2.20.0
 click==8.1.8

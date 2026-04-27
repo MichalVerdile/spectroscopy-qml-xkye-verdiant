@@ -1,10 +1,3 @@
-"""
-Exhaustive hyperparameter grid search for MPS Functional Group Classifier.
-
-This runner executes every combination from GRID_SEARCH_CONFIG using a full
-Cartesian product over model and training hyperparameters.
-"""
-
 import csv
 import gc
 from dataclasses import asdict
@@ -116,6 +109,9 @@ def run_grid_search() -> None:
         data_dir,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
+        apply_savgol=DATA_CONFIG.apply_savgol,
+        savgol_window_length=DATA_CONFIG.savgol_window_length,
+        savgol_polyorder=DATA_CONFIG.savgol_polyorder,
         apply_snv=DATA_CONFIG.apply_snv,
     )
     print(f"Dataset loaded once: X shape={X.shape}, y shape={y.shape}")

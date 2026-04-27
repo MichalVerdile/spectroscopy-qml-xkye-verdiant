@@ -1,7 +1,3 @@
-"""
-Data loading and preprocessing utilities for IR spectra.
-"""
-
 from pathlib import Path
 from typing import Optional
 
@@ -10,6 +6,7 @@ import pandas as pd
 import torch
 from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
+from scipy.signal import savgol_filter
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
@@ -127,6 +124,27 @@ def apply_snv_normalization(spectrum: np.ndarray, eps: float = 1e-8) -> np.ndarr
     return (spectrum - mean) / std
 
 
+def apply_savgol_smoothing(
+    spectrum: np.ndarray, window_length: int = 11, polyorder: int = 3
+) -> np.ndarray:
+    """
+    Apply Savitzky-Golay smoothing filter to a spectrum.
+
+    Smooths the spectrum to reduce noise before derivative computation.
+
+    Args:
+        spectrum: Input spectrum array
+        window_length: Length of the filter window (must be odd and > polyorder)
+        polyorder: Order of the polynomial used to fit the samples
+
+    Returns:
+        Smoothed spectrum
+    """
+    if len(spectrum) < window_length:
+        return spectrum
+    return savgol_filter(spectrum, window_length=window_length, polyorder=polyorder)
+
+
 class IRSpectraDataset(Dataset):
     """PyTorch Dataset for IR spectra."""
 
@@ -147,7 +165,13 @@ class IRSpectraDataset(Dataset):
 
 
 def load_ir_data(
-    data_dir: Path, target_length: int = 1800, max_files: int | None = None, apply_snv: bool = False
+    data_dir: Path,
+    target_length: int = 1800,
+    max_files: int | None = None,
+    apply_snv: bool = False,
+    apply_savgol: bool = False,
+    savgol_window_length: int = 11,
+    savgol_polyorder: int = 3,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Load IR spectra data from parquet files.
@@ -157,6 +181,9 @@ def load_ir_data(
         target_length: Target length for spectrum interpolation
         max_files: Maximum number of files to load (for testing)
         apply_snv: Whether to apply SNV normalization (default: False)
+        apply_savgol: Whether to apply Savitzky-Golay smoothing (default: False)
+        savgol_window_length: Window length for Savitzky-Golay filter
+        savgol_polyorder: Polynomial order for Savitzky-Golay filter
 
     Returns:
         Tuple of (spectra, labels) as numpy arrays
@@ -188,6 +215,12 @@ def load_ir_data(
             [interpolate_spectrum(spec, target_length) for spec in df["ir_spectra"].values]
         )
 
+        # Apply Savitzky-Golay smoothing before derivatives (cleans noise)
+        if apply_savgol:
+            spectra = np.stack(
+                [apply_savgol_smoothing(spec, savgol_window_length, savgol_polyorder) for spec in spectra]
+            )
+
         # Apply SNV normalization if requested
         if apply_snv:
             spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
@@ -207,7 +240,12 @@ def load_ir_data(
     print(f"Total samples loaded: {len(X)}")
     print(f"Spectra shape: {X.shape}")
     print(f"Labels shape: {y.shape}")
-    print(f"Label distribution: {y.sum(axis=0)}")
+    label_dist = {name: int(count) for name, count in zip(FUNCTIONAL_GROUPS.keys(), y.sum(axis=0))}
+    print("Label distribution:")
+    for name, count in label_dist.items():
+        print(f"  {name}: {count}")
+    if apply_savgol:
+        print(f"Savitzky-Golay smoothing applied (window={savgol_window_length}, order={savgol_polyorder})")
     if apply_snv:
         print("SNV normalization applied")
 

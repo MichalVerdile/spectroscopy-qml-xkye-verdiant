@@ -1,7 +1,3 @@
-"""
-Training script for MPS Functional Group Classifier.
-"""
-
 import csv
 import gc
 import os
@@ -236,6 +232,8 @@ def train_epoch(
                 loss = criterion(logits, labels)
 
             scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             scaler.step(optimizer)
             scaler.update()
         else:
@@ -243,6 +241,7 @@ def train_epoch(
             logits = model(spectra)
             loss = criterion(logits, labels)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
         total_loss += loss.item() * spectra.size(0)
@@ -368,6 +367,9 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
             data_dir,
             target_length=DATA_CONFIG.target_length,
             max_files=DATA_CONFIG.max_files,
+            apply_savgol=DATA_CONFIG.apply_savgol,
+            savgol_window_length=DATA_CONFIG.savgol_window_length,
+            savgol_polyorder=DATA_CONFIG.savgol_polyorder,
             apply_snv=DATA_CONFIG.apply_snv,
         )
     else:

@@ -1,7 +1,3 @@
-"""
-Configuration for MPS Functional Group Classifier training and evaluation.
-"""
-
 from dataclasses import dataclass
 from typing import Optional
 
@@ -11,9 +7,9 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 1800
-    num_sites: int = 5
-    physical_dim: int = 450
-    bond_dim: int = 128
+    num_sites: int = 1800
+    physical_dim: int = 3
+    bond_dim: int = 25
     num_classes: int = 37
     dropout_rate: float = 0.0
 
@@ -23,6 +19,9 @@ class DataConfig:
     """Data preprocessing configuration."""
 
     apply_snv: bool = True
+    apply_savgol: bool = True
+    savgol_window_length: int = 25
+    savgol_polyorder: int = 4
     target_length: int = 1800
     max_files: int | None = None
 
@@ -32,10 +31,10 @@ class TrainingConfig:
     """Training hyperparameters."""
 
     batch_size: int = 2048
-    num_epochs: int = 250
-    learning_rate: float = 1e-3
+    num_epochs: int = 200
+    learning_rate: float = 2.5e-4
     weight_decay: float = 1e-6
-    patience: int = 25
+    patience: int = 40
     min_delta: float = 1e-4
 
     # Data loading optimization
@@ -47,7 +46,7 @@ class TrainingConfig:
 
     # Learning rate scheduler
     lr_scheduler_factor: float = 0.7
-    lr_scheduler_patience: int = 20
+    lr_scheduler_patience: int = 30
     lr_scheduler_min_lr: float = 1e-6
 
     # Data split

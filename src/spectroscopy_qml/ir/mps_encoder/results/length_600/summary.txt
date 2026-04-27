@@ -1,0 +1,39 @@
+================================================================================
+MPS Functional Group Classifier - Training Summary
+================================================================================
+
+Model Configuration:
+  Input dimension: 600
+  Number of sites: 5
+  Site dimension: 120
+  Physical dimension: 450
+  Bond dimension: 128
+  Number of classes: 37
+  Dropout rate: 0.0
+  Total parameters: 59,656,515
+
+Training Configuration:
+  Batch size: 2048
+  Epochs trained: 188
+  Learning rate: 0.001
+  Weight decay: 1e-06
+  Training time: 99.8 minutes
+
+Best Validation Results:
+  Epoch: 184
+  Loss: 6.4951
+  F1 Micro: 0.8454
+  F1 Macro: 0.6335
+  Threshold mean: 0.680
+  Threshold std: 0.000
+
+Test Set Results:
+  Loss: 6.0847
+  Accuracy: 0.2651
+  F1 Micro: 0.8469
+  F1 Macro: 0.6707
+  F1 Weighted: 0.8441
+  Precision Micro: 0.8611
+  Precision Macro: 0.7234
+  Recall Micro: 0.8331
+  Recall Macro: 0.6410

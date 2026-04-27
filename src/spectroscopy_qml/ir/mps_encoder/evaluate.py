@@ -1,7 +1,3 @@
-"""
-Evaluation script for MPS Functional Group Classifier.
-"""
-
 from pathlib import Path
 
 import click
@@ -234,6 +230,9 @@ def main(model_path, data_dir, output_dir):
         data_dir,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
+        apply_savgol=DATA_CONFIG.apply_savgol,
+        savgol_window_length=DATA_CONFIG.savgol_window_length,
+        savgol_polyorder=DATA_CONFIG.savgol_polyorder,
         apply_snv=DATA_CONFIG.apply_snv,
     )
 

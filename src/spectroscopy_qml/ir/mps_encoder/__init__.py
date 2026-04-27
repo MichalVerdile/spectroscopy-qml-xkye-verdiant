@@ -1,10 +1,3 @@
-"""
-MPS Encoder for IR Spectroscopy Functional Group Classification.
-
-This package implements a pure tensor network (Matrix Product State) approach
-for multi-label classification of functional groups from IR spectra.
-"""
-
 from .config import (
     DATA_CONFIG,
     GRID_SEARCH_CONFIG,

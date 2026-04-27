@@ -1,10 +1,3 @@
-"""
-Pure MPS/Tensor Network Classifier for IR Spectra.
-
-This module implements a multi-label classifier based on Matrix Product States (MPS)
-for predicting functional groups from IR spectroscopy data.
-"""
-
 import torch
 import torch.nn as nn
 
@@ -116,77 +109,71 @@ class MPSEncoder(nn.Module):
             nn.init.xavier_uniform_(core)
             self.backward_cores.append(nn.Parameter(core))
 
-        # Output projection
-        self.output_norm = nn.LayerNorm(2 * bond_dim)
-        self.output_proj = nn.Linear(2 * bond_dim, output_dim)
+        # Output projection: all site states from both directions
+        # Total features = 2 * num_sites * bond_dim
+        total_features = 2 * num_sites * bond_dim
+        self.output_norm = nn.LayerNorm(total_features)
+        self.output_proj = nn.Linear(total_features, output_dim)
 
-    def _contract_forward(self, features: torch.Tensor) -> torch.Tensor:
+    def _contract_forward(self, features: torch.Tensor) -> list[torch.Tensor]:
         """
-        Perform forward contraction of MPS with features.
+        Perform forward contraction of MPS with features, collecting
+        the bond vector at every site.
 
         Args:
             features: Tensor of shape (batch_size, num_sites, physical_dim)
 
         Returns:
-            Final state of shape (batch_size, bond_dim)
+            List of num_sites tensors, each of shape (batch_size, bond_dim)
         """
-        batch_size = features.size(0)
+        states = []
 
         # Initialize state with first core
-        # features[:, 0]: (batch_size, physical_dim)
-        # forward_cores[0]: (1, physical_dim, bond_dim)
-        # Result: (batch_size, bond_dim)
         state = torch.einsum("bp,ipj->bj", features[:, 0], self.forward_cores[0])
-
-        # Normalize
         state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)
+        states.append(state)
 
-        # Contract remaining sites
+        # Contract remaining sites, keeping every intermediate state
         for i in range(1, self.num_sites):
-            # state: (batch_size, bond_dim)
-            # features[:, i]: (batch_size, physical_dim)
-            # forward_cores[i]: (bond_dim, physical_dim, bond_dim)
-            # Result: (batch_size, bond_dim)
             state = torch.einsum("bi,ipj,bp->bj", state, self.forward_cores[i], features[:, i])
-
-            # Normalize
             state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)
+            states.append(state)
 
-        return state
+        return states
 
-    def _contract_backward(self, features: torch.Tensor) -> torch.Tensor:
+    def _contract_backward(self, features: torch.Tensor) -> list[torch.Tensor]:
         """
-        Perform backward contraction of MPS with reversed features.
+        Perform backward contraction of MPS with reversed features, collecting
+        the bond vector at every site.
 
         Args:
             features: Tensor of shape (batch_size, num_sites, physical_dim)
 
         Returns:
-            Final state of shape (batch_size, bond_dim)
+            List of num_sites tensors, each of shape (batch_size, bond_dim)
         """
-        batch_size = features.size(0)
-
-        # Reverse features
+        states = []
         features_rev = torch.flip(features, dims=[1])
 
         # Initialize state with first core
         state = torch.einsum("bp,ipj->bj", features_rev[:, 0], self.backward_cores[0])
-
-        # Normalize
         state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)
+        states.append(state)
 
-        # Contract remaining sites
+        # Contract remaining sites, keeping every intermediate state
         for i in range(1, self.num_sites):
             state = torch.einsum("bi,ipj,bp->bj", state, self.backward_cores[i], features_rev[:, i])
-
-            # Normalize
             state = state / (torch.norm(state, dim=1, keepdim=True) + self.eps)
+            states.append(state)
 
-        return state
+        return states
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:
         """
         Encode features using bidirectional MPS.
+
+        Collects the bond vector after every core in both directions
+        and concatenates all of them.
 
         Args:
             features: Tensor of shape (batch_size, num_sites, physical_dim)
@@ -194,12 +181,12 @@ class MPSEncoder(nn.Module):
         Returns:
             Embedding of shape (batch_size, output_dim)
         """
-        # Perform forward and backward contractions
-        forward_state = self._contract_forward(features)
-        backward_state = self._contract_backward(features)
+        # Collect all intermediate states from both directions
+        forward_states = self._contract_forward(features)    # num_sites × (batch, bond_dim)
+        backward_states = self._contract_backward(features)  # num_sites × (batch, bond_dim)
 
-        # Concatenate states
-        combined = torch.cat([forward_state, backward_state], dim=1)
+        # Concatenate all states: (batch, 2 * num_sites * bond_dim)
+        combined = torch.cat(forward_states + backward_states, dim=1)
 
         # Project to output dimension
         embedding = self.output_norm(combined)
@@ -255,21 +242,40 @@ class MPSFunctionalGroupClassifier(nn.Module):
             site_dim=self.site_dim, physical_dim=physical_dim, dropout_rate=dropout_rate
         )
 
-        # MPS encoder
+        # MPS encoder (per-site bond vectors used as CNN input)
         self.mps_encoder = MPSEncoder(
-            num_sites=num_sites, physical_dim=physical_dim, bond_dim=bond_dim, output_dim=128
+            num_sites=num_sites, physical_dim=physical_dim, bond_dim=bond_dim, output_dim=256
         )
 
-        # Classifier head
-        self.classifier_norm = nn.LayerNorm(128)
-        self.fc1 = nn.Linear(128, 64)
-        self.gelu = nn.GELU()
-        self.dropout = nn.Dropout(dropout_rate)
-        self.fc2 = nn.Linear(64, num_classes)
+        # CNN classifier head operating on per-site MPS features + raw spectrum
+        cnn_in_channels = 2 * bond_dim + self.site_dim  # MPS bond vectors + raw site values
+
+        # 1st CNN layer
+        self.conv1 = nn.Conv1d(cnn_in_channels, 31, kernel_size=11, stride=1, padding="same")
+        self.bn1 = nn.BatchNorm1d(31)
+        self.pool1 = nn.MaxPool1d(kernel_size=2, stride=2)
+
+        # 2nd CNN layer
+        self.conv2 = nn.Conv1d(31, 62, kernel_size=11, stride=1, padding="same")
+        self.bn2 = nn.BatchNorm1d(62)
+        self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
+
+        # Compute flattened size after conv layers
+        conv_out_length = num_sites // 2 // 2  # after two MaxPool1d(2, 2)
+        flat_size = 62 * conv_out_length
+
+        # Dense layers
+        self.fc1 = nn.Linear(flat_size, 4927)
+        self.fc2 = nn.Linear(4927, 2785)
+        self.fc3 = nn.Linear(2785, 1574)
+        self.fc_out = nn.Linear(1574, num_classes)
+
+        self.cnn_dropout = nn.Dropout(0.48599073736368)
+        self.relu = nn.ReLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass through the MPS classifier.
+        Forward pass through the MPS-informed CNN classifier.
 
         Args:
             x: Input tensor of shape (batch_size, input_dim)
@@ -280,24 +286,60 @@ class MPSFunctionalGroupClassifier(nn.Module):
         batch_size = x.size(0)
 
         # Reshape input into sites: (batch_size, num_sites, site_dim)
-        x = x.view(batch_size, self.num_sites, self.site_dim)
+        x_sites = x.view(batch_size, self.num_sites, self.site_dim)
 
         # Apply local feature map to each site
-        # Process all sites in parallel by reshaping
-        x_flat = x.view(batch_size * self.num_sites, self.site_dim)
+        x_flat = x_sites.view(batch_size * self.num_sites, self.site_dim)
         features_flat = self.feature_map(x_flat)
         features = features_flat.view(batch_size, self.num_sites, self.physical_dim)
 
-        # Encode with MPS
-        embedding = self.mps_encoder(features)
+        # Get per-site MPS bond vectors (bypass final projection)
+        # Run MPS contractions in float32 to avoid float16 overflow under AMP
+        with torch.amp.autocast("cuda", enabled=False):
+            features_f32 = features.float()
+            forward_states = self.mps_encoder._contract_forward(features_f32)
+            backward_states = self.mps_encoder._contract_backward(features_f32)
 
-        # Classify
-        x = self.classifier_norm(embedding)
+        # Stack per-site features: (batch, num_sites, 2 * bond_dim)
+        fw = torch.stack(forward_states, dim=1)
+        bw = torch.stack(backward_states, dim=1)
+        per_site_mps = torch.cat([fw, bw], dim=2)
+
+        # Concatenate raw site values with MPS features: (batch, num_sites, 2*bond_dim + site_dim)
+        per_site = torch.cat([per_site_mps, x_sites], dim=2)
+
+        # Transpose for Conv1D: (batch, channels, length)
+        x = per_site.transpose(1, 2)
+
+        # 1st CNN layer
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pool1(x)
+
+        # 2nd CNN layer
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.pool2(x)
+
+        # Flatten
+        x = x.view(batch_size, -1)
+
+        # Dense layers
         x = self.fc1(x)
-        x = self.gelu(x)
-        x = self.dropout(x)
-        logits = self.fc2(x)
+        x = self.relu(x)
+        x = self.cnn_dropout(x)
 
+        x = self.fc2(x)
+        x = self.relu(x)
+        x = self.cnn_dropout(x)
+
+        x = self.fc3(x)
+        x = self.relu(x)
+        x = self.cnn_dropout(x)
+
+        logits = self.fc_out(x)
         return logits
 
     def get_num_parameters(self) -> int:

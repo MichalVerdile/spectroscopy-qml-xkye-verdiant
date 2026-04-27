@@ -1,9 +1,3 @@
-"""
-Quick start script for MPS Functional Group Classifier.
-
-This script provides a simple interface to train and evaluate the model.
-"""
-
 import argparse
 import sys
 from pathlib import Path
