@@ -201,8 +201,8 @@ def load_or_create_split_indices(
     idx_train_local, idx_val_local, _, _ = multilabel_train_test_split(
         sub_idx, sub_labels, test_size=val_size, random_seed=random_seed + 1
     )
-    train_indices = idx_trainval[idx_train_local[:, 0]].astype(np.int64)
-    val_indices = idx_trainval[idx_val_local[:, 0]].astype(np.int64)
+    train_indices = idx_train_local[:, 0].astype(np.int64)
+    val_indices = idx_val_local[:, 0].astype(np.int64)
     test_indices = idx_test.astype(np.int64)
 
     _validate_split(train_indices, val_indices, test_indices, num_samples)
