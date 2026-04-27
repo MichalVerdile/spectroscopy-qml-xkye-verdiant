@@ -1,0 +1,42 @@
+CNN Model with PQN Normalization - NEG_MSMS
+============================================================
+
+Model Configuration:
+  - Normalization: PQN
+  - Grouping: Coarse Buckets + Butina (threshold-based)
+  - Spectrum Type: neg_msms
+  - Input Shape: (600, 1)
+  - Number of Functional Groups: 37
+
+Grouping Parameters:
+  - Fingerprint Radius: 2
+  - Fingerprint Bits: 2048
+  - Tanimoto Threshold: 0.6
+  - Min Cluster Size for PQN: 20
+  - Min Bucket Size: 2
+  - Max Bucket Size: 5000
+
+Dataset Split:
+  - Training samples: 635522 (80%)
+  - Test samples: 158881 (20%)
+  - Cross-validation folds: 5
+  - Random seed: 3245
+
+Cross-Validation Results:
+  - Mean CV F1 Score: 0.6416 ± 0.0008
+  - Individual Fold Scores:
+    Fold 1: 0.6421
+    Fold 2: 0.6416
+    Fold 3: 0.6406
+    Fold 4: 0.6428 (best)
+    Fold 5: 0.6411
+
+Final Test Results:
+  - Test F1 Score: 0.6417
+  - Best Model: Fold 4
+
+Output Files:
+  - Best Model: neg_msms_pqn_model.keras
+  - Results Pickle: neg_msms_cv_results.pickle
+  - Model Directory: src/spectroscopy_qml/msms_neg/pqn_normalization/results/model
+  - Results Directory: src/spectroscopy_qml/msms_neg/pqn_normalization/results/results

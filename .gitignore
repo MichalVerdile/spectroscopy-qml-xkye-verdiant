@@ -60,6 +60,8 @@ dmypy.json
 *.hdf5
 *.pb
 *.onnx
+*.pt
+*.npz
 
 # Logs
 *.log
