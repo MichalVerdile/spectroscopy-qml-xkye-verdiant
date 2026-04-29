@@ -1,0 +1,472 @@
+{
+  "split": "test",
+  "num_samples": 79441,
+  "num_labels": 37,
+  "f1_micro": 0.8588058927801591,
+  "f1_macro": 0.6546520887795833,
+  "precision_micro": 0.8493881231482674,
+  "recall_micro": 0.8684348469722393,
+  "mean_threshold": 0.7005405426025391,
+  "std_threshold": 0.25533172488212585,
+  "worst_classes_by_f1": [
+    {
+      "label": "Sulfonic acid",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support_true": 1
+    },
+    {
+      "label": "Thial",
+      "f1": 0.024390243902439025,
+      "precision": 0.012987012987012988,
+      "recall": 0.2,
+      "support_true": 5
+    },
+    {
+      "label": "Azo compound",
+      "f1": 0.17582417582417584,
+      "precision": 0.21621621621621623,
+      "recall": 0.14814814814814814,
+      "support_true": 54
+    },
+    {
+      "label": "Sulfoxide",
+      "f1": 0.34354194407456723,
+      "precision": 0.4358108108108108,
+      "recall": 0.2835164835164835,
+      "support_true": 455
+    },
+    {
+      "label": "Imine",
+      "f1": 0.3458149779735683,
+      "precision": 0.5015974440894568,
+      "recall": 0.2638655462184874,
+      "support_true": 595
+    },
+    {
+      "label": "Acid anhydride",
+      "f1": 0.3617021276595745,
+      "precision": 0.53125,
+      "recall": 0.27419354838709675,
+      "support_true": 62
+    },
+    {
+      "label": "Hydrazone",
+      "f1": 0.36673773987206826,
+      "precision": 0.4332493702770781,
+      "recall": 0.3179297597042514,
+      "support_true": 541
+    },
+    {
+      "label": "Acyl halide",
+      "f1": 0.4,
+      "precision": 0.4778156996587031,
+      "recall": 0.343980343980344,
+      "support_true": 407
+    },
+    {
+      "label": "Phosphine",
+      "f1": 0.41237113402061853,
+      "precision": 0.625,
+      "recall": 0.3076923076923077,
+      "support_true": 65
+    },
+    {
+      "label": "Enamine",
+      "f1": 0.44470727380248376,
+      "precision": 0.6550522648083623,
+      "recall": 0.3366159355416294,
+      "support_true": 1117
+    },
+    {
+      "label": "Sulfide",
+      "f1": 0.47412267449389217,
+      "precision": 0.4440850650925851,
+      "recall": 0.5085185185185185,
+      "support_true": 10800
+    },
+    {
+      "label": "Ketone",
+      "f1": 0.5344064969907911,
+      "precision": 0.5329765692797223,
+      "recall": 0.5358441180747419,
+      "support_true": 6877
+    }
+  ],
+  "most_over_predicted": [
+    {
+      "class_index": 17,
+      "label": "Haloalkane",
+      "true_count": 36618,
+      "true_pct": 0.4609458591910978,
+      "pred_count": 43388,
+      "pred_pct": 0.5461663372817562,
+      "pred_minus_true_count": 6770,
+      "pred_minus_true_pct": 0.08522047809065848,
+      "over_prediction_ratio": 1.1848817521437545
+    },
+    {
+      "class_index": 16,
+      "label": "Ether",
+      "true_count": 44933,
+      "true_pct": 0.5656147329464634,
+      "pred_count": 49625,
+      "pred_pct": 0.6246774335670497,
+      "pred_minus_true_count": 4692,
+      "pred_minus_true_pct": 0.05906270062058635,
+      "over_prediction_ratio": 1.104422139630116
+    },
+    {
+      "class_index": 28,
+      "label": "Sulfide",
+      "true_count": 10800,
+      "true_pct": 0.13594995027756449,
+      "pred_count": 12367,
+      "pred_pct": 0.15567528102617037,
+      "pred_minus_true_count": 1567,
+      "pred_minus_true_pct": 0.019725330748605885,
+      "over_prediction_ratio": 1.1450925925925926
+    },
+    {
+      "class_index": 7,
+      "label": "Amide",
+      "true_count": 20965,
+      "true_pct": 0.26390654699714255,
+      "pred_count": 22116,
+      "pred_pct": 0.2783952870683904,
+      "pred_minus_true_count": 1151,
+      "pred_minus_true_pct": 0.014488740071247844,
+      "over_prediction_ratio": 1.0549010255187217
+    },
+    {
+      "class_index": 4,
+      "label": "Alkane",
+      "true_count": 76514,
+      "true_pct": 0.9631550458831082,
+      "pred_count": 77123,
+      "pred_pct": 0.9708211125237598,
+      "pred_minus_true_count": 609,
+      "pred_minus_true_pct": 0.007666066640651553,
+      "over_prediction_ratio": 1.0079593277047338
+    },
+    {
+      "class_index": 9,
+      "label": "Arene",
+      "true_count": 61509,
+      "true_pct": 0.7742727307058068,
+      "pred_count": 62020,
+      "pred_pct": 0.7807051774272731,
+      "pred_minus_true_count": 511,
+      "pred_minus_true_pct": 0.006432446721466246,
+      "over_prediction_ratio": 1.0083077273244565
+    },
+    {
+      "class_index": 34,
+      "label": "Thial",
+      "true_count": 5,
+      "true_pct": 6.293979179516874e-05,
+      "pred_count": 77,
+      "pred_pct": 0.0009692727936455986,
+      "pred_minus_true_count": 72,
+      "pred_minus_true_pct": 0.0009063330018504299,
+      "over_prediction_ratio": 15.4
+    },
+    {
+      "class_index": 24,
+      "label": "Ketone",
+      "true_count": 6877,
+      "true_pct": 0.08656738963507508,
+      "pred_count": 6914,
+      "pred_pct": 0.08703314409435933,
+      "pred_minus_true_count": 37,
+      "pred_minus_true_pct": 0.0004657544592842487,
+      "over_prediction_ratio": 1.0053802530173042
+    },
+    {
+      "class_index": 32,
+      "label": "Sulfonic acid",
+      "true_count": 1,
+      "true_pct": 1.2587958359033748e-05,
+      "pred_count": 4,
+      "pred_pct": 5.035183343613499e-05,
+      "pred_minus_true_count": 3,
+      "pred_minus_true_pct": 3.7763875077101246e-05,
+      "over_prediction_ratio": 4.0
+    },
+    {
+      "class_index": 22,
+      "label": "Isocyanate",
+      "true_count": 92,
+      "true_pct": 0.0011580921690311048,
+      "pred_count": 92,
+      "pred_pct": 0.0011580921690311048,
+      "pred_minus_true_count": 0,
+      "pred_minus_true_pct": 0.0,
+      "over_prediction_ratio": 1.0
+    }
+  ],
+  "most_under_predicted": [
+    {
+      "class_index": 8,
+      "label": "Amine",
+      "true_count": 33587,
+      "true_pct": 0.4227917574048665,
+      "pred_count": 32176,
+      "pred_pct": 0.4050301481602699,
+      "pred_minus_true_count": -1411,
+      "pred_minus_true_pct": -0.01776160924459662,
+      "over_prediction_ratio": 0.9579896983952124
+    },
+    {
+      "class_index": 5,
+      "label": "Alkene",
+      "true_count": 9178,
+      "true_pct": 0.11553228181921174,
+      "pred_count": 8275,
+      "pred_pct": 0.10416535542100427,
+      "pred_minus_true_count": -903,
+      "pred_minus_true_pct": -0.011366926398207475,
+      "over_prediction_ratio": 0.9016125517541949
+    },
+    {
+      "class_index": 13,
+      "label": "Enamine",
+      "true_count": 1117,
+      "true_pct": 0.014060749487040697,
+      "pred_count": 574,
+      "pred_pct": 0.007225488098085372,
+      "pred_minus_true_count": -543,
+      "pred_minus_true_pct": -0.006835261388955325,
+      "over_prediction_ratio": 0.5138764547896151
+    },
+    {
+      "class_index": 11,
+      "label": "Carbamate",
+      "true_count": 7618,
+      "true_pct": 0.09589506677911909,
+      "pred_count": 7128,
+      "pred_pct": 0.08972696718319256,
+      "pred_minus_true_count": -490,
+      "pred_minus_true_pct": -0.006168099595926537,
+      "over_prediction_ratio": 0.9356786558151746
+    },
+    {
+      "class_index": 25,
+      "label": "Nitrile",
+      "true_count": 5240,
+      "true_pct": 0.06596090180133685,
+      "pred_count": 4780,
+      "pred_pct": 0.06017044095618132,
+      "pred_minus_true_count": -460,
+      "pred_minus_true_pct": -0.0057904608451555244,
+      "over_prediction_ratio": 0.9122137404580153
+    },
+    {
+      "class_index": 3,
+      "label": "Aldehyde",
+      "true_count": 2032,
+      "true_pct": 0.025578731385556577,
+      "pred_count": 1600,
+      "pred_pct": 0.020140733374453997,
+      "pred_minus_true_count": -432,
+      "pred_minus_true_pct": -0.005437998011102579,
+      "over_prediction_ratio": 0.7874015748031497
+    },
+    {
+      "class_index": 6,
+      "label": "Alkyne",
+      "true_count": 1522,
+      "true_pct": 0.019158872622449363,
+      "pred_count": 1102,
+      "pred_pct": 0.013871930111655191,
+      "pred_minus_true_count": -420,
+      "pred_minus_true_pct": -0.0052869425107941745,
+      "over_prediction_ratio": 0.7240473061760841
+    },
+    {
+      "class_index": 21,
+      "label": "Imine",
+      "true_count": 595,
+      "true_pct": 0.0074898352236250805,
+      "pred_count": 313,
+      "pred_pct": 0.003940030966377564,
+      "pred_minus_true_count": -282,
+      "pred_minus_true_pct": -0.003549804257247517,
+      "over_prediction_ratio": 0.5260504201680672
+    },
+    {
+      "class_index": 20,
+      "label": "Imide",
+      "true_count": 1479,
+      "true_pct": 0.018617590413010913,
+      "pred_count": 1217,
+      "pred_pct": 0.015319545322944071,
+      "pred_minus_true_count": -262,
+      "pred_minus_true_pct": -0.003298045090066842,
+      "over_prediction_ratio": 0.8228532792427316
+    },
+    {
+      "class_index": 15,
+      "label": "Ester",
+      "true_count": 14944,
+      "true_pct": 0.18811444971740032,
+      "pred_count": 14695,
+      "pred_pct": 0.18498004808600094,
+      "pred_minus_true_count": -249,
+      "pred_minus_true_pct": -0.0031344016313994034,
+      "over_prediction_ratio": 0.9833377944325482
+    }
+  ],
+  "top_confusions": [
+    {
+      "missed_true_label_index": 16,
+      "missed_true_label": "Ether",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 1545
+    },
+    {
+      "missed_true_label_index": 17,
+      "missed_true_label": "Haloalkane",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 1225
+    },
+    {
+      "missed_true_label_index": 28,
+      "missed_true_label": "Sulfide",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 1205
+    },
+    {
+      "missed_true_label_index": 28,
+      "missed_true_label": "Sulfide",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 988
+    },
+    {
+      "missed_true_label_index": 8,
+      "missed_true_label": "Amine",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 965
+    },
+    {
+      "missed_true_label_index": 8,
+      "missed_true_label": "Amine",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 947
+    },
+    {
+      "missed_true_label_index": 15,
+      "missed_true_label": "Ester",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 867
+    },
+    {
+      "missed_true_label_index": 7,
+      "missed_true_label": "Amide",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 859
+    },
+    {
+      "missed_true_label_index": 5,
+      "missed_true_label": "Alkene",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 770
+    },
+    {
+      "missed_true_label_index": 16,
+      "missed_true_label": "Ether",
+      "wrong_predicted_label_index": 28,
+      "wrong_predicted_label": "Sulfide",
+      "count": 762
+    },
+    {
+      "missed_true_label_index": 7,
+      "missed_true_label": "Amide",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 658
+    },
+    {
+      "missed_true_label_index": 17,
+      "missed_true_label": "Haloalkane",
+      "wrong_predicted_label_index": 28,
+      "wrong_predicted_label": "Sulfide",
+      "count": 658
+    },
+    {
+      "missed_true_label_index": 24,
+      "missed_true_label": "Ketone",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 650
+    },
+    {
+      "missed_true_label_index": 24,
+      "missed_true_label": "Ketone",
+      "wrong_predicted_label_index": 17,
+      "wrong_predicted_label": "Haloalkane",
+      "count": 648
+    },
+    {
+      "missed_true_label_index": 16,
+      "missed_true_label": "Ether",
+      "wrong_predicted_label_index": 7,
+      "wrong_predicted_label": "Amide",
+      "count": 599
+    },
+    {
+      "missed_true_label_index": 5,
+      "missed_true_label": "Alkene",
+      "wrong_predicted_label_index": 16,
+      "wrong_predicted_label": "Ether",
+      "count": 565
+    },
+    {
+      "missed_true_label_index": 8,
+      "missed_true_label": "Amine",
+      "wrong_predicted_label_index": 7,
+      "wrong_predicted_label": "Amide",
+      "count": 499
+    },
+    {
+      "missed_true_label_index": 17,
+      "missed_true_label": "Haloalkane",
+      "wrong_predicted_label_index": 7,
+      "wrong_predicted_label": "Amide",
+      "count": 456
+    },
+    {
+      "missed_true_label_index": 17,
+      "missed_true_label": "Haloalkane",
+      "wrong_predicted_label_index": 15,
+      "wrong_predicted_label": "Ester",
+      "count": 434
+    },
+    {
+      "missed_true_label_index": 24,
+      "missed_true_label": "Ketone",
+      "wrong_predicted_label_index": 7,
+      "wrong_predicted_label": "Amide",
+      "count": 405
+    }
+  ],
+  "artifacts": {
+    "per_class_metrics": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/per_class_metrics.csv",
+    "per_class_diagnosis": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/per_class_diagnosis.csv",
+    "global_label_distribution": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/global_label_distribution.csv",
+    "switch_matrix": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/switch_matrix_false_negative_vs_false_positive.csv",
+    "top_confusions": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/top_confusions.csv",
+    "sample_errors": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/sample_errors.csv",
+    "plots": "src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/evaluation/plots/plots"
+  }
+}

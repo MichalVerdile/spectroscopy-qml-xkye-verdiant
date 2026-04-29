@@ -296,21 +296,21 @@ def tune_thresholds(
         raise ValueError("threshold_mode='per_class' requires threshold_target_metric != 'f1_micro'.")
 
     thresholds = np.full(n_classes, 0.5, dtype=np.float32)
-    for class_index in range(n_classes):
-        class_labels = y_true[:, class_index]
-        if class_labels.sum() == 0:
-            thresholds[class_index] = 0.95
-            continue
-
-        best_score = -1.0
-        best_threshold = 0.5
-        for threshold in threshold_grid:
-            class_pred = threshold_predictions(y_probs[:, class_index], threshold)
-            score = f1_score(class_labels, class_pred, zero_division=0)
-            if score > best_score:
-                best_score = score
-                best_threshold = float(threshold)
-        thresholds[class_index] = best_threshold
+    #for class_index in range(n_classes):
+    #    class_labels = y_true[:, class_index]
+    #    if class_labels.sum() == 0:
+    #        thresholds[class_index] = 0.95
+    #        continue
+#
+    #    best_score = -1.0
+    #    best_threshold = 0.5
+    #    for threshold in threshold_grid:
+    #        class_pred = threshold_predictions(y_probs[:, class_index], threshold)
+    #        score = f1_score(class_labels, class_pred, zero_division=0)
+    #        if score > best_score:
+    #            best_score = score
+    #            best_threshold = float(threshold)
+    #    thresholds[class_index] = best_threshold
     return thresholds
 
 
