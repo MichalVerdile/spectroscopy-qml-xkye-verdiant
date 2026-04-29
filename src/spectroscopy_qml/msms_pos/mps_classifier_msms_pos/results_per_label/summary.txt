@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/models_per_label/mps_model_best.pt
+  Trained epochs: 1
+  Parameters: 198,858,369
+  Thresholds: mean=0.638, std=0.192
+
+Test Set Performance:
+  accuracy: 0.0017
+  f1_micro: 0.6136
+  f1_macro: 0.2496
+  f1_weighted: 0.6657
+  f1_samples: 0.6085
+  precision_micro: 0.4919
+  precision_macro: 0.2115
+  precision_weighted: 0.5851
+  recall_micro: 0.8152
+  recall_macro: 0.3697
+  recall_weighted: 0.8152
+  hamming_accuracy: 0.8672
+
+Validation Set Performance:
+  accuracy: 0.0019
+  f1_micro: 0.6146
+  f1_macro: 0.2520
+  f1_weighted: 0.6665
+  f1_samples: 0.6095
+  precision_micro: 0.4926
+  precision_macro: 0.2139
+  precision_weighted: 0.5854
+  recall_micro: 0.8169
+  recall_macro: 0.3746
+  recall_weighted: 0.8169
+  hamming_accuracy: 0.8676
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9809 (support=76492)
+  Arene: F1=0.8887 (support=61588)
+  Ether: F1=0.7265 (support=44963)
+  Haloalkane: F1=0.6720 (support=36735)
+  Amine: F1=0.6567 (support=33395)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Acid anhydride: F1=0.0087 (support=64)
+  Isocyanate: F1=0.0220 (support=96)
+  Phosphine: F1=0.0232 (support=55)
+
+Top 5 Functional Groups by Total Errors:
+  Alcohol: errors=50921, TP=19045, FP=48570, FN=2351, TN=9475, specificity=0.1632, example_fp_indices=[1, 2, 3, 6, 8, 11, 12, 13, 15, 17], example_fn_indices=[7, 23, 86, 94, 113, 115, 135, 193, 218, 236]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_detailed.png
+  Ether: errors=32834, TP=43615, FP=31486, FN=1348, TN=2992, specificity=0.0868, example_fp_indices=[0, 4, 7, 13, 14, 16, 23, 24, 32, 34], example_fn_indices=[66, 197, 401, 672, 675, 719, 849, 934, 998, 1081]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_detailed.png
+  Amine: errors=30641, TP=29307, FP=26553, FN=4088, TN=19493, specificity=0.4233, example_fp_indices=[0, 1, 4, 6, 13, 14, 17, 23, 26, 34], example_fn_indices=[8, 29, 31, 46, 62, 86, 134, 136, 167, 173]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_detailed.png
+  Haloalkane: errors=30468, TP=31206, FP=24939, FN=5529, TN=17767, specificity=0.4160, example_fp_indices=[0, 9, 11, 15, 19, 20, 21, 28, 29, 31], example_fn_indices=[8, 14, 16, 35, 47, 51, 93, 107, 124, 127]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_detailed.png
+  Ester: errors=29844, TP=8394, FP=23293, FN=6551, TN=41203, specificity=0.6388, example_fp_indices=[2, 3, 8, 10, 11, 12, 15, 16, 17, 18], example_fn_indices=[19, 48, 78, 91, 121, 143, 147, 148, 160, 169]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_per_label/validation_error_analysis_detailed.png
