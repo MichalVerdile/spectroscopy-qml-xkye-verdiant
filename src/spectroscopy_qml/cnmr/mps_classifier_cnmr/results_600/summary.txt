@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_600/mps_model_best.pt
+  Trained epochs: 6
+  Parameters: 488,964,537
+  Thresholds: mean=0.678, std=0.195
+
+Test Set Performance:
+  accuracy: 0.0098
+  f1_micro: 0.6496
+  f1_macro: 0.2922
+  f1_weighted: 0.7076
+  f1_samples: 0.6478
+  precision_micro: 0.5296
+  precision_macro: 0.2479
+  precision_weighted: 0.6354
+  recall_micro: 0.8398
+  recall_macro: 0.4354
+  recall_weighted: 0.8398
+  hamming_accuracy: 0.8828
+
+Validation Set Performance:
+  accuracy: 0.0102
+  f1_micro: 0.6491
+  f1_macro: 0.2907
+  f1_weighted: 0.7073
+  f1_samples: 0.6473
+  precision_micro: 0.5292
+  precision_macro: 0.2465
+  precision_weighted: 0.6352
+  recall_micro: 0.8393
+  recall_macro: 0.4398
+  recall_weighted: 0.8393
+  hamming_accuracy: 0.8828
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9905 (support=76492)
+  Arene: F1=0.8982 (support=61588)
+  Ether: F1=0.8199 (support=44963)
+  Ketone: F1=0.7562 (support=6682)
+  Carbamate: F1=0.6981 (support=7735)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Isothiocyanate: F1=0.0117 (support=79)
+  Acid anhydride: F1=0.0167 (support=64)
+  Azo compound: F1=0.0192 (support=51)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=38673, TP=35381, FP=37319, FN=1354, TN=5387, specificity=0.1261, example_fp_indices=[0, 9, 11, 12, 15, 19, 20, 21, 22, 23], example_fn_indices=[87, 150, 194, 340, 439, 507, 647, 823, 852, 948]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_detailed.png
+  Alcohol: errors=36603, TP=16165, FP=31372, FN=5231, TN=26673, specificity=0.4595, example_fp_indices=[0, 2, 3, 4, 12, 18, 20, 21, 22, 26], example_fn_indices=[10, 48, 49, 53, 78, 111, 180, 181, 192, 193]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_detailed.png
+  Amine: errors=35986, TP=28588, FP=31179, FN=4807, TN=14867, specificity=0.3229, example_fp_indices=[0, 1, 4, 6, 12, 13, 15, 16, 17, 24], example_fn_indices=[36, 40, 42, 43, 54, 68, 85, 139, 145, 156]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_detailed.png
+  Alkene: errors=32499, TP=5497, FP=28816, FN=3683, TN=41445, specificity=0.5899, example_fp_indices=[6, 7, 9, 12, 14, 22, 24, 27, 28, 30], example_fn_indices=[49, 91, 110, 112, 118, 141, 149, 190, 215, 218]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_detailed.png
+  Sulfide: errors=32189, TP=6188, FP=27507, FN=4682, TN=41064, specificity=0.5989, example_fp_indices=[0, 3, 7, 9, 16, 19, 22, 24, 37, 40], example_fn_indices=[5, 12, 17, 36, 96, 97, 128, 140, 178, 194]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/validation_error_analysis_detailed.png

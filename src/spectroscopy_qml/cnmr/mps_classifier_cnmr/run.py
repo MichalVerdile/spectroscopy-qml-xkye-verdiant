@@ -68,6 +68,7 @@ Examples:
             if torch.cuda.is_available():
                 print(f"  CUDA version: {torch.version.cuda}")
                 print(f"  GPU: {torch.cuda.get_device_name(0)}")
+                torch.cuda.set_device(1)
         except ImportError as e:
             print(f"✗ PyTorch not found: {e}")
             return

@@ -202,12 +202,12 @@ def tune_thresholds(
         best_score = 0.0
         best_threshold = 0.5
 
-        for threshold in np.arange(0.1, 0.9, 0.01):
-            y_pred = (y_probs >= threshold).astype(int)
-            score = f1_score(y_true, y_pred, average="micro", zero_division=0)
-            if score > best_score:
-                best_score = score
-                best_threshold = threshold
+        #for threshold in np.arange(0.1, 0.9, 0.01):
+        #    y_pred = (y_probs >= threshold).astype(int)
+        #    score = f1_score(y_true, y_pred, average="micro", zero_division=0)
+        #    if score > best_score:
+        #        best_score = score
+        #        best_threshold = threshold
 
         # Use same threshold for all classes (micro F1 optimization)
         thresholds = np.full(n_classes, best_threshold)
