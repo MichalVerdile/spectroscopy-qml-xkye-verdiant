@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.1608363439533742,
+  "f1_micro": 0.7828955832655021,
+  "f1_macro": 0.4817368763560126,
+  "f1_weighted": 0.7834332124503733,
+  "f1_samples": 0.7749496493059159,
+  "precision_micro": 0.7589121882431968,
+  "precision_macro": 0.5575972919886126,
+  "precision_weighted": 0.7705806557159328,
+  "recall_micro": 0.8084443088126194,
+  "recall_macro": 0.4443210120978799,
+  "recall_weighted": 0.8084443088126194,
+  "hamming_accuracy": 0.9420154410021103
+}

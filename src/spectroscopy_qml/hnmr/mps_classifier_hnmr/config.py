@@ -9,7 +9,7 @@ from dataclasses import dataclass
 class ModelConfig:
     """Model architecture configuration."""
 
-    input_dim: int = 10000
+    input_dim: int = 600
     num_sites: int = 10
     physical_dim: int = 450
     bond_dim: int = 128
@@ -33,7 +33,7 @@ class DataConfig:
     apply_savgol: bool = True
     savgol_window_length: int = 25
     savgol_polyorder: int = 4
-    target_length: int = 10000
+    target_length: int = 600
     max_files: int | None = None
 
 
@@ -65,8 +65,8 @@ class TrainingConfig:
     lr_scheduler_min_lr: float = 1e-6
 
     # Data split
-    train_ratio: float = 0.7
-    val_ratio: float = 0.2
+    train_ratio: float = 0.8
+    val_ratio: float = 0.1
     test_ratio: float = 0.1
     num_folds: int = 1
     random_seed: int = 42
@@ -83,15 +83,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/models"
-    results_dir: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results"
+    model_dir: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/models_test"
+    results_dir: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_test"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/models/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/models_test/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results/training_log.csv"
+    summary_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_test/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_test/training_log.csv"
 
 
 @dataclass
