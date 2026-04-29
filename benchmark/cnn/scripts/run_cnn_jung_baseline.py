@@ -420,7 +420,7 @@ def main(analytical_data, base_out_path, columns, seed, n_folds, use_kfold):
 
             # Split train into train/val (80/20 of train set = 64/16 of total)
             X_train, X_val, y_train, y_val = train_test_split(
-                X_train_full, y_train_full, test_size=0.2, random_state=seed, shuffle=True
+                X_train_full, y_train_full, test_size=0.5, random_state=seed, shuffle=True
             )
 
             print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
