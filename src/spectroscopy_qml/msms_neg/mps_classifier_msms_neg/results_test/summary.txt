@@ -21,10 +21,10 @@ Model Configuration:
 Training Configuration:
   Batch size: 2048
   Folds trained: 1
-  Total epochs trained across folds: 12
+  Total epochs trained across folds: 22
   Learning rate: 0.00025
   Weight decay: 1e-06
-  Training time: 37.0 minutes
+  Training time: 67.5 minutes
 
 Cross-Validation Results (mean ± std over folds):
   Val Loss: 1.1439 ± 0.0000

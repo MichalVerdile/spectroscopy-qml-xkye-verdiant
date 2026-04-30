@@ -513,7 +513,7 @@ def _count_model_parameters(model: nn.Module) -> int:
 @click.option(
     "--output_dir",
     type=click.Path(path_type=Path),
-    default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results"),
+    default=Path("src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_test"),
     help="Run directory or parent results directory for experiment 10.2",
 )
 @click.option(

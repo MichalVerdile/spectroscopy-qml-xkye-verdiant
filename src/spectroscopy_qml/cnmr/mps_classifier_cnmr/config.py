@@ -10,7 +10,7 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 600
-    num_sites: int = 25
+    num_sites: int = 5
     physical_dim: int = 450
     bond_dim: int = 128
     num_classes: int = 37
