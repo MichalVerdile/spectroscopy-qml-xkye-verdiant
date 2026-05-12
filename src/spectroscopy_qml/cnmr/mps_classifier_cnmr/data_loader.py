@@ -211,7 +211,7 @@ def load_ir_data(
     print(f"Loading IR spectra from {data_dir}")
 
     data_dir = Path(data_dir)
-    parquet_files = sorted(data_dir.glob("*.parquet"))
+    parquet_files = sorted(data_dir.glob("*188.parquet"))
 
     if max_files:
         parquet_files = parquet_files[:max_files]

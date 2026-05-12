@@ -10,7 +10,7 @@ class ModelConfig:
     """Model architecture configuration."""
 
     input_dim: int = 600
-    num_sites: int = 5
+    num_sites: int = 25
     physical_dim: int = 450
     bond_dim: int = 128
     num_classes: int = 37
@@ -49,7 +49,7 @@ class TrainingConfig:
     min_delta: float = 1e-4
 
     # Data loading optimization
-    num_workers: int = 2
+    num_workers: int = 8
     pin_memory: bool = True
 
     # Mixed precision training for speed
@@ -83,15 +83,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_test"
-    results_dir: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test"
+    model_dir: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_test_HEUTE"
+    results_dir: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test_HEUTE"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_test/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_test_HEUTE/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test/training_log.csv"
+    summary_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test_HEUTE/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_test_HEUTE/training_log.csv"
 
 
 @dataclass
