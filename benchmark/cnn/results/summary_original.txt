@@ -3,14 +3,25 @@ CNN Model Evaluation Summary - ORIGINAL
 ================================================================================
 
 Model: cnmr
-  F1 Score (micro):    0.5766
-  F1 Score (macro):    0.1502
-  Precision (micro):   0.5756
-  Precision (macro):   0.4279
-  Recall (micro):      0.5777
-  Recall (macro):      0.1780
-  Subset Accuracy:     0.0028
-  Hamming Accuracy:    0.8904
+  F1 Score (micro):    0.6172
+  F1 Score (macro):    0.1438
+  Precision (micro):   0.7118
+  Precision (macro):   0.4216
+  Recall (micro):      0.5448
+  Recall (macro):      0.1365
+  Subset Accuracy:     0.0201
+  Hamming Accuracy:    0.9127
+
+  Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over evaluation samples
+    f1_micro: point=0.6172, CI=[0.6161, 0.6183], bootstrap_std=0.0006, n_bootstrap=2000
+    f1_macro: point=0.1438, CI=[0.1421, 0.1455], bootstrap_std=0.0009, n_bootstrap=2000
+    precision_micro: point=0.7118, CI=[0.7099, 0.7137], bootstrap_std=0.0010, n_bootstrap=2000
+    precision_macro: point=0.4216, CI=[0.3689, 0.4302], bootstrap_std=0.0163, n_bootstrap=2000
+    recall_micro: point=0.5448, CI=[0.5435, 0.5461], bootstrap_std=0.0007, n_bootstrap=2000
+    recall_macro: point=0.1365, CI=[0.1350, 0.1381], bootstrap_std=0.0008, n_bootstrap=2000
+    subset_accuracy: point=0.0201, CI=[0.0191, 0.0210], bootstrap_std=0.0005, n_bootstrap=2000
+    hamming_accuracy: point=0.9127, CI=[0.9123, 0.9129], bootstrap_std=0.0001, n_bootstrap=2000
 
 Model: hnmr
   F1 Score (micro):    0.8238
@@ -22,15 +33,37 @@ Model: hnmr
   Subset Accuracy:     0.2658
   Hamming Accuracy:    0.9567
 
+  Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over evaluation samples
+    f1_micro: point=0.8238, CI=[0.8230, 0.8246], bootstrap_std=0.0004, n_bootstrap=2000
+    f1_macro: point=0.4707, CI=[0.4660, 0.4751], bootstrap_std=0.0024, n_bootstrap=2000
+    precision_micro: point=0.8686, CI=[0.8677, 0.8695], bootstrap_std=0.0005, n_bootstrap=2000
+    precision_macro: point=0.7490, CI=[0.7053, 0.7596], bootstrap_std=0.0149, n_bootstrap=2000
+    recall_micro: point=0.7834, CI=[0.7824, 0.7844], bootstrap_std=0.0005, n_bootstrap=2000
+    recall_macro: point=0.4000, CI=[0.3967, 0.4032], bootstrap_std=0.0017, n_bootstrap=2000
+    subset_accuracy: point=0.2658, CI=[0.2635, 0.2680], bootstrap_std=0.0011, n_bootstrap=2000
+    hamming_accuracy: point=0.9567, CI=[0.9565, 0.9569], bootstrap_std=0.0001, n_bootstrap=2000
+
 Model: ir
-  F1 Score (micro):    0.8940
-  F1 Score (macro):    0.6812
-  Precision (micro):   0.9220
-  Precision (macro):   0.8289
-  Recall (micro):      0.8677
-  Recall (macro):      0.6200
-  Subset Accuracy:     0.4124
-  Hamming Accuracy:    0.9734
+  F1 Score (micro):    0.8989
+  F1 Score (macro):    0.6912
+  Precision (micro):   0.9262
+  Precision (macro):   0.8162
+  Recall (micro):      0.8731
+  Recall (macro):      0.6306
+  Subset Accuracy:     0.4299
+  Hamming Accuracy:    0.9746
+
+  Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over evaluation samples
+    f1_micro: point=0.8989, CI=[0.8981, 0.8997], bootstrap_std=0.0004, n_bootstrap=2000
+    f1_macro: point=0.6912, CI=[0.6843, 0.6976], bootstrap_std=0.0034, n_bootstrap=2000
+    precision_micro: point=0.9262, CI=[0.9253, 0.9271], bootstrap_std=0.0005, n_bootstrap=2000
+    precision_macro: point=0.8162, CI=[0.8074, 0.8252], bootstrap_std=0.0045, n_bootstrap=2000
+    recall_micro: point=0.8731, CI=[0.8721, 0.8743], bootstrap_std=0.0006, n_bootstrap=2000
+    recall_macro: point=0.6306, CI=[0.6247, 0.6369], bootstrap_std=0.0031, n_bootstrap=2000
+    subset_accuracy: point=0.4299, CI=[0.4267, 0.4334], bootstrap_std=0.0017, n_bootstrap=2000
+    hamming_accuracy: point=0.9746, CI=[0.9744, 0.9748], bootstrap_std=0.0001, n_bootstrap=2000
 
 Model: neg_msms
   F1 Score (micro):    0.6451
@@ -42,6 +75,17 @@ Model: neg_msms
   Subset Accuracy:     0.0359
   Hamming Accuracy:    0.9215
 
+  Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over evaluation samples
+    f1_micro: point=0.6451, CI=[0.6443, 0.6460], bootstrap_std=0.0004, n_bootstrap=2000
+    f1_macro: point=0.1309, CI=[0.1299, 0.1320], bootstrap_std=0.0005, n_bootstrap=2000
+    precision_micro: point=0.7749, CI=[0.7738, 0.7760], bootstrap_std=0.0006, n_bootstrap=2000
+    precision_macro: point=0.4629, CI=[0.3986, 0.4778], bootstrap_std=0.0215, n_bootstrap=2000
+    recall_micro: point=0.5526, CI=[0.5516, 0.5535], bootstrap_std=0.0005, n_bootstrap=2000
+    recall_macro: point=0.1176, CI=[0.1170, 0.1182], bootstrap_std=0.0003, n_bootstrap=2000
+    subset_accuracy: point=0.0359, CI=[0.0350, 0.0368], bootstrap_std=0.0005, n_bootstrap=2000
+    hamming_accuracy: point=0.9215, CI=[0.9213, 0.9217], bootstrap_std=0.0001, n_bootstrap=2000
+
 Model: pos_msms
   F1 Score (micro):    0.6406
   F1 Score (macro):    0.1258
@@ -52,3 +96,19 @@ Model: pos_msms
   Subset Accuracy:     0.0334
   Hamming Accuracy:    0.9226
 
+  Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over evaluation samples
+    f1_micro: point=0.6406, CI=[0.6398, 0.6415], bootstrap_std=0.0004, n_bootstrap=2000
+    f1_macro: point=0.1258, CI=[0.1245, 0.1271], bootstrap_std=0.0007, n_bootstrap=2000
+    precision_micro: point=0.8010, CI=[0.7999, 0.8020], bootstrap_std=0.0005, n_bootstrap=2000
+    precision_macro: point=0.4062, CI=[0.3695, 0.4394], bootstrap_std=0.0182, n_bootstrap=2000
+    recall_micro: point=0.5338, CI=[0.5328, 0.5347], bootstrap_std=0.0005, n_bootstrap=2000
+    recall_macro: point=0.1104, CI=[0.1097, 0.1111], bootstrap_std=0.0004, n_bootstrap=2000
+    subset_accuracy: point=0.0334, CI=[0.0325, 0.0343], bootstrap_std=0.0005, n_bootstrap=2000
+    hamming_accuracy: point=0.9226, CI=[0.9224, 0.9228], bootstrap_std=0.0001, n_bootstrap=2000
+
+Generated Artifacts:
+  Metrics comparison plot: benchmark/cnn/results/metrics_comparison_original.png
+  Per-class F1 file: benchmark/cnn/results/per_class_f1_original.txt
+  Bootstrap CI CSV: benchmark/cnn/results/bootstrap_confidence_intervals_original.csv
+  Bootstrap CI JSON: benchmark/cnn/results/bootstrap_confidence_intervals_original.json

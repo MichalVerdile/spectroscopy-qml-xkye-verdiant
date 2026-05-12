@@ -1,0 +1,2 @@
+test_index,case_type,true_labels,predicted_labels,correct_labels,false_positive_labels,false_negative_labels,source_file,source_row,global_index,molecular_formula,smiles
+16189,mixed error,Alkane; Alkene; Amine; Arene; Enamine; Imine; Ketone; Sulfone,Alkane; Amine; Arene; Ester; Ether; Haloalkane; Sulfonamide,Alkane; Amine; Arene,Ester; Ether; Haloalkane; Sulfonamide,Alkene; Enamine; Imine; Ketone; Sulfone,aligned_chunk_242.parquet,2464,521511,C10H22O2,CCCCCOC(C)CCCO
