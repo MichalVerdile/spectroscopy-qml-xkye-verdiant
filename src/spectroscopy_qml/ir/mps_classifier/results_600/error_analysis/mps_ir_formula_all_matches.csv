@@ -1,0 +1,4 @@
+searched_formula,test_index,case_type,true_labels,predicted_binary_labels,source_file,source_row,global_index
+C10H22O2,27044,correct,Alcohol; Alkane,Alcohol; Alkane,aligned_chunk_179.parquet,287,289426
+C10H22O2,65829,correct,Alkane; Ether,Alkane; Ether,aligned_chunk_208.parquet,2803,398677
+C10H22O2,65989,correct,Alcohol; Alkane; Ether,Alcohol; Alkane; Ether,aligned_chunk_205.parquet,1072,387293
