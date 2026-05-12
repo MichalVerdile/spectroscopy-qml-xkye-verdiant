@@ -5,7 +5,6 @@ Feature channels:          raw + first_derivative + second_derivative
 Elapsed seconds:           2828.83
 Epochs completed:          136/200
 Data files used:           245/245
-Fixed split artifact:      src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results_test/data_split_seed42_all.npz
 Best epoch:                116
 Best early-stop score:     0.733490
 Best score metric:         blended_f1

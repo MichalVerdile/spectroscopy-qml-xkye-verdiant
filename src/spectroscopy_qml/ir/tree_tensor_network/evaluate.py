@@ -27,20 +27,20 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     IRSpectraDataset,
     load_ir_data,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     count_available_data_files,
     resolve_device,
     resolve_used_file_count,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
     resolve_cache_path,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_2.model import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.model import (  # noqa: E402
     TTNIRClassifier10_2,
 )
 
@@ -513,7 +513,7 @@ def _count_model_parameters(model: nn.Module) -> int:
 @click.option(
     "--output_dir",
     type=click.Path(path_type=Path),
-    default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results"),
+    default=Path("ir/tree_tensor_network/results"),
     help="Run directory or parent results directory for experiment 10.2",
 )
 @click.option(

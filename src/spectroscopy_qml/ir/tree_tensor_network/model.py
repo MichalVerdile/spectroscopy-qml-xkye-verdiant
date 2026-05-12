@@ -19,12 +19,12 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment6.model import (
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.segment_helpers import (
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
     validate_target_segment_overlap,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.model import (
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.merge_helpers import (
     FastDirectIsometricMerge,
 )
 

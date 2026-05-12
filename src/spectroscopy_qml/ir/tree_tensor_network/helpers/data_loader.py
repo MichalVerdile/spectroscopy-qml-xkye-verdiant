@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.ir.mps_classifier.data_loader import (
+from src.spectroscopy_qml.ir.mps_classifier.data_loader import (
     FUNCTIONAL_GROUPS,
     IRSpectraDataset,
     load_ir_data as mps_load_ir_data,

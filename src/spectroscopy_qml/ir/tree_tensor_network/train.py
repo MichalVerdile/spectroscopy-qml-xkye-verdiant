@@ -16,20 +16,20 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[5]
+SRC_DIR = Path(__file__).resolve().parents[3]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     load_ir_data,
     load_or_create_split_indices,
     prepare_dataloaders_from_split_indices,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.losses import build_loss  # noqa: E402
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     EarlyStopping,
     build_threshold_grid,
     compute_metrics,
@@ -45,12 +45,12 @@ from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment5.train import
     write_epoch_details,
     write_threshold_artifact,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10_2.model import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
     TTNIRClassifier10_2,
 )
-from spectroscopy_qml.ir.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
+from src.spectroscopy_qml.ir.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
     ensure_finite_tensor,
     evaluate_with_probs_amp,
     resolve_cache_path,
@@ -72,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10_2/results_test"),
+        default=Path("ir/tree_tensor_network/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
@@ -163,7 +163,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--compile",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=False,
         help="Use torch.compile to fuse ops (requires PyTorch 2.0+).",
     )
     return parser
