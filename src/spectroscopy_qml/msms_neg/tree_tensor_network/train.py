@@ -1,4 +1,4 @@
-"""Training entry point for experiment 10."""
+"""Training entry point for experiment 10.2."""
 
 from __future__ import annotations
 
@@ -16,20 +16,20 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[5]
+SRC_DIR = Path(__file__).resolve().parents[3]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.msms_neg.tree_tensor_network.experiment.experiment5.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.msms_neg.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
-    load_ir_data,
+    load_cnmr_data,
     load_or_create_split_indices,
     prepare_dataloaders_from_split_indices,
 )
-from spectroscopy_qml.msms_neg.tree_tensor_network.experiment.experiment5.losses import build_loss  # noqa: E402
-from spectroscopy_qml.msms_neg.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
+from src.spectroscopy_qml.msms_neg.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
+from src.spectroscopy_qml.msms_neg.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     EarlyStopping,
     build_threshold_grid,
     compute_metrics,
@@ -45,27 +45,45 @@ from spectroscopy_qml.msms_neg.tree_tensor_network.experiment.experiment5.train 
     write_epoch_details,
     write_threshold_artifact,
 )
-from spectroscopy_qml.msms_neg.tree_tensor_network.experiment.experiment10.model import (  # noqa: E402
+from src.spectroscopy_qml.msms_neg.tree_tensor_network.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
-    TTNIRClassifier10,
+    TTNCnmrClassifier10_2,
+)
+from src.spectroscopy_qml.msms_neg.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
+    ensure_finite_tensor,
+    evaluate_with_probs_amp,
+    resolve_cache_path,
+    resolve_compile_enabled,
+    sanitize_binary_targets_and_probs,
+    train_epoch_amp,
+    write_summary,
 )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Train experiment10: TTN IR classifier with direct segmented states and no leaf encoder."
+        description=(
+            "Train experiment10.2: TTN C-NMR classifier with Lorentzian-smoothed feature "
+            "channels, direct segmented states, and linear readout."
+        )
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/ir/tree_tensor_network/experiment/experiment10/results"),
+        default=Path("c_nmr/tree_tensor_network/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
-    parser.add_argument("--input-dim", type=int, default=1800)
+    parser.add_argument("--input-dim", type=int, default=600)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
+    parser.add_argument(
+        "--specialist-indices",
+        type=str,
+        default=None,
+        help="Comma-separated class indices to train on (e.g. '19,33,21,13,28'). Subsets labels.",
+    )
     parser.add_argument("--chi", type=int, default=64)
     parser.add_argument("--segment-window-size", type=int, default=DEFAULT_SEGMENT_WINDOW_SIZE)
     parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
@@ -75,8 +93,22 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--merge-mode", choices=["strict", "relaxed"], default="relaxed")
     parser.add_argument("--merge-residual-weight", type=float, default=0.1)
     parser.add_argument("--merge-renormalize-output", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--readout-hidden-dim", type=int, default=None)
-    parser.add_argument("--readout-dropout", type=float, default=0.0)
+    parser.add_argument(
+        "--lorentz-gamma",
+        type=float,
+        default=3.0,
+        help="Half-width at half-maximum of the Lorentzian smoothing kernel (in data points).",
+    )
+    parser.add_argument(
+        "--lorentz-kernel-half-width",
+        type=int,
+        default=15,
+        help="Kernel half-width in data points (kernel is truncated at ±this value).",
+    )
+    parser.add_argument(
+        "--lorentz-norm-mode", choices=["max_abs", "z_score", "percentile"], default="percentile",
+        help="Per-channel normalisation: max_abs (original), z_score (÷std), percentile (÷99th pct).",
+    )
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--cache-path", type=Path, default=None)
     parser.add_argument("--overwrite-cache", action="store_true")
@@ -91,10 +123,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--train-ratio", type=float, default=0.8)
     parser.add_argument("--val-ratio", type=float, default=0.1)
     parser.add_argument("--test-ratio", type=float, default=0.1)
-    parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--num-workers", type=int, default=8)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--loss-type", choices=["bce"], default="bce")
+    parser.add_argument("--loss-type", choices=["bce", "focal"], default="bce")
+    parser.add_argument("--focal-gamma", type=float, default=2.0)
     parser.add_argument("--pos-weight-power", type=float, default=0.5)
     parser.add_argument("--pos-weight-max", type=float, default=None)
     parser.add_argument("--threshold-mode", choices=["global", "per_class"], default="per_class")
@@ -130,24 +163,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--compile",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=False,
         help="Use torch.compile to fuse ops (requires PyTorch 2.0+).",
     )
     return parser
 
 
-def resolve_cache_path(args: argparse.Namespace) -> Path:
-    if args.cache_path is not None:
-        return args.cache_path
-
-    cache_dir = Path("data/cache")
-    file_suffix = "all" if args.max_files is None else f"files{int(args.max_files)}"
-    snv_suffix = "snv" if args.apply_snv else "raw"
-    return cache_dir / f"ir_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
-
-
-def build_model(args: argparse.Namespace) -> TTNIRClassifier10:
-    return TTNIRClassifier10(
+def build_model(args: argparse.Namespace) -> TTNCnmrClassifier10_2:
+    return TTNCnmrClassifier10_2(
         num_labels=args.num_labels,
         chi=args.chi,
         input_dim=args.input_dim,
@@ -159,14 +182,15 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier10:
         merge_mode=args.merge_mode,
         merge_residual_weight=args.merge_residual_weight,
         merge_renormalize_output=args.merge_renormalize_output,
-        readout_hidden_dim=args.readout_hidden_dim,
-        readout_dropout=args.readout_dropout,
+        lorentz_gamma=args.lorentz_gamma,
+        lorentz_kernel_half_width=args.lorentz_kernel_half_width,
+        lorentz_norm_mode=args.lorentz_norm_mode,
     )
 
 
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
-    print("TTN IR Experiment10 Training")
+    print("TTN C-NMR Experiment10.2 Training")
     print("=" * 80)
     print(f"Data dir:                 {args.data_dir}")
     print(f"Output dir:               {args.output_dir}")
@@ -175,8 +199,11 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Num labels:               {args.num_labels}")
     print(f"Chi:                      {args.chi}")
     print("Leaf encoder:             none (segments enter TTN directly)")
+    print("Readout:                  linear (chi -> num_labels, no hidden expansion)")
     print(f"Segment state normalize:  {args.segment_state_normalize}")
-    print(f"Feature channels:         raw + first_derivative + second_derivative")
+    print(f"Feature channels:         raw + lorentz_d1 + lorentz_d2")
+    print(f"Lorentz gamma:            {args.lorentz_gamma}")
+    print(f"Lorentz kernel half-width:{args.lorentz_kernel_half_width}")
     print(f"Window size:              {args.segment_window_size}")
     print(f"Stride:                   {args.segment_stride}")
     print(f"Segment mode:             {args.segment_mode}")
@@ -199,148 +226,6 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Num workers:              {args.num_workers}")
 
 
-def write_summary(
-    summary_path: Path,
-    elapsed_seconds: float,
-    completed_epochs: int,
-    requested_epochs: int,
-    used_data_files: int,
-    total_data_files: int,
-    split_path: Path,
-    best_epoch: int,
-    best_score: float,
-    best_metric_name: str,
-    best_val_loss: float,
-    test_loss: float,
-    test_metrics: dict[str, float | np.ndarray],
-    final_thresholds: np.ndarray,
-) -> None:
-    with summary_path.open("w") as handle:
-        handle.write("TTN IR Experiment10 Summary\n")
-        handle.write("=" * 80 + "\n")
-        handle.write("Leaf encoder:              none (segments enter TTN directly)\n")
-        handle.write("Feature channels:          raw + first_derivative + second_derivative\n")
-        handle.write(f"Elapsed seconds:           {elapsed_seconds:.2f}\n")
-        handle.write(f"Epochs completed:          {completed_epochs}/{requested_epochs}\n")
-        handle.write(f"Data files used:           {used_data_files}/{total_data_files}\n")
-        handle.write(f"Fixed split artifact:      {split_path}\n")
-        handle.write(f"Best epoch:                {best_epoch}\n")
-        handle.write(f"Best early-stop score:     {best_score:.6f}\n")
-        handle.write(f"Best score metric:         {best_metric_name}\n")
-        handle.write(f"Best val loss:             {best_val_loss:.6f}\n")
-        handle.write(f"Threshold mean:            {float(np.mean(final_thresholds)):.6f}\n")
-        handle.write(f"Threshold std:             {float(np.std(final_thresholds)):.6f}\n")
-        handle.write(f"Test loss:                 {test_loss:.6f}\n")
-        handle.write(f"Test f1_micro:             {float(test_metrics['f1_micro']):.6f}\n")
-        handle.write(f"Test f1_macro:             {float(test_metrics['f1_macro']):.6f}\n")
-        handle.write(f"Test precision_micro:      {float(test_metrics['precision_micro']):.6f}\n")
-        handle.write(f"Test recall_micro:         {float(test_metrics['recall_micro']):.6f}\n")
-
-
-def sanitize_binary_targets_and_probs(labels: np.ndarray, probs: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    safe_labels = np.nan_to_num(labels, nan=0.0, posinf=1.0, neginf=0.0)
-    safe_labels = np.clip(safe_labels, 0.0, 1.0)
-    safe_labels = (safe_labels >= 0.5).astype(np.float32)
-
-    safe_probs = np.nan_to_num(probs, nan=0.5, posinf=1.0, neginf=0.0)
-    safe_probs = np.clip(safe_probs, 0.0, 1.0).astype(np.float32)
-    return safe_labels, safe_probs
-
-
-def ensure_finite_tensor(tensor: torch.Tensor, name: str, stage: str, batch_index: int) -> None:
-    """Fail fast when numerics break instead of masking them in later metrics."""
-    if torch.isfinite(tensor).all():
-        return
-    raise RuntimeError(
-        f"Non-finite {name} detected during {stage} at batch {batch_index} on device {tensor.device}."
-    )
-
-
-def resolve_compile_enabled(requested_compile: bool, device: torch.device) -> bool:
-    """Disable torch.compile automatically on backends where it is unstable here."""
-    return bool(requested_compile and device.type != "mps")
-
-
-def train_epoch_amp(
-    model,
-    dataloader,
-    criterion,
-    optimizer,
-    device,
-    grad_clip_norm: float | None = None,
-    scaler: GradScaler | None = None,
-):
-    model.train()
-    total_loss = 0.0
-    labels_list: list[np.ndarray] = []
-    probs_list: list[np.ndarray] = []
-    use_amp = scaler is not None
-
-    for batch_index, (spectra, labels) in enumerate(dataloader, start=1):
-        spectra = spectra.to(device, non_blocking=True)
-        labels = labels.to(device, non_blocking=True)
-
-        optimizer.zero_grad(set_to_none=True)
-        with autocast(device_type=device.type, enabled=use_amp):
-            logits = model(spectra)
-            loss = criterion(logits, labels)
-        ensure_finite_tensor(logits, name="logits", stage="train", batch_index=batch_index)
-        ensure_finite_tensor(loss.detach(), name="loss", stage="train", batch_index=batch_index)
-
-        if use_amp:
-            scaler.scale(loss).backward()
-            if grad_clip_norm is not None:
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            loss.backward()
-            if grad_clip_norm is not None:
-                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
-            optimizer.step()
-
-        total_loss += loss.item() * spectra.size(0)
-        labels_list.append(labels.detach().cpu().numpy())
-        probs_list.append(torch.sigmoid(logits.detach().float()).cpu().numpy())
-
-    all_labels = np.concatenate(labels_list, axis=0)
-    all_probs = np.concatenate(probs_list, axis=0)
-    all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
-    preds = threshold_predictions(all_probs, 0.5)
-    metrics = compute_metrics(all_labels, preds)
-    avg_loss = total_loss / len(dataloader.dataset)
-    return avg_loss, metrics
-
-
-@torch.no_grad()
-def evaluate_with_probs_amp(model, dataloader, criterion, device, use_amp: bool = False):
-    model.eval()
-    total_loss = 0.0
-    labels_list: list[np.ndarray] = []
-    probs_list: list[np.ndarray] = []
-
-    for batch_index, (spectra, labels) in enumerate(dataloader, start=1):
-        spectra = spectra.to(device, non_blocking=True)
-        labels = labels.to(device, non_blocking=True)
-
-        with autocast(device_type=device.type, enabled=use_amp):
-            logits = model(spectra)
-            loss = criterion(logits, labels)
-        ensure_finite_tensor(logits, name="logits", stage="eval", batch_index=batch_index)
-        ensure_finite_tensor(loss.detach(), name="loss", stage="eval", batch_index=batch_index)
-
-        total_loss += loss.item() * spectra.size(0)
-        labels_list.append(labels.cpu().numpy())
-        probs_list.append(torch.sigmoid(logits.float()).cpu().numpy())
-
-    all_labels = np.concatenate(labels_list, axis=0)
-    all_probs = np.concatenate(probs_list, axis=0)
-    all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
-    avg_loss = total_loss / len(dataloader.dataset)
-    return avg_loss, all_labels, all_probs
-
-
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
@@ -361,7 +246,7 @@ def main() -> None:
     describe_args(args, split_path)
 
     config_path = args.output_dir / "run_config.json"
-    checkpoint_path = args.output_dir / "ttn_ir_best.pt"
+    checkpoint_path = args.output_dir / "ttn_cnmr_best.pt"
     log_path = args.output_dir / "training_log.csv"
     details_path = args.output_dir / "training_details.jsonl"
     summary_path = args.output_dir / "summary.txt"
@@ -374,6 +259,9 @@ def main() -> None:
     device = resolve_device(args.device)
     print(f"Device: {device}")
 
+    if args.specialist_indices is not None:
+        args.num_labels = len(args.specialist_indices.split(","))
+
     if device.type == "cuda":
         torch.backends.cudnn.benchmark = True
         torch.set_float32_matmul_precision("high")
@@ -382,7 +270,7 @@ def main() -> None:
     run_synthetic_preflight(model, args, device)
 
     print("\nLoading data...")
-    X, y = load_ir_data(
+    X, y = load_cnmr_data(
         data_dir=args.data_dir,
         target_length=args.input_dim,
         max_files=args.max_files,
@@ -392,8 +280,9 @@ def main() -> None:
     )
     if X.shape[1] != args.input_dim:
         raise RuntimeError(f"Loaded spectra have width {X.shape[1]}, expected {args.input_dim}.")
-    if y.shape[1] != args.num_labels:
-        raise RuntimeError(f"Loaded labels have width {y.shape[1]}, expected {args.num_labels}.")
+    specialist_indices = None
+    if args.specialist_indices is not None:
+        specialist_indices = [int(i) for i in args.specialist_indices.split(",")]
 
     split_indices = load_or_create_split_indices(
         labels=y,
@@ -405,6 +294,14 @@ def main() -> None:
         stratify_multilabel=True,
         overwrite=args.overwrite_split,
     )
+    if specialist_indices is not None:
+        y = y[:, specialist_indices]
+        args.num_labels = len(specialist_indices)
+        print(f"Specialist mode: using {args.num_labels} classes at indices {specialist_indices}")
+
+    if y.shape[1] != args.num_labels:
+        raise RuntimeError(f"Loaded labels have width {y.shape[1]}, expected {args.num_labels}.")
+
     train_loader, val_loader, test_loader = prepare_dataloaders_from_split_indices(
         X,
         y,
@@ -428,7 +325,7 @@ def main() -> None:
         f"mean={pos_weight.mean().item():.2f}"
     )
 
-    criterion = build_loss(args.loss_type, pos_weight=pos_weight)
+    criterion = build_loss(args.loss_type, pos_weight=pos_weight, focal_gamma=args.focal_gamma)
     run_real_batch_preflight(model, train_loader, device, criterion)
 
     if args.check_only:
@@ -465,7 +362,12 @@ def main() -> None:
         mode="max",
     )
     threshold_grid = build_threshold_grid(args.threshold_grid_step)
-    label_names = list(FUNCTIONAL_GROUPS.keys())
+    _all_label_names = list(FUNCTIONAL_GROUPS.keys())
+    label_names = (
+        [_all_label_names[i] for i in specialist_indices]
+        if specialist_indices is not None
+        else _all_label_names
+    )
     model = model.to(device)
 
     print("\nStarting training...")
@@ -582,7 +484,7 @@ def main() -> None:
                     best_epoch,
                 )
 
-            if epoch >= args.min_epochs_before_stopping and early_stopping.step(early_stopping_score):
+            if epoch >= args.min_epochs_before_stopping and early_stopping(early_stopping_score):
                 print(f"Stopping early at epoch {epoch}.")
                 break
             if epoch >= args.min_epochs_before_stopping and early_stopping.counter > 0:

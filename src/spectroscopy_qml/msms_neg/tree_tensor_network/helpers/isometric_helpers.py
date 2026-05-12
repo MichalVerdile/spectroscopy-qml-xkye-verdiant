@@ -1,4 +1,4 @@
-"""Experiment 5 TTN-inspired classifier for ordered IR spectra."""
+"""Experiment 5 TTN-inspired classifier for ordered C-NMR spectra."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ class QuantumFeatureMap(nn.Module):
 
 
 class SegmentLeafEncoder(nn.Module):
-    """Encode one local IR segment into a TTN bond vector."""
+    """Encode one local C-NMR segment into a TTN bond vector."""
 
     def __init__(
         self,
@@ -212,7 +212,7 @@ class RelaxedIsometricMerge(nn.Module):
         return merged
 
 
-class TTNIRClassifier5(nn.Module):
+class TTNCnmrClassifier5(nn.Module):
     """Structured TTN-inspired classifier with overlapping local encoders and multi-scale readout."""
 
     def __init__(
