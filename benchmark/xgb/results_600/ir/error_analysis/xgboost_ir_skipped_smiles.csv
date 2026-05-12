@@ -1,0 +1,15 @@
+row_number,smiles,reason
+1,C#Cc1ccc(CN2CCOCC2)cc1,not found in test split
+2,CC1(C)C=CN(c2ccccc2)C(=O)C1,not found in test split
+3,CCNc1cc(-c2ccoc2)ccc1C,not found in test split
+4,COc1ccc(Nc2ncccc2C(=O)O)cc1Cl,not found in test split
+5,COc1ccccc1C(=O)Cn1cc(Cl)cnc1=O,not found in test split
+6,O=C(Nc1noc(C2CC2)c1Cl)Oc1ccccc1,not found in test split
+7,O=C(O)CC(=O)NCCc1ccccn1,not found in test split
+8,CN1C(=O)OC(O)N1Cc1ccccc1,not found in test split
+9,CCOc1cc(C#N)ccc1COON,not found in test split
+10,O=C1Cc2ccccc2N1c1ncc[nH]1,not found in test split
+11,O=C1Nc2ccccc2Cn2ccnc21,not found in test split
+12,Cn1cnc2c(O)nc3ccccc3c21,not found in test split
+13,O=C(O)c1cc(CCCc2ccccc2)on1,not found in test split
+14,CC1CC(=O)C=CN1C(=O)Oc1ccccc1,not found in test split

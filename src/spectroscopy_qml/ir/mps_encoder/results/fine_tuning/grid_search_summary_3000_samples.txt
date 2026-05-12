@@ -1,0 +1,56 @@
+================================================================================
+MPS Functional Group Classifier - Grid Search Summary
+================================================================================
+
+Search Overview:
+  Total trials executed: 972
+  Total search time: 36.75 hours
+  Trial results CSV: src/spectroscopy_qml/ir/mps_encoder/results/grid_search_trials.csv
+  Best model path: src/spectroscopy_qml/ir/mps_encoder/models/mps_model_best.pt
+  Best trial history CSV: src/spectroscopy_qml/ir/mps_encoder/results/training_log.csv
+
+Best Trial Configuration:
+  num_sites: 4
+  physical_dim: 300
+  bond_dim: 128
+  dropout_rate: 0.2
+  apply_snv: True
+  target_length: 1800
+  batch_size: 1024
+  num_epochs: 200
+  learning_rate: 0.001
+  weight_decay: 1e-06
+  patience: 20
+  min_delta: 0.0001
+  num_workers: 4
+  pin_memory: True
+  use_amp: True
+  lr_scheduler_factor: 0.7
+  lr_scheduler_patience: 10
+  lr_scheduler_min_lr: 1e-06
+  threshold_metric: f1_macro
+
+Best Validation Metrics:
+  Epoch: 63
+  Loss: 2.3259
+  F1 Micro: 0.7467
+  F1 Macro: 0.3103
+  F1 Weighted: 0.7542
+
+Best Trial Test Metrics:
+  Loss: 4.6861
+  Accuracy: 0.0525
+  F1 Micro: 0.7247
+  F1 Macro: 0.2820
+  F1 Weighted: 0.7283
+  Precision Micro: 0.6787
+  Precision Macro: 0.3002
+  Recall Micro: 0.7773
+  Recall Macro: 0.2979
+
+Top 5 Trials by Validation F1 Micro:
+  Trial 150: val_f1_micro=0.7467, val_f1_macro=0.3103, test_f1_micro=0.7247, time=2.3 min
+  Trial 114: val_f1_micro=0.7454, val_f1_macro=0.3183, test_f1_micro=0.7225, time=2.5 min
+  Trial 126: val_f1_micro=0.7415, val_f1_macro=0.3088, test_f1_micro=0.7197, time=2.6 min
+  Trial 162: val_f1_micro=0.7412, val_f1_macro=0.3119, test_f1_micro=0.7263, time=2.6 min
+  Trial 82: val_f1_micro=0.7410, val_f1_macro=0.2982, test_f1_micro=0.7199, time=3.8 min

@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/models_per_label/mps_model_best.pt
+  Trained epochs: 106
+  Parameters: 198,858,369
+  Thresholds: mean=0.519, std=0.175
+
+Test Set Performance:
+  accuracy: 0.1639
+  f1_micro: 0.7763
+  f1_macro: 0.4748
+  f1_weighted: 0.7784
+  f1_samples: 0.7707
+  precision_micro: 0.7461
+  precision_macro: 0.5079
+  precision_weighted: 0.7554
+  recall_micro: 0.8091
+  recall_macro: 0.4595
+  recall_weighted: 0.8091
+  hamming_accuracy: 0.9397
+
+Validation Set Performance:
+  accuracy: 0.1624
+  f1_micro: 0.7754
+  f1_macro: 0.4841
+  f1_weighted: 0.7772
+  f1_samples: 0.7696
+  precision_micro: 0.7456
+  precision_macro: 0.5410
+  precision_weighted: 0.7548
+  recall_micro: 0.8076
+  recall_macro: 0.4641
+  recall_weighted: 0.8076
+  hamming_accuracy: 0.9395
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9923 (support=76492)
+  Arene: F1=0.9356 (support=61588)
+  Ether: F1=0.8693 (support=44963)
+  Carbamate: F1=0.8058 (support=7735)
+  Ketone: F1=0.7757 (support=6682)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Isothiocyanate: F1=0.1104 (support=79)
+  Thiol: F1=0.1184 (support=291)
+  Isocyanate: F1=0.1361 (support=96)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=29163, TP=30175, FP=22603, FN=6560, TN=20103, specificity=0.4707, example_fp_indices=[0, 9, 11, 12, 19, 20, 21, 22, 23, 28], example_fn_indices=[4, 87, 116, 143, 150, 156, 161, 168, 169, 178]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_detailed.png
+  Amine: errors=22014, TP=25489, FP=14108, FN=7906, TN=31938, specificity=0.6936, example_fp_indices=[4, 6, 12, 13, 14, 15, 16, 27, 38, 52], example_fn_indices=[2, 18, 29, 32, 62, 81, 85, 86, 98, 142]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_detailed.png
+  Alcohol: errors=21012, TP=13430, FP=13046, FN=7966, TN=44999, specificity=0.7752, example_fp_indices=[0, 4, 15, 22, 24, 26, 28, 31, 32, 35], example_fn_indices=[7, 10, 30, 40, 53, 59, 78, 89, 111, 113]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_detailed.png
+  Amide: errors=13343, TP=15973, FP=8128, FN=5215, TN=50125, specificity=0.8605, example_fp_indices=[4, 7, 9, 14, 16, 17, 18, 20, 43, 46], example_fn_indices=[23, 30, 39, 58, 60, 69, 79, 81, 99, 165]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_detailed.png
+  Sulfide: errors=12965, TP=5225, FP=7320, FN=5645, TN=61251, specificity=0.8932, example_fp_indices=[10, 31, 73, 78, 79, 84, 88, 113, 119, 122], example_fn_indices=[5, 23, 28, 32, 36, 48, 53, 54, 96, 99]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_per_label/validation_error_analysis_detailed.png

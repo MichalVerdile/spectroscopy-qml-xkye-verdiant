@@ -1,8 +1,5 @@
-"""
-Training script for MPS Functional Group Classifier.
-"""
-
 import csv
+import gc
 import os
 import time
 from pathlib import Path
@@ -66,6 +63,40 @@ class EarlyStopping:
             return score < self.best_score - self.min_delta  # type: ignore[operator]
         else:  # mode == "max"
             return score > self.best_score + self.min_delta  # type: ignore[operator]
+
+
+def _resolve_training_device(requested_device: str) -> torch.device:
+    """Resolve device and fail fast on incompatible CUDA runtime/build."""
+    if requested_device != "cuda":
+        print("Using device: CPU")
+        return torch.device("cpu")
+
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "CUDA was requested but torch.cuda.is_available() is False. "
+            "Check NVIDIA driver, CUDA runtime, and PyTorch CUDA build."
+        )
+
+    try:
+        # Smoke test a real CUDA kernel to catch 'no kernel image' early.
+        _ = (torch.tensor([1.0], device="cuda") * 2.0).item()
+        torch.cuda.synchronize()
+    except Exception as exc:
+        torch_ver = torch.__version__
+        torch_cuda = torch.version.cuda
+        dev_name = torch.cuda.get_device_name(0)
+        capability = torch.cuda.get_device_capability(0)
+        raise RuntimeError(
+            "CUDA initialization failed for this PyTorch build. "
+            f"GPU='{dev_name}', capability={capability}, torch={torch_ver}, "
+            f"torch_cuda={torch_cuda}. Original error: {exc}\n"
+            "Likely cause: incompatible PyTorch wheel for this GPU architecture (sm_120).\n"
+            "Install a PyTorch build that explicitly supports Blackwell sm_120 "
+            "(typically the latest stable or nightly with CUDA 12.8+)."
+        ) from exc
+
+    print(f"Using device: CUDA ({torch.cuda.get_device_name(0)})")
+    return torch.device("cuda")
 
 
 def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
@@ -142,7 +173,7 @@ def tune_thresholds(
         best_score = 0.0
         best_threshold = 0.5
 
-        for threshold in np.arange(0.1, 0.9, 0.05):
+        for threshold in np.arange(0.1, 0.9, 0.01):
             y_pred = (y_probs >= threshold).astype(int)
             score = f1_score(y_true, y_pred, average="micro", zero_division=0)
             if score > best_score:
@@ -201,6 +232,8 @@ def train_epoch(
                 loss = criterion(logits, labels)
 
             scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             scaler.step(optimizer)
             scaler.update()
         else:
@@ -208,6 +241,7 @@ def train_epoch(
             logits = model(spectra)
             loss = criterion(logits, labels)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
         total_loss += loss.item() * spectra.size(0)
@@ -297,7 +331,7 @@ def validate(
         return avg_loss, metrics
 
 
-def train_model():
+def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     """Main training function."""
     print("=" * 80)
     print("MPS Functional Group Classifier Training")
@@ -307,13 +341,8 @@ def train_model():
     torch.manual_seed(TRAINING_CONFIG.random_seed)
     np.random.seed(TRAINING_CONFIG.random_seed)
 
-    # Determine device
-    if torch.cuda.is_available() and TRAINING_CONFIG.device == "cuda":
-        device = torch.device("cuda")
-        print(f"Using device: CUDA ({torch.cuda.get_device_name(0)})")
-    else:
-        device = torch.device("cpu")
-        print("Using device: CPU")
+    # Determine device and validate CUDA kernel compatibility upfront.
+    device = _resolve_training_device(TRAINING_CONFIG.device)
 
     # Create output directories
     model_dir = Path(PATH_CONFIG.model_dir)
@@ -321,24 +350,30 @@ def train_model():
     model_dir.mkdir(parents=True, exist_ok=True)
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load data
+    # Load data once unless preloaded arrays are provided
     print("\n" + "=" * 80)
     print("Loading Data")
     print("=" * 80)
 
-    data_dir = Path(PATH_CONFIG.data_dir)
-    if not data_dir.exists():
-        # Fall back to raw data if processed doesn't exist
-        project_root = Path(__file__).parents[4]
-        data_dir = project_root / "data" / "raw"
-        print(f"Processed data not found, using raw data from: {data_dir}")
+    if X is None or y is None:
+        data_dir = Path(PATH_CONFIG.data_dir)
+        if not data_dir.exists():
+            # Fall back to raw data if processed doesn't exist
+            project_root = Path(__file__).parents[4]
+            data_dir = project_root / "data" / "raw"
+            print(f"Processed data not found, using raw data from: {data_dir}")
 
-    X, y = load_ir_data(
-        data_dir,
-        target_length=DATA_CONFIG.target_length,
-        max_files=DATA_CONFIG.max_files,
-        apply_snv=DATA_CONFIG.apply_snv,
-    )
+        X, y = load_ir_data(
+            data_dir,
+            target_length=DATA_CONFIG.target_length,
+            max_files=DATA_CONFIG.max_files,
+            apply_savgol=DATA_CONFIG.apply_savgol,
+            savgol_window_length=DATA_CONFIG.savgol_window_length,
+            savgol_polyorder=DATA_CONFIG.savgol_polyorder,
+            apply_snv=DATA_CONFIG.apply_snv,
+        )
+    else:
+        print("Using preloaded dataset passed to train_model()")
 
     # Prepare dataloaders
     train_loader, val_loader, test_loader = prepare_dataloaders(
@@ -441,7 +476,6 @@ def train_model():
 
     best_val_f1 = 0.0  # Track best validation micro F1
     best_thresholds = np.full(MODEL_CONFIG.num_classes, 0.5)  # Initialize with 0.5
-    best_model_state = None  # Store best model state for saving at end
     best_val_loss = float("inf")  # Store best validation loss
     best_val_metrics = None  # Store best validation metrics
     best_epoch = 0  # Track best epoch
@@ -551,14 +585,27 @@ def train_model():
             )
 
         # Track best model based on validation micro F1 (not loss)
+        # Track best model based on validation micro F1 (not loss)
         if val_metrics["f1_micro"] > best_val_f1:
             best_val_f1 = val_metrics["f1_micro"]
             best_thresholds = tuned_thresholds  # Update best thresholds
-            best_model_state = model.state_dict().copy()  # Store best model state
             best_val_loss = val_loss
             best_val_metrics = val_metrics.copy()
             best_epoch = epoch + 1
-            print(f"  ✓ New best model found (val_f1_micro: {val_metrics['f1_micro']:.4f})")
+            # Save directly to disk – no in-memory copy kept to save RAM
+            torch.save(
+                {
+                    "epoch": best_epoch,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "val_loss": best_val_loss,
+                    "val_metrics": best_val_metrics,
+                    "thresholds": best_thresholds,
+                    "config": MODEL_CONFIG,
+                },
+                PATH_CONFIG.best_model_path,
+            )
+            print(f"  ✓ New best model saved to disk (val_f1_micro: {val_metrics['f1_micro']:.4f})")
 
         # Early stopping check - monitor validation micro F1
         if early_stopping(val_metrics["f1_micro"]):
@@ -568,24 +615,7 @@ def train_model():
     total_time = time.time() - start_time
     print(f"\nTraining completed in {total_time/60:.1f} minutes")
 
-    # Save best model at the end
-    print("\n" + "=" * 80)
-    print("Saving Best Model")
-    print("=" * 80)
-
-    torch.save(
-        {
-            "epoch": best_epoch,
-            "model_state_dict": best_model_state,
-            "optimizer_state_dict": optimizer.state_dict(),
-            "val_loss": best_val_loss,
-            "val_metrics": best_val_metrics,
-            "thresholds": best_thresholds,  # Save tuned thresholds
-            "config": MODEL_CONFIG,
-        },
-        PATH_CONFIG.best_model_path,
-    )
-    print(f"✓ Best model saved from epoch {best_epoch}")
+    print(f"\n✓ Best model already saved to disk from epoch {best_epoch}")
     print(f"  Validation F1 Micro: {best_val_metrics['f1_micro']:.4f}")
     print(f"  Validation F1 Macro: {best_val_metrics['f1_macro']:.4f}")
 
@@ -674,6 +704,32 @@ def train_model():
     print("Note: Model saved as .pt (PyTorch format)")
     print("For TensorFlow/Keras compatibility, consider using ONNX export")
     print("=" * 80)
+
+    # ------------------------------------------------------------------ #
+    # Explicit memory cleanup so grid search runs don't accumulate RAM /  #
+    # GPU memory across consecutive training runs.                        #
+    # ------------------------------------------------------------------ #
+    return_val = {
+        "best_epoch": best_epoch,
+        "best_val_loss": best_val_loss,
+        "best_val_metrics": best_val_metrics,
+        "test_loss": test_loss,
+        "test_metrics": test_metrics,
+        "best_model_path": str(PATH_CONFIG.best_model_path),
+        "summary_path": str(summary_path),
+        "training_log_path": str(log_file),
+        "num_epochs_trained": len(training_log),
+    }
+
+    del model, optimizer, criterion, scheduler
+    del train_loader, val_loader, test_loader
+    if scaler is not None:
+        del scaler
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect()
+
+    return return_val
 
 
 if __name__ == "__main__":

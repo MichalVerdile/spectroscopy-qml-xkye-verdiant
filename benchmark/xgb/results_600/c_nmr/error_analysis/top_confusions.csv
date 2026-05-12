@@ -1,0 +1,101 @@
+missed_true_label_index,missed_true_label,wrong_predicted_label_index,wrong_predicted_label,count
+2,Alcohol,17,Haloalkane,2066
+8,Amine,17,Haloalkane,1993
+2,Alcohol,16,Ether,1737
+28,Sulfide,17,Haloalkane,1502
+2,Alcohol,8,Amine,1383
+2,Alcohol,7,Amide,1329
+8,Amine,16,Ether,1268
+17,Haloalkane,8,Amine,1133
+5,Alkene,17,Haloalkane,1096
+17,Haloalkane,16,Ether,1059
+12,Carboxylic acid,7,Amide,1048
+7,Amide,16,Ether,980
+7,Amide,17,Haloalkane,978
+16,Ether,17,Haloalkane,902
+26,Phenol,17,Haloalkane,894
+8,Amine,7,Amide,859
+7,Amide,8,Amine,845
+28,Sulfide,9,Arene,842
+16,Ether,8,Amine,780
+12,Carboxylic acid,17,Haloalkane,762
+28,Sulfide,7,Amide,726
+5,Alkene,9,Arene,725
+28,Sulfide,16,Ether,717
+17,Haloalkane,7,Amide,696
+5,Alkene,8,Amine,689
+25,Nitrile,17,Haloalkane,674
+2,Alcohol,9,Arene,661
+15,Ester,7,Amide,648
+16,Ether,7,Amide,645
+28,Sulfide,8,Amine,627
+8,Amine,9,Arene,621
+8,Amine,2,Alcohol,590
+7,Amide,2,Alcohol,564
+5,Alkene,16,Ether,517
+15,Ester,8,Amine,504
+2,Alcohol,15,Ester,495
+17,Haloalkane,9,Arene,494
+7,Amide,15,Ester,491
+8,Amine,15,Ester,473
+5,Alkene,7,Amide,472
+7,Amide,9,Arene,461
+15,Ester,17,Haloalkane,448
+12,Carboxylic acid,16,Ether,433
+17,Haloalkane,2,Alcohol,407
+17,Haloalkane,15,Ester,406
+29,Sulfonamide,17,Haloalkane,401
+26,Phenol,8,Amine,367
+25,Nitrile,8,Amine,365
+8,Amine,24,Ketone,357
+25,Nitrile,16,Ether,335
+11,Carbamate,8,Amine,334
+26,Phenol,16,Ether,331
+12,Carboxylic acid,8,Amine,319
+25,Nitrile,9,Arene,317
+16,Ether,9,Arene,299
+28,Sulfide,2,Alcohol,283
+15,Ester,2,Alcohol,276
+12,Carboxylic acid,9,Arene,275
+16,Ether,2,Alcohol,266
+12,Carboxylic acid,15,Ester,263
+11,Carbamate,17,Haloalkane,262
+15,Ester,9,Arene,256
+5,Alkene,2,Alcohol,254
+9,Arene,16,Ether,242
+28,Sulfide,24,Ketone,239
+7,Amide,12,Carboxylic acid,234
+25,Nitrile,7,Amide,225
+29,Sulfonamide,7,Amide,220
+29,Sulfonamide,16,Ether,219
+9,Arene,8,Amine,216
+28,Sulfide,15,Ester,216
+2,Alcohol,24,Ketone,214
+31,Sulfone,8,Amine,201
+8,Amine,12,Carboxylic acid,199
+17,Haloalkane,24,Ketone,187
+26,Phenol,7,Amide,183
+4,Alkane,17,Haloalkane,182
+17,Haloalkane,11,Carbamate,182
+24,Ketone,17,Haloalkane,181
+5,Alkene,15,Ester,178
+7,Amide,24,Ketone,178
+9,Arene,15,Ester,174
+35,Thioamide,24,Ketone,171
+9,Arene,17,Haloalkane,167
+16,Ether,24,Ketone,163
+31,Sulfone,17,Haloalkane,162
+8,Amine,11,Carbamate,158
+24,Ketone,16,Ether,155
+11,Carbamate,7,Amide,151
+6,Alkyne,16,Ether,149
+24,Ketone,8,Amine,142
+11,Carbamate,9,Arene,134
+11,Carbamate,15,Ester,132
+18,Hydrazine,17,Haloalkane,128
+2,Alcohol,4,Alkane,127
+16,Ether,12,Carboxylic acid,125
+2,Alcohol,11,Carbamate,123
+13,Enamine,17,Haloalkane,123
+17,Haloalkane,12,Carboxylic acid,123
+24,Ketone,7,Amide,120

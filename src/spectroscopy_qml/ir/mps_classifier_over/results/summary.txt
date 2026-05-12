@@ -1,0 +1,61 @@
+================================================================================
+MPS Functional Group Classifier - Training Summary
+================================================================================
+
+Model Configuration:
+  Input dimension: 1800
+  Classifier head: mps
+  Number of classes: 37
+  Dropout rate: 0.49
+  Total parameters: 195,628,649
+
+  Number of sites (MPS 1): 5
+  Site dimension (MPS 1): 360
+  Physical dimension (MPS 1): 450
+  Bond dimension (MPS 1): 128
+  Number of sites (MPS 2): 10
+  Site dimension (MPS 2): 180
+  Physical dimension (MPS 2): 450
+  Bond dimension (MPS 2): 128
+
+Training Configuration:
+  Batch size: 2048
+  Folds trained: 1
+  Total epochs trained across folds: 156
+  Learning rate: 0.00025
+  Weight decay: 1e-06
+  Training time: 226.9 minutes
+
+Cross-Validation Results (mean ± std over folds):
+  Val Loss: 4.3854 ± 0.0000
+  accuracy: 0.2829 ± 0.0000
+  f1_micro: 0.8593 ± 0.0000
+  f1_macro: 0.7128 ± 0.0000
+  f1_weighted: 0.8601 ± 0.0000
+  precision_micro: 0.8546 ± 0.0000
+  precision_macro: 0.7618 ± 0.0000
+  recall_micro: 0.8640 ± 0.0000
+  recall_macro: 0.6879 ± 0.0000
+
+Best Fold Checkpoint:
+  Fold: 1
+  Epoch: 146
+  Loss: 4.3854
+  F1 Micro: 0.8593
+  F1 Macro: 0.7128
+  Threshold mean: 0.320
+  Threshold std: 0.000
+
+Per-Fold Best Validation Results:
+  Fold 1: epoch=146, val_loss=4.3854, f1_micro=0.8593, f1_macro=0.7128
+
+Test Set Results:
+  Loss: 4.9091
+  Accuracy: 0.2865
+  F1 Micro: 0.8602
+  F1 Macro: 0.6908
+  F1 Weighted: 0.8610
+  Precision Micro: 0.8551
+  Precision Macro: 0.7588
+  Recall Micro: 0.8654
+  Recall Macro: 0.6630

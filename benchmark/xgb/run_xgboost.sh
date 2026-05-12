@@ -7,13 +7,13 @@ python ./benchmark/xgb/scripts/run_xgb_baseline.py \
 # C NMR
 python ./benchmark/xgb/scripts/run_xgb_baseline.py \
     --analytical_data ./data/raw/ \
-    --out_path ./benchmark/xgb/models/c_nmr \
-    --column c_nmr_spectra
+    --base_out_path ./benchmark/xgb/models_600/c_nmr \
+    --columns ir_spectra --no_kfold
 
 # IR
 python ./benchmark/xgb/scripts/run_xgb_baseline.py \
     --analytical_data ./data/raw/ \
-    --out_path ./benchmark/xgb/models/ir \
+    --out_path ./benchmark/xgb/models_600/ir \
     --column ir_spectra
 
 # Pos MSMS
@@ -31,5 +31,5 @@ python ./benchmark/xgb/scripts/run_xgb_baseline.py \
 # Evaluate and visualize results
 echo "Evaluating XGBoost models..."
 python ./benchmark/xgb/scripts/evaluate_results.py \
---models_dir ./benchmark/xgb/models \
---output_dir ./benchmark/xgb/results
+--models_dir ./benchmark/xgb/models_600 \
+--output_dir ./benchmark/xgb/results_600

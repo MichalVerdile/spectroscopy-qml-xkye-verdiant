@@ -1,0 +1,19 @@
+MPS + TTN Separate Training Selector Summary
+================================================================================
+Training mode:            models trained separately and merged after training
+Elapsed seconds:           2555.91
+Fixed split artifact:      src/spectroscopy_qml/ir/mps_ttn_merged/results/data_split_seed42_all.npz
+Best MPS epoch:            3
+Best TTN epoch:            1
+MPS val f1_micro:          0.626508
+TTN val f1_micro:          0.279399
+Selector val f1_micro:     0.778387
+Selector val f1_macro:     0.547486
+Threshold mean:            0.738919
+Threshold std:             0.275992
+Labels assigned to MPS:    29
+Labels assigned to TTN:    8
+Selector test f1_micro:    0.778598
+Selector test f1_macro:    0.549687
+Selector precision_micro:  0.713468
+Selector recall_micro:     0.856813

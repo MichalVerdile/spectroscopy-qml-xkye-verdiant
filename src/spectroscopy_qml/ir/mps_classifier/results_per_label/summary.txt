@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/ir/mps_classifier/models_per_label/mps_model_best.pt
+  Trained epochs: 102
+  Parameters: 193,798,249
+  Thresholds: mean=0.599, std=0.212
+
+Test Set Performance:
+  accuracy: 0.3214
+  f1_micro: 0.8725
+  f1_macro: 0.7011
+  f1_weighted: 0.8715
+  f1_samples: 0.8673
+  precision_micro: 0.8732
+  precision_macro: 0.7706
+  precision_weighted: 0.8739
+  recall_micro: 0.8719
+  recall_macro: 0.6592
+  recall_weighted: 0.8719
+  hamming_accuracy: 0.9671
+
+Validation Set Performance:
+  accuracy: 0.3189
+  f1_micro: 0.8719
+  f1_macro: 0.7087
+  f1_weighted: 0.8708
+  f1_samples: 0.8663
+  precision_micro: 0.8728
+  precision_macro: 0.8071
+  precision_weighted: 0.8736
+  recall_micro: 0.8710
+  recall_macro: 0.6606
+  recall_weighted: 0.8710
+  hamming_accuracy: 0.9669
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alcohol: F1=0.9863 (support=21396)
+  Carboxylic acid: F1=0.9860 (support=7880)
+  Alkane: F1=0.9838 (support=76492)
+  Arene: F1=0.9720 (support=61588)
+  Sulfonate: F1=0.9338 (support=909)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Azo compound: F1=0.2188 (support=51)
+  Phosphine: F1=0.4103 (support=55)
+  Sulfoxide: F1=0.4438 (support=403)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=19290, TP=29052, FP=11607, FN=7683, TN=31099, specificity=0.7282, example_fp_indices=[9, 20, 21, 22, 24, 38, 40, 41, 45, 61], example_fn_indices=[1, 7, 14, 26, 35, 42, 47, 50, 51, 72]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_detailed.png
+  Ether: errors=18997, TP=37769, FP=11803, FN=7194, TN=22675, specificity=0.6577, example_fp_indices=[4, 13, 34, 42, 49, 64, 75, 86, 89, 90], example_fn_indices=[5, 12, 41, 55, 73, 87, 96, 97, 100, 105]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_detailed.png
+  Sulfide: errors=9899, TP=5781, FP=4810, FN=5089, TN=63761, specificity=0.9299, example_fp_indices=[1, 21, 27, 46, 70, 94, 122, 139, 150, 174], example_fn_indices=[18, 23, 36, 48, 54, 128, 140, 178, 201, 226]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_detailed.png
+  Amine: errors=7160, TP=29032, FP=2797, FN=4363, TN=43249, specificity=0.9393, example_fp_indices=[0, 23, 48, 59, 67, 83, 103, 153, 162, 185], example_fn_indices=[8, 10, 72, 127, 160, 174, 184, 187, 201, 262]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_detailed.png
+  Amide: errors=6887, TP=17399, FP=3098, FN=3789, TN=55155, specificity=0.9468, example_fp_indices=[10, 21, 22, 28, 38, 46, 47, 98, 123, 159], example_fn_indices=[23, 48, 58, 88, 113, 119, 174, 194, 206, 251]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/ir/mps_classifier/results_per_label/validation_error_analysis_detailed.png

@@ -1,7 +1,3 @@
-"""
-Evaluation script for MPS Functional Group Classifier.
-"""
-
 from pathlib import Path
 
 import click
@@ -31,7 +27,12 @@ from spectroscopy_qml.ir.mps_encoder.data_loader import (
 from spectroscopy_qml.ir.mps_encoder.model import MPSFunctionalGroupClassifier
 
 
-def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
+def evaluate_model(
+    model: nn.Module,
+    dataloader,
+    device: torch.device,
+    thresholds: np.ndarray | None = None,
+) -> dict:
     """
     Evaluate model on a dataset.
 
@@ -39,6 +40,7 @@ def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
         model: Trained model
         dataloader: DataLoader for evaluation
         device: Device to run evaluation on
+        thresholds: Per-class decision thresholds (shape: num_classes). Defaults to 0.5.
 
     Returns:
         Dictionary containing predictions, labels, and metrics
@@ -55,12 +57,13 @@ def evaluate_model(model: nn.Module, dataloader, device: torch.device) -> dict:
 
             # Forward pass
             logits = model(spectra)
-            probs = torch.sigmoid(logits)
-            preds = (probs > 0.5).float()
+            probs_np = torch.sigmoid(logits).cpu().numpy()
+            thresh = thresholds if thresholds is not None else 0.5
+            preds = (probs_np >= thresh).astype(float)
 
             all_labels.append(labels.cpu().numpy())
-            all_preds.append(preds.cpu().numpy())
-            all_probs.append(probs.cpu().numpy())
+            all_preds.append(preds)
+            all_probs.append(probs_np)
 
     # Concatenate results
     y_true = np.vstack(all_labels)
@@ -217,12 +220,19 @@ def main(model_path, data_dir, output_dir):
     print(f"Model loaded (trained for {checkpoint['epoch']} epochs)")
     print(f"Validation loss: {checkpoint['val_loss']:.4f}")
 
+    # Load per-class thresholds tuned on the validation set during training
+    thresholds = checkpoint.get("thresholds", np.full(MODEL_CONFIG.num_classes, 0.5))
+    print(f"Thresholds: mean={thresholds.mean():.3f}, std={thresholds.std():.3f}")
+
     # Load data
     print(f"\nLoading data from: {data_dir}")
     X, y = load_ir_data(
         data_dir,
         target_length=DATA_CONFIG.target_length,
         max_files=DATA_CONFIG.max_files,
+        apply_savgol=DATA_CONFIG.apply_savgol,
+        savgol_window_length=DATA_CONFIG.savgol_window_length,
+        savgol_polyorder=DATA_CONFIG.savgol_polyorder,
         apply_snv=DATA_CONFIG.apply_snv,
     )
 
@@ -245,7 +255,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Test Set")
     print("=" * 80)
 
-    test_results = evaluate_model(model, test_loader, device)
+    test_results = evaluate_model(model, test_loader, device, thresholds=thresholds)
 
     # Save detailed results
     eval_output_path = output_dir / "evaluation_results.txt"
@@ -259,7 +269,7 @@ def main(model_path, data_dir, output_dir):
     print("Evaluating on Validation Set")
     print("=" * 80)
 
-    val_results = evaluate_model(model, val_loader, device)
+    val_results = evaluate_model(model, val_loader, device, thresholds=thresholds)
 
     val_output_path = output_dir / "validation_results.txt"
     with open(val_output_path, "w") as f:
@@ -277,7 +287,8 @@ def main(model_path, data_dir, output_dir):
         f.write("Model Information:\n")
         f.write(f"  Model path: {model_path}\n")
         f.write(f"  Trained epochs: {checkpoint['epoch']}\n")
-        f.write(f"  Parameters: {model.get_num_parameters():,}\n\n")
+        f.write(f"  Parameters: {model.get_num_parameters():,}\n")
+        f.write(f"  Thresholds: mean={thresholds.mean():.3f}, std={thresholds.std():.3f}\n\n")
 
         f.write("Test Set Performance:\n")
         for metric, value in test_results["metrics"].items():

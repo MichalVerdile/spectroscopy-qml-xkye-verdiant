@@ -1,0 +1,2 @@
+searched_formula,test_index,case_type,true_labels,predicted_binary_labels,top_probability_labels,correct_labels,false_positive_labels,false_negative_labels,source_file,source_row,global_index,number_of_formula_matches_in_test_split,molecular_formula,smiles
+C10H22O2,27044,correct,Alcohol; Alkane,Alcohol; Alkane,Alcohol (0.999); Alkane (0.960); Haloalkane (0.092); Ether (0.037); Amine (0.008); Arene (0.000); Alkene (0.000); Nitrile (0.000); Alkyne (0.000); Azo compound (0.000),Alcohol; Alkane,,,aligned_chunk_179.parquet,287,289426,3,C10H22O2,CCCCCCC(C)(O)CCO
