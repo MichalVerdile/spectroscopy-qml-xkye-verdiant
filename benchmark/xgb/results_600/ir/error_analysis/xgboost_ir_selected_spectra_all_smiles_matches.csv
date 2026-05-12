@@ -1,0 +1,2 @@
+searched_smiles,selected,test_index,case_type,true_labels,predicted_binary_labels,top_probability_labels,source_file,source_row,global_index,formula,smiles
+CCOC(=O)C1=Nc2ccc(C)cc2C(=O)C1,1,24763,mixed error,Alkane; Arene; Ester; Ether; Imine; Ketone,Alkane; Arene; Ether; Haloalkane,Alkane (1.000); Arene (0.947); Ether (0.795); Haloalkane (0.568); Amide (0.387); Ester (0.180); Ketone (0.156); Amine (0.095); Sulfide (0.071); Carbamate (0.069),aligned_chunk_127.parquet,2942,515221,C13H13NO3,CCOC(=O)C1=Nc2ccc(C)cc2C(=O)C1
