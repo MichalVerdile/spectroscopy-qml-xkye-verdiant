@@ -1,0 +1,88 @@
+================================================================================
+TTN IR Experiment 10.2 - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/ttn_ir_best.pt
+  Run config: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/run_config.json
+  Split artifact: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/data_split_seed42_all.npz
+  Parameters: 2,125,949
+  Thresholds: mean=0.500, std=0.000
+
+Test Set Performance:
+  accuracy: 0.0822
+  f1_micro: 0.7159
+  f1_macro: 0.3286
+  f1_weighted: 0.7116
+  f1_samples: 0.7137
+  precision_micro: 0.7167
+  precision_macro: 0.3185
+  precision_weighted: 0.7152
+  recall_micro: 0.7152
+  recall_macro: 0.3669
+  recall_weighted: 0.7152
+  hamming_accuracy: 0.9267
+
+Test Set Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over test samples, n_bootstrap=2000, ci_level=0.950
+  accuracy: point=0.0822, CI=[0.0803, 0.0841], bootstrap_std=0.0010
+  f1_micro: point=0.7159, CI=[0.7147, 0.7171], bootstrap_std=0.0006
+  f1_macro: point=0.3286, CI=[0.3248, 0.3325], bootstrap_std=0.0019
+  f1_weighted: point=0.7116, CI=[0.7103, 0.7129], bootstrap_std=0.0007
+  f1_samples: point=0.7137, CI=[0.7124, 0.7149], bootstrap_std=0.0007
+  precision_micro: point=0.7167, CI=[0.7152, 0.7181], bootstrap_std=0.0008
+  precision_macro: point=0.3185, CI=[0.3154, 0.3216], bootstrap_std=0.0016
+  precision_weighted: point=0.7152, CI=[0.7137, 0.7166], bootstrap_std=0.0007
+  recall_micro: point=0.7152, CI=[0.7136, 0.7166], bootstrap_std=0.0007
+  recall_macro: point=0.3669, CI=[0.3609, 0.3735], bootstrap_std=0.0032
+  recall_weighted: point=0.7152, CI=[0.7136, 0.7166], bootstrap_std=0.0007
+  hamming_accuracy: point=0.9267, CI=[0.9264, 0.9270], bootstrap_std=0.0002
+
+Validation Set Performance:
+  accuracy: 0.0817
+  f1_micro: 0.7150
+  f1_macro: 0.3290
+  f1_weighted: 0.7108
+  f1_samples: 0.7124
+  precision_micro: 0.7149
+  precision_macro: 0.3173
+  precision_weighted: 0.7139
+  recall_micro: 0.7150
+  recall_macro: 0.3723
+  recall_weighted: 0.7150
+  hamming_accuracy: 0.9264
+
+Top 5 Best Performing Functional Groups on Test Set (by F1 score):
+  Alkane: F1=0.9917 (support=76514)
+  Arene: F1=0.9077 (support=61509)
+  Ether: F1=0.8348 (support=44933)
+  Ketone: F1=0.7559 (support=6877)
+  Carbamate: F1=0.7198 (support=7618)
+
+Bottom 5 Worst Performing Functional Groups on Test Set (by F1 score):
+  Thial: F1=0.0000 (support=5)
+  Sulfonic acid: F1=0.0000 (support=1)
+  Thiol: F1=0.0379 (support=286)
+  Isothiocyanate: F1=0.0446 (support=74)
+  Phosphine: F1=0.0561 (support=65)
+
+Top 5 Functional Groups by Total Errors on Test Set:
+  Haloalkane: errors=29899, TP=21901, FP=15182, FN=14717, TN=27641, specificity=0.6455, example_fp_indices=[2, 3, 6, 19, 24, 31, 32, 36, 37, 49], example_fn_indices=[0, 29, 34, 45, 47, 48, 55, 59, 60, 62]
+  Amine: errors=26004, TP=20459, FP=12876, FN=13128, TN=32978, specificity=0.7192, example_fp_indices=[8, 14, 17, 30, 34, 40, 47, 50, 57, 62], example_fn_indices=[4, 7, 12, 22, 26, 37, 52, 68, 69, 72]
+  Alcohol: errors=21382, TP=9055, FP=9131, FN=12251, TN=49004, specificity=0.8429, example_fp_indices=[22, 23, 44, 46, 52, 53, 58, 65, 69, 72], example_fn_indices=[2, 12, 36, 41, 51, 54, 57, 63, 68, 70]
+  Amide: errors=17304, TP=13420, FP=9759, FN=7545, TN=48717, specificity=0.8331, example_fp_indices=[13, 17, 42, 47, 52, 54, 61, 64, 79, 89], example_fn_indices=[1, 14, 18, 23, 39, 62, 71, 95, 104, 108]
+  Ether: errors=14733, TP=37216, FP=7016, FN=7717, TN=27492, specificity=0.7967, example_fp_indices=[0, 1, 2, 4, 15, 35, 41, 44, 55, 67], example_fn_indices=[17, 39, 43, 46, 52, 57, 61, 79, 93, 104]
+
+Generated Error Analysis Artifacts:
+  Test results TXT: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/evaluation_results.txt
+  Test CSV: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_error_analysis_metrics.json
+  Test detailed plot: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_error_analysis_detailed.png
+  Test top-problem-groups plot: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_top_problem_groups.png
+  Test bootstrap CI CSV: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_bootstrap_confidence_intervals.csv
+  Test bootstrap CI JSON: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/test_bootstrap_confidence_intervals.json
+  Validation results TXT: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/validation_results.txt
+  Validation CSV: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/validation_error_analysis_metrics.json
+  Validation detailed plot: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/validation_error_analysis_detailed.png
+  Validation top-problem-groups plot: src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_ablation_bond/validation_top_problem_groups.png

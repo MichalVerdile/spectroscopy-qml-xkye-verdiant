@@ -1,4 +1,4 @@
-"""Evaluation script for TTN IR Experiment 10.2."""
+"""Evaluation script for TTN C-NMR Experiment 10.2."""
 
 from __future__ import annotations
 
@@ -27,21 +27,21 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
-    IRSpectraDataset,
-    load_ir_data,
+    CnmrSpectraDataset,
+    load_cnmr_data,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     count_available_data_files,
     resolve_device,
     resolve_used_file_count,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
     resolve_cache_path,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10_2.model import (  # noqa: E402
-    TTNIRClassifier10_2,
+from src.spectroscopy_qml.cnmr.tree_tensor_network.model import (  # noqa: E402
+    TTNCnmrClassifier10_2,
 )
 
 
@@ -75,10 +75,10 @@ def _resolve_specialist_indices(run_config: dict) -> list[int] | None:
     return [int(index.strip()) for index in str(raw_value).split(",") if index.strip()]
 
 
-def _build_model_from_run_config(run_config: dict) -> TTNIRClassifier10_2:
+def _build_model_from_run_config(run_config: dict) -> TTNCnmrClassifier10_2:
     specialist_indices = _resolve_specialist_indices(run_config)
     effective_num_labels = len(specialist_indices) if specialist_indices is not None else int(run_config["num_labels"])
-    return TTNIRClassifier10_2(
+    return TTNCnmrClassifier10_2(
         num_labels=effective_num_labels,
         chi=int(run_config["chi"]),
         input_dim=int(run_config["input_dim"]),
@@ -127,7 +127,7 @@ def _create_eval_dataloader(
     num_workers: int,
     pin_memory: bool,
 ) -> DataLoader:
-    dataset = IRSpectraDataset(X_split, y_split)
+    dataset = CnmrSpectraDataset(X_split, y_split)
     return DataLoader(
         dataset,
         batch_size=batch_size,
@@ -502,7 +502,7 @@ def _count_model_parameters(model: nn.Module) -> int:
     "--model_path",
     type=click.Path(path_type=Path),
     default=None,
-    help="Path to model checkpoint (default: use ttn_ir_best.pt in the resolved run directory)",
+    help="Path to model checkpoint (default: use ttn_cnmr_best.pt in the resolved run directory)",
 )
 @click.option(
     "--data_dir",
@@ -513,7 +513,7 @@ def _count_model_parameters(model: nn.Module) -> int:
 @click.option(
     "--output_dir",
     type=click.Path(path_type=Path),
-    default=Path("src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_test"),
+    default=Path("c_nmr/tree_tensor_network/results"),
     help="Run directory or parent results directory for experiment 10.2",
 )
 @click.option(
@@ -551,13 +551,13 @@ def main(
     device: str,
 ) -> None:
     print("=" * 80)
-    print("TTN IR Experiment 10.2 Evaluation")
+    print("TTN C-NMR Experiment 10.2 Evaluation")
     print("=" * 80)
 
     run_dir = run_config_path.parent if run_config_path is not None else _resolve_run_dir(output_dir)
     run_config_path = run_config_path or (run_dir / "run_config.json")
     thresholds_path = thresholds_path or (run_dir / "selected_thresholds.json")
-    model_path = model_path or (run_dir / "ttn_ir_best.pt")
+    model_path = model_path or (run_dir / "ttn_cnmr_best.pt")
     results_dir = run_dir
     results_dir.mkdir(parents=True, exist_ok=True)
 
@@ -602,7 +602,7 @@ def main(
     print(f"Thresholds: mean={thresholds.mean():.3f}, std={thresholds.std():.3f}")
 
     print(f"\nLoading data from: {data_dir}")
-    X, y = load_ir_data(
+    X, y = load_cnmr_data(
         data_dir=data_dir,
         target_length=int(run_config["input_dim"]),
         max_files=run_config.get("max_files"),
@@ -678,7 +678,7 @@ def main(
     summary_path = results_dir / "summary_evaluation.txt"
     with summary_path.open("w", encoding="utf-8") as handle:
         handle.write("=" * 80 + "\n")
-        handle.write("TTN IR Experiment 10.2 - Evaluation Summary\n")
+        handle.write("TTN C-NMR Experiment 10.2 - Evaluation Summary\n")
         handle.write("=" * 80 + "\n\n")
 
         handle.write("Model Information:\n")

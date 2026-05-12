@@ -19,12 +19,12 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment6.model import (
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.segment_helpers import (
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
     validate_target_segment_overlap,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10.model import (
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.merge_helpers import (
     FastDirectIsometricMerge,
 )
 
@@ -118,7 +118,7 @@ class LorentzianFeatureMap(nn.Module):
         return torch.stack((ch0, ch1, ch2), dim=-1)
 
 
-class TTNIRClassifier10_2(nn.Module):
+class TTNCnmrClassifier10_2(nn.Module):
     """Experiment 10.2 TTN classifier with Lorentzian-smoothed feature channels.
 
     Architecture is identical to Experiment 10.1 (direct segment states, linear

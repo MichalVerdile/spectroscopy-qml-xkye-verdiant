@@ -16,20 +16,20 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[5]
+SRC_DIR = Path(__file__).resolve().parents[3]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
-    load_ir_data,
+    load_cnmr_data,
     load_or_create_split_indices,
     prepare_dataloaders_from_split_indices,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.losses import build_loss  # noqa: E402
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.train import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     EarlyStopping,
     build_threshold_grid,
     compute_metrics,
@@ -45,12 +45,12 @@ from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment5.train impo
     write_epoch_details,
     write_threshold_artifact,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10_2.model import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
-    TTNIRClassifier10_2,
+    TTNCnmrClassifier10_2,
 )
-from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10.train import (  # noqa: E402
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
     ensure_finite_tensor,
     evaluate_with_probs_amp,
     resolve_cache_path,
@@ -64,7 +64,7 @@ from spectroscopy_qml.cnmr.tree_tensor_network.experiment.experiment10.train imp
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Train experiment10.2: TTN IR classifier with Lorentzian-smoothed feature "
+            "Train experiment10.2: TTN C-NMR classifier with Lorentzian-smoothed feature "
             "channels, direct segmented states, and linear readout."
         )
     )
@@ -72,20 +72,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("src/spectroscopy_qml/cnmr/tree_tensor_network/experiment/experiment10_2/results_test"),
+        default=Path("c_nmr/tree_tensor_network/results"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
     parser.add_argument("--input-dim", type=int, default=600)
     parser.add_argument("--num-labels", type=int, default=len(FUNCTIONAL_GROUPS))
-    parser.add_argument("--gpu-id", type=int, default=1, help="GPU ID to use (0-3 for your 4 GPUs). Only used when --device is 'cuda'.")
     parser.add_argument(
         "--specialist-indices",
         type=str,
         default=None,
         help="Comma-separated class indices to train on (e.g. '19,33,21,13,28'). Subsets labels.",
     )
-    parser.add_argument("--chi", type=int, default=144)
+    parser.add_argument("--chi", type=int, default=64)
     parser.add_argument("--segment-window-size", type=int, default=DEFAULT_SEGMENT_WINDOW_SIZE)
     parser.add_argument("--segment-stride", type=int, default=DEFAULT_SEGMENT_STRIDE)
     parser.add_argument("--segment-mode", choices=["overlap", "dual_offset"], default="overlap")
@@ -158,20 +157,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--amp",
         action=argparse.BooleanOptionalAction,
-        default=False,
+        default=True,
         help="Enable mixed-precision (AMP) training for ~2x speedup.",
     )
     parser.add_argument(
         "--compile",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=False,
         help="Use torch.compile to fuse ops (requires PyTorch 2.0+).",
     )
     return parser
 
 
-def build_model(args: argparse.Namespace) -> TTNIRClassifier10_2:
-    return TTNIRClassifier10_2(
+def build_model(args: argparse.Namespace) -> TTNCnmrClassifier10_2:
+    return TTNCnmrClassifier10_2(
         num_labels=args.num_labels,
         chi=args.chi,
         input_dim=args.input_dim,
@@ -191,7 +190,7 @@ def build_model(args: argparse.Namespace) -> TTNIRClassifier10_2:
 
 def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("=" * 80)
-    print("TTN IR Experiment10.2 Training")
+    print("TTN C-NMR Experiment10.2 Training")
     print("=" * 80)
     print(f"Data dir:                 {args.data_dir}")
     print(f"Output dir:               {args.output_dir}")
@@ -243,11 +242,11 @@ def main() -> None:
     total_data_files = count_available_data_files(args.data_dir)
     used_data_files = resolve_used_file_count(total_data_files, args.max_files)
     split_suffix = "all" if args.max_files is None else f"files{used_data_files}"
-    split_path = args.split_path or (args.output_dir / f"data_split_seed_cnmr{args.seed}_{split_suffix}.npz")
+    split_path = args.split_path or (args.output_dir / f"data_split_seed{args.seed}_{split_suffix}.npz")
     describe_args(args, split_path)
 
     config_path = args.output_dir / "run_config.json"
-    checkpoint_path = args.output_dir / "ttn_ir_best.pt"
+    checkpoint_path = args.output_dir / "ttn_cnmr_best.pt"
     log_path = args.output_dir / "training_log.csv"
     details_path = args.output_dir / "training_details.jsonl"
     summary_path = args.output_dir / "summary.txt"
@@ -258,14 +257,6 @@ def main() -> None:
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = resolve_device(args.device)
-    if device.type == "cuda" and args.gpu_id is not None:
-        if args.gpu_id < 0 or args.gpu_id >= torch.cuda.device_count():
-            raise ValueError(
-                f"GPU ID {args.gpu_id} is invalid. Available GPUs: 0-{torch.cuda.device_count() - 1}"
-            )
-        device = torch.device(f"cuda:{args.gpu_id}")
-        torch.cuda.set_device(args.gpu_id)
-
     print(f"Device: {device}")
 
     if args.specialist_indices is not None:
@@ -279,7 +270,7 @@ def main() -> None:
     run_synthetic_preflight(model, args, device)
 
     print("\nLoading data...")
-    X, y = load_ir_data(
+    X, y = load_cnmr_data(
         data_dir=args.data_dir,
         target_length=args.input_dim,
         max_files=args.max_files,

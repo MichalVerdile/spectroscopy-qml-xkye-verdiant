@@ -9,10 +9,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.cnmr.mps_classifier_cnmr.data_loader import (
+from src.spectroscopy_qml.cnmr.mps_classifier_cnmr.data_loader import (
     FUNCTIONAL_GROUPS,
-    IRSpectraDataset,
-    load_ir_data as mps_load_ir_data,
+    CnmrSpectraDataset,
+    load_cnmr_data as mps_load_cnmr_data,
     multilabel_train_test_split,
 )
 
@@ -56,7 +56,7 @@ def _validate_cache_payload(
     return np.asarray(X), np.asarray(y)
 
 
-def load_ir_data(
+def load_cnmr_data(
     data_dir: Path,
     target_length: int = 1800,
     max_files: int | None = None,
@@ -67,7 +67,7 @@ def load_ir_data(
     cache_path: Path | None = None,
     overwrite_cache: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Load IR spectra via the MPS encoder loader with optional cached arrays."""
+    """Load C-NMR spectra via the MPS encoder loader with optional cached arrays."""
     cache_file = Path(cache_path) if cache_path is not None else None
     if cache_file is not None and cache_file.exists() and not overwrite_cache:
         payload = np.load(cache_file, allow_pickle=False)
@@ -82,13 +82,13 @@ def load_ir_data(
         )
         if cached is not None:
             X, y = cached
-            print(f"Loaded cached IR dataset from {cache_file}")
+            print(f"Loaded cached C-NMR dataset from {cache_file}")
             print(f"Spectra shape: {X.shape}")
             print(f"Labels shape: {y.shape}")
             return X, y
         print(f"Ignoring incompatible cache artifact at {cache_file}")
 
-    X, y = mps_load_ir_data(
+    X, y = mps_load_cnmr_data(
         data_dir=data_dir,
         target_length=target_length,
         max_files=max_files,
@@ -111,7 +111,7 @@ def load_ir_data(
             savgol_polyorder=np.asarray(savgol_polyorder, dtype=np.int64),
             max_files=np.asarray(np.nan if max_files is None else max_files, dtype=np.float64),
         )
-        print(f"Saved IR dataset cache to {cache_file}")
+        print(f"Saved C-NMR dataset cache to {cache_file}")
 
     return X, y
 
@@ -339,9 +339,9 @@ def prepare_dataloaders_from_split_indices(
     print(f"  Test:  {len(X_test)} samples ({len(X_test) / len(X):.1%})")
     print("  Split: fixed artifact")
 
-    train_dataset = IRSpectraDataset(X_train, y_train)
-    val_dataset = IRSpectraDataset(X_val, y_val)
-    test_dataset = IRSpectraDataset(X_test, y_test)
+    train_dataset = CnmrSpectraDataset(X_train, y_train)
+    val_dataset = CnmrSpectraDataset(X_val, y_val)
+    test_dataset = CnmrSpectraDataset(X_test, y_test)
 
     train_loader = DataLoader(
         train_dataset,
@@ -372,7 +372,7 @@ def prepare_dataloaders_from_split_indices(
 
 __all__ = [
     "FUNCTIONAL_GROUPS",
-    "load_ir_data",
+    "load_cnmr_data",
     "load_or_create_split_indices",
     "prepare_dataloaders_from_split_indices",
 ]
