@@ -15,6 +15,7 @@ TITLE = "MS/MS-"
 SOURCES = {
     "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/training_log.csv"),
     "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_neg/tree_tensor_network/results_600/training_log.csv"),
+    "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models/neg_msms/training_logs.csv"),
 }
 
 
@@ -23,7 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts/plots/neg_msms_learning_curves.png",
+        default=ROOT / "artifacts/plots/learning_curves/neg_msms_learning_curves.png",
         help="Output PNG path.",
     )
     return parser.parse_args()
@@ -42,8 +43,17 @@ def read_epoch_log(path: Path, split: str) -> tuple[list[float], list[float], li
     return x, micro, macro
 
 
+def read_xgb_log(path: Path, split: str) -> tuple[list[float], list[float], list[float]]:
+    rows = [row for row in read_csv(path) if row.get("event") == "learning_curve" and row.get("step")]
+    x = [float(row["step"]) for row in rows]
+    micro = [float(row[f"{split}_f1_micro"]) for row in rows]
+    macro = [float(row[f"{split}_f1_macro"]) for row in rows]
+    return x, micro, macro
+
+
 READERS = {
     "epoch_csv": read_epoch_log,
+    "xgb_csv": read_xgb_log,
 }
 
 

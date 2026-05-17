@@ -15,6 +15,8 @@ TITLE = "MS/MS+"
 SOURCES = {
     "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_600/training_log.csv"),
     "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_pos/tree_tensor_network/results_600/training_log.csv"),
+    "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/pos_msms/original/training_logs.csv"),
+    "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models/pos_msms/training_logs.csv"),
 }
 
 
@@ -23,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts/plots/pos_msms_learning_curves.png",
+        default=ROOT / "artifacts/plots/learning_curves/pos_msms_learning_curves.png",
         help="Output PNG path.",
     )
     return parser.parse_args()
@@ -42,8 +44,26 @@ def read_epoch_log(path: Path, split: str) -> tuple[list[float], list[float], li
     return x, micro, macro
 
 
+def read_cnn_log(path: Path, split: str) -> tuple[list[float], list[float], list[float]]:
+    rows = [row for row in read_csv(path) if row.get("event") == "epoch_finished" and row.get("epoch")]
+    x = [float(row["epoch"]) for row in rows]
+    micro = [float(row[f"{split}_f1_micro"]) for row in rows]
+    macro = [float(row[f"{split}_f1_macro"]) for row in rows]
+    return x, micro, macro
+
+
+def read_xgb_log(path: Path, split: str) -> tuple[list[float], list[float], list[float]]:
+    rows = [row for row in read_csv(path) if row.get("event") == "learning_curve" and row.get("step")]
+    x = [float(row["step"]) for row in rows]
+    micro = [float(row[f"{split}_f1_micro"]) for row in rows]
+    macro = [float(row[f"{split}_f1_macro"]) for row in rows]
+    return x, micro, macro
+
+
 READERS = {
     "epoch_csv": read_epoch_log,
+    "cnn_csv": read_cnn_log,
+    "xgb_csv": read_xgb_log,
 }
 
 
