@@ -15,11 +15,14 @@ round t, the weak learner is trained on the current logistic pseudo-residuals.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import json
 import math
+import multiprocessing as mp
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -562,6 +565,215 @@ def write_summary(
             handle.write(f"  {name}: base_logit={base_score:.6f}, estimators={count}\n")
 
 
+
+def resolve_parallel_worker_device(device_name: str, label_index: int) -> torch.device:
+    """Resolve the device inside a worker process.
+
+    When CUDA is requested and multiple GPUs are visible, labels are distributed
+    round-robin over CUDA devices. Otherwise this falls back to the existing
+    resolve_device helper.
+    """
+    if device_name in {"auto", "cuda"} and torch.cuda.is_available():
+        gpu_count = max(1, torch.cuda.device_count())
+        device = torch.device(f"cuda:{label_index % gpu_count}")
+        torch.cuda.set_device(device)
+        return device
+    return resolve_device(device_name)
+
+
+def train_one_label_boosted_ttn(payload: dict) -> dict:
+    """Train the boosted TTN ensemble for exactly one functional group.
+
+    This is the original per-label training loop moved into a top-level
+    function so that labels can be trained in separate processes.
+    """
+    args = copy.deepcopy(payload["args"])
+    label_index = int(payload["label_index"])
+    label_name = str(payload["label_name"])
+    total_labels = int(payload["total_labels"])
+    X_train = payload["X_train"]
+    X_val = payload["X_val"]
+    X_test = payload["X_test"]
+    y_train = payload["y_train"]
+    y_val = payload["y_val"]
+    y_test = payload["y_test"]
+    threshold_grid = payload["threshold_grid"]
+    train_indices_by_stage = payload["train_indices_by_stage"]
+    start_time = float(payload["start_time"])
+
+    device = resolve_parallel_worker_device(args.device, label_index)
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True
+        torch.set_float32_matmul_precision("high")
+
+    print("\n" + "=" * 80)
+    print(f"Training boosted TTN for label {label_index + 1}/{total_labels}: {label_name}")
+    print("=" * 80)
+
+    y_train_label = y_train[:, label_index]
+    y_val_label = y_val[:, label_index]
+    y_test_label = y_test[:, label_index]
+
+    base_score = compute_base_logit(y_train_label)
+    train_logits = np.full(len(y_train_label), base_score, dtype=np.float32)
+    val_logits = np.full(len(y_val_label), base_score, dtype=np.float32)
+    test_logits = np.full(len(y_test_label), base_score, dtype=np.float32)
+
+    label_ensemble = BoostedTTNBinaryEnsemble(
+        base_score=base_score,
+        learning_rate=args.boost_learning_rate,
+    )
+
+    train_positive_rate = float(np.mean(y_train_label))
+    residual_balance_train = compute_residual_sample_weights(
+        y_train_label,
+        positive_weight_power=args.residual_pos_weight_power,
+        positive_weight_max=args.residual_pos_weight_max,
+    )
+    residual_balance_val = compute_residual_sample_weights(
+        y_val_label,
+        positive_weight_power=args.residual_pos_weight_power,
+        positive_weight_max=args.residual_pos_weight_max,
+    )
+    positive_residual_weight = (
+        float(residual_balance_train[y_train_label >= 0.5][0])
+        if np.any(y_train_label >= 0.5)
+        else 1.0
+    )
+    print(f"Positive rate:        {train_positive_rate:.4f}")
+    print(f"Base logit:           {base_score:.4f}")
+    print(f"Positive resid weight:{positive_residual_weight:.4f}")
+
+    log_rows: list[list[object]] = []
+
+    for stage in range(1, args.n_estimators + 1):
+        stage_seed = args.seed + 10_000 * label_index + stage
+        torch.manual_seed(stage_seed)
+
+        train_targets, train_weights = make_boosting_targets(
+            y_train_label,
+            train_logits,
+            mode=args.boost_target,
+            newton_eps=args.newton_eps,
+            newton_clip=args.newton_clip,
+        )
+        val_targets, val_weights = make_boosting_targets(
+            y_val_label,
+            val_logits,
+            mode=args.boost_target,
+            newton_eps=args.newton_eps,
+            newton_clip=args.newton_clip,
+        )
+
+        train_weights = train_weights * residual_balance_train
+        val_weights = val_weights * residual_balance_val
+
+        train_indices = train_indices_by_stage[stage - 1]
+
+        learner = build_weak_learner(args)
+        learner, weak_val_loss = train_one_weak_learner(
+            learner,
+            X_train=X_train,
+            train_targets=train_targets,
+            train_weights=train_weights,
+            train_indices=train_indices,
+            X_val=X_val,
+            val_targets=val_targets,
+            val_weights=val_weights,
+            args=args,
+            device=device,
+        )
+
+        use_amp = bool(args.amp and device.type == "cuda")
+        pred_train = predict_single_learner_logits(
+            learner,
+            X_train,
+            batch_size=args.predict_batch_size,
+            device=device,
+            use_amp=use_amp,
+        )
+        pred_val = predict_single_learner_logits(
+            learner,
+            X_val,
+            batch_size=args.predict_batch_size,
+            device=device,
+            use_amp=use_amp,
+        )
+        pred_test = predict_single_learner_logits(
+            learner,
+            X_test,
+            batch_size=args.predict_batch_size,
+            device=device,
+            use_amp=use_amp,
+        )
+
+        train_logits += args.boost_learning_rate * pred_train
+        val_logits += args.boost_learning_rate * pred_val
+        test_logits += args.boost_learning_rate * pred_test
+
+        stage_threshold, val_f1 = tune_binary_threshold(
+            y_val_label,
+            sigmoid_np(val_logits),
+            threshold_grid,
+        )
+        train_f1 = single_label_f1_at_threshold(y_train_label, train_logits, stage_threshold)
+        test_f1 = single_label_f1_at_threshold(y_test_label, test_logits, stage_threshold)
+
+        train_f1_0p5 = single_label_f1(y_train_label, train_logits)
+        val_f1_0p5 = single_label_f1(y_val_label, val_logits)
+        test_f1_0p5 = single_label_f1(y_test_label, test_logits)
+
+        learner = learner.to("cpu")
+        label_ensemble.add_learner(learner, freeze=True)
+
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
+
+        elapsed = time.time() - start_time
+        log_rows.append(
+            [
+                label_index,
+                label_name,
+                stage,
+                base_score,
+                train_positive_rate,
+                weak_val_loss,
+                stage_threshold,
+                train_f1,
+                val_f1,
+                test_f1,
+                train_f1_0p5,
+                val_f1_0p5,
+                test_f1_0p5,
+                elapsed,
+            ]
+        )
+
+        print(
+            f"Label {label_index:02d} {label_name:<24} | "
+            f"stage {stage:03d}/{args.n_estimators} | "
+            f"weak_val_mse={weak_val_loss:.6f} | "
+            f"thr={stage_threshold:.2f} | "
+            f"train_f1={train_f1:.4f} | "
+            f"val_f1={val_f1:.4f} | "
+            f"test_f1={test_f1:.4f} | "
+            f"val_f1@0.5={val_f1_0p5:.4f}"
+        )
+
+    label_ensemble = label_ensemble.to("cpu")
+
+    return {
+        "label_index": label_index,
+        "label_name": label_name,
+        "base_score": float(base_score),
+        "estimators": len(label_ensemble.learners),
+        "ensemble_state_dict": label_ensemble.state_dict(),
+        "train_logits": train_logits,
+        "val_logits": val_logits,
+        "test_logits": test_logits,
+        "log_rows": log_rows,
+    }
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Train XGBoost-like boosted TTN ensembles, one per functional group."
@@ -604,14 +816,14 @@ def build_parser() -> argparse.ArgumentParser:
     # Boosting arguments.
     parser.add_argument("--n-estimators", type=int, default=100)
     parser.add_argument("--boost-learning-rate", type=float, default=0.05)
-    parser.add_argument("--boost-subsample", type=float, default=0.8)
+    parser.add_argument("--boost-subsample", type=float, default=1.0)
     parser.add_argument("--boost-target", choices=["gradient", "newton"], default="newton")
     parser.add_argument("--newton-eps", type=float, default=1e-3)
     parser.add_argument("--newton-clip", type=float, default=10.0)
     parser.add_argument(
         "--residual-pos-weight-power",
         type=float,
-        default=0.5,
+        default=1.0,
         help=(
             "Positive-class weight power for residual MSE. "
             "0 disables it; 0.5 is a safe sqrt(neg/pos) weighting."
@@ -620,22 +832,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--residual-pos-weight-max",
         type=float,
-        default=50.0,
+        default=500.0,
         help="Maximum positive residual weight. Use None only by editing the script.",
     )
 
     # Weak learner training arguments.
-    parser.add_argument("--weak-epochs", type=int, default=10)
-    parser.add_argument("--weak-learning-rate", type=float, default=3e-4)
+    parser.add_argument("--weak-epochs", type=int, default=3)
+    parser.add_argument("--weak-learning-rate", type=float, default=3e-3)
     parser.add_argument("--weak-weight-decay", type=float, default=1e-6)
     parser.add_argument("--weak-early-stopping-patience", type=int, default=10)
     parser.add_argument("--weak-early-stopping-min-delta", type=float, default=1e-5)
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
 
     # Runtime / metrics.
-    parser.add_argument("--batch-size", type=int, default=8192)
-    parser.add_argument("--predict-batch-size", type=int, default=8192)
-    parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument("--batch-size", type=int, default=8096)
+    parser.add_argument("--predict-batch-size", type=int, default=8096)
+    parser.add_argument("--num-workers", type=int, default=1)
+    parser.add_argument("--parallel-labels", type=int, default=4)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda", "mps"], default="auto")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=False)
@@ -664,6 +877,8 @@ def main() -> None:
         raise ValueError("--boost-subsample must be in (0, 1].")
     if args.threshold_mode == "per_class" and args.threshold_target_metric == "f1_micro":
         raise ValueError("--threshold-mode per_class is incompatible with --threshold-target-metric f1_micro.")
+    if args.parallel_labels < 1:
+        raise ValueError("--parallel-labels must be >= 1.")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     config_path = args.output_dir / "run_config.json"
@@ -703,6 +918,7 @@ def main() -> None:
     print(f"Residual pos wt max:    {args.residual_pos_weight_max}")
     print(f"Weak learner epochs:    {args.weak_epochs}")
     print(f"One ensemble per label: yes")
+    print(f"Parallel labels:        {args.parallel_labels}")
 
     config_payload = vars(args).copy()
     config_payload["split_path"] = str(split_path)
@@ -769,6 +985,54 @@ def main() -> None:
 
     start_time = time.time()
 
+    precomputed_train_indices_by_label: list[list[np.ndarray]] = []
+    for label_index in range(len(label_names)):
+        y_train_label = y_train[:, label_index]
+        stage_indices: list[np.ndarray] = []
+        for _ in range(1, args.n_estimators + 1):
+            stage_indices.append(
+                make_stratified_boost_subsample_indices(
+                    y_train_label,
+                    args.boost_subsample,
+                    rng,
+                )
+            )
+        precomputed_train_indices_by_label.append(stage_indices)
+
+    payloads = []
+    for label_index, label_name in enumerate(label_names):
+        payloads.append(
+            {
+                "args": args,
+                "label_index": label_index,
+                "label_name": label_name,
+                "total_labels": len(label_names),
+                "X_train": X_train,
+                "X_val": X_val,
+                "X_test": X_test,
+                "y_train": y_train,
+                "y_val": y_val,
+                "y_test": y_test,
+                "threshold_grid": threshold_grid,
+                "train_indices_by_stage": precomputed_train_indices_by_label[label_index],
+                "start_time": start_time,
+            }
+        )
+
+    if args.parallel_labels == 1:
+        label_results = [train_one_label_boosted_ttn(payload) for payload in payloads]
+    else:
+        label_results = []
+        context = mp.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=args.parallel_labels, mp_context=context) as executor:
+            futures = [executor.submit(train_one_label_boosted_ttn, payload) for payload in payloads]
+            for future in as_completed(futures):
+                result = future.result()
+                print(f"Finished label {result['label_index']}: {result['label_name']}")
+                label_results.append(result)
+
+    label_results.sort(key=lambda item: int(item["label_index"]))
+
     with log_path.open("w", newline="", encoding="utf-8") as log_handle:
         writer = csv.writer(log_handle)
         writer.writerow(
@@ -789,168 +1053,29 @@ def main() -> None:
                 "elapsed_seconds",
             ]
         )
+        for result in label_results:
+            writer.writerows(result["log_rows"])
 
-        for label_index, label_name in enumerate(label_names):
-            print("\n" + "=" * 80)
-            print(f"Training boosted TTN for label {label_index + 1}/{len(label_names)}: {label_name}")
-            print("=" * 80)
+    for result in label_results:
+        label_index = int(result["label_index"])
+        base_score = float(result["base_score"])
+        estimator_count = int(result["estimators"])
 
-            y_train_label = y_train[:, label_index]
-            y_val_label = y_val[:, label_index]
-            y_test_label = y_test[:, label_index]
+        label_ensemble = BoostedTTNBinaryEnsemble(
+            base_score=base_score,
+            learning_rate=args.boost_learning_rate,
+        )
+        for _ in range(estimator_count):
+            label_ensemble.add_learner(build_weak_learner(args), freeze=True)
+        label_ensemble.load_state_dict(result["ensemble_state_dict"])
 
-            base_score = compute_base_logit(y_train_label)
-            train_logits = np.full(len(y_train_label), base_score, dtype=np.float32)
-            val_logits = np.full(len(y_val_label), base_score, dtype=np.float32)
-            test_logits = np.full(len(y_test_label), base_score, dtype=np.float32)
+        base_scores.append(base_score)
+        estimators_per_label.append(estimator_count)
+        boosted_model.add_label_ensemble(label_ensemble)
 
-            base_scores.append(float(base_score))
-            label_ensemble = BoostedTTNBinaryEnsemble(
-                base_score=base_score,
-                learning_rate=args.boost_learning_rate,
-            )
-
-            train_positive_rate = float(np.mean(y_train_label))
-            residual_balance_train = compute_residual_sample_weights(
-                y_train_label,
-                positive_weight_power=args.residual_pos_weight_power,
-                positive_weight_max=args.residual_pos_weight_max,
-            )
-            residual_balance_val = compute_residual_sample_weights(
-                y_val_label,
-                positive_weight_power=args.residual_pos_weight_power,
-                positive_weight_max=args.residual_pos_weight_max,
-            )
-            positive_residual_weight = float(residual_balance_train[y_train_label >= 0.5][0]) if np.any(y_train_label >= 0.5) else 1.0
-            print(f"Positive rate:        {train_positive_rate:.4f}")
-            print(f"Base logit:           {base_score:.4f}")
-            print(f"Positive resid weight:{positive_residual_weight:.4f}")
-
-            for stage in range(1, args.n_estimators + 1):
-                stage_seed = args.seed + 10_000 * label_index + stage
-                torch.manual_seed(stage_seed)
-
-                train_targets, train_weights = make_boosting_targets(
-                    y_train_label,
-                    train_logits,
-                    mode=args.boost_target,
-                    newton_eps=args.newton_eps,
-                    newton_clip=args.newton_clip,
-                )
-                val_targets, val_weights = make_boosting_targets(
-                    y_val_label,
-                    val_logits,
-                    mode=args.boost_target,
-                    newton_eps=args.newton_eps,
-                    newton_clip=args.newton_clip,
-                )
-
-                train_weights = train_weights * residual_balance_train
-                val_weights = val_weights * residual_balance_val
-
-                train_indices = make_stratified_boost_subsample_indices(
-                    y_train_label,
-                    args.boost_subsample,
-                    rng,
-                )
-
-                learner = build_weak_learner(args)
-                learner, weak_val_loss = train_one_weak_learner(
-                    learner,
-                    X_train=X_train,
-                    train_targets=train_targets,
-                    train_weights=train_weights,
-                    train_indices=train_indices,
-                    X_val=X_val,
-                    val_targets=val_targets,
-                    val_weights=val_weights,
-                    args=args,
-                    device=device,
-                )
-
-                use_amp = bool(args.amp and device.type == "cuda")
-                pred_train = predict_single_learner_logits(
-                    learner,
-                    X_train,
-                    batch_size=args.predict_batch_size,
-                    device=device,
-                    use_amp=use_amp,
-                )
-                pred_val = predict_single_learner_logits(
-                    learner,
-                    X_val,
-                    batch_size=args.predict_batch_size,
-                    device=device,
-                    use_amp=use_amp,
-                )
-                pred_test = predict_single_learner_logits(
-                    learner,
-                    X_test,
-                    batch_size=args.predict_batch_size,
-                    device=device,
-                    use_amp=use_amp,
-                )
-
-                train_logits += args.boost_learning_rate * pred_train
-                val_logits += args.boost_learning_rate * pred_val
-                test_logits += args.boost_learning_rate * pred_test
-
-                stage_threshold, val_f1 = tune_binary_threshold(
-                    y_val_label,
-                    sigmoid_np(val_logits),
-                    threshold_grid,
-                )
-                train_f1 = single_label_f1_at_threshold(y_train_label, train_logits, stage_threshold)
-                test_f1 = single_label_f1_at_threshold(y_test_label, test_logits, stage_threshold)
-
-                train_f1_0p5 = single_label_f1(y_train_label, train_logits)
-                val_f1_0p5 = single_label_f1(y_val_label, val_logits)
-                test_f1_0p5 = single_label_f1(y_test_label, test_logits)
-
-                learner = learner.to("cpu")
-                label_ensemble.add_learner(learner, freeze=True)
-
-                if device.type == "cuda":
-                    torch.cuda.empty_cache()
-
-                elapsed = time.time() - start_time
-                writer.writerow(
-                    [
-                        label_index,
-                        label_name,
-                        stage,
-                        base_score,
-                        train_positive_rate,
-                        weak_val_loss,
-                        stage_threshold,
-                        train_f1,
-                        val_f1,
-                        test_f1,
-                        train_f1_0p5,
-                        val_f1_0p5,
-                        test_f1_0p5,
-                        elapsed,
-                    ]
-                )
-                log_handle.flush()
-
-                print(
-                    f"Label {label_index:02d} {label_name:<24} | "
-                    f"stage {stage:03d}/{args.n_estimators} | "
-                    f"weak_val_mse={weak_val_loss:.6f} | "
-                    f"thr={stage_threshold:.2f} | "
-                    f"train_f1={train_f1:.4f} | "
-                    f"val_f1={val_f1:.4f} | "
-                    f"test_f1={test_f1:.4f} | "
-                    f"val_f1@0.5={val_f1_0p5:.4f}"
-                )
-
-            estimators_per_label.append(len(label_ensemble.learners))
-            boosted_model.add_label_ensemble(label_ensemble)
-
-            train_logits_all[:, label_index] = train_logits
-            val_logits_all[:, label_index] = val_logits
-            test_logits_all[:, label_index] = test_logits
+        train_logits_all[:, label_index] = result["train_logits"]
+        val_logits_all[:, label_index] = result["val_logits"]
+        test_logits_all[:, label_index] = result["test_logits"]
 
     print("\nTuning thresholds on validation probabilities...")
     threshold_grid = build_threshold_grid(args.threshold_grid_step)
