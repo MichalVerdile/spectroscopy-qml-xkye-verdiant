@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 TITLE = "IR"
 SOURCES = {
-    "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/ir/mps_classifier/results_600/training_log.csv"),
-    "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/ir/tree_tensor_network/results_600/training_log.csv"),
+    "MPS": ("epoch_csv", ROOT / "artifacts/Error_Analyse/MPS/IR/training_log.csv"),
+    "TTN": ("epoch_csv", ROOT / "artifacts/Error_Analyse/TTN/IR/training_log.csv"),
     "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/ir/original/training_logs.csv"),
     "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models_600/ir/training_logs.csv"),
 }
@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts/plots/ir_learning_curves.png",
+        default=ROOT / "artifacts/plots/learning_curves/ir_learning_curves.png",
         help="Output PNG path.",
     )
     return parser.parse_args()
@@ -65,6 +65,7 @@ READERS = {
     "cnn_csv": read_cnn_log,
     "xgb_csv": read_xgb_log,
 }
+
 
 
 def load_series(split: str) -> tuple[dict[str, tuple[list[float], list[float], list[float]]], list[str]]:

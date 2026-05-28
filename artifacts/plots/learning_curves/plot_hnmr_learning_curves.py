@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 TITLE = "H-NMR"
 SOURCES = {
-    "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/training_log.csv"),
-    "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/training_log.csv"),
+    "MPS": ("epoch_csv", ROOT / "artifacts/Error_Analyse/MPS/H-NMR/training_log.csv"),
+    "TTN": ("epoch_csv", ROOT / "artifacts/Error_Analyse/TTN/H-NMR/training_log.csv"),
     "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/hnmr/original/training_logs.csv"),
     "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models/h_nmr/training_logs.csv"),
 }
@@ -65,6 +65,7 @@ READERS = {
     "cnn_csv": read_cnn_log,
     "xgb_csv": read_xgb_log,
 }
+
 
 
 def load_series(split: str) -> tuple[dict[str, tuple[list[float], list[float], list[float]]], list[str]]:

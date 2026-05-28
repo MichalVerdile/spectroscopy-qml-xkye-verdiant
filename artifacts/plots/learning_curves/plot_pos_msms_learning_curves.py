@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 TITLE = "MS/MS+"
 SOURCES = {
-    "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_600/training_log.csv"),
-    "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_pos/tree_tensor_network/results_600/training_log.csv"),
+    "MPS": ("epoch_csv", ROOT / "artifacts/Error_Analyse/MPS/MSMS+/training_log.csv"),
+    "TTN": ("epoch_csv", ROOT / "artifacts/Error_Analyse/TTN/MSMS+/training_log.csv"),
     "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/pos_msms/original/training_logs.csv"),
     "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models/pos_msms/training_logs.csv"),
 }
@@ -65,6 +65,7 @@ READERS = {
     "cnn_csv": read_cnn_log,
     "xgb_csv": read_xgb_log,
 }
+
 
 
 def load_series(split: str) -> tuple[dict[str, tuple[list[float], list[float], list[float]]], list[str]]:

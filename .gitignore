@@ -82,6 +82,10 @@ tmp/
 temp/
 *.tmp
 
+# Local analysis artifacts
+artifacts/Error_Analyse/
+artifacts/Error_analyse/
+
 # Documentation builds
 docs/_build/
 docs/.doctrees/

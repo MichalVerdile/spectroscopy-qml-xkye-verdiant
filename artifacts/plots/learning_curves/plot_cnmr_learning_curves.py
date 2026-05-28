@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 TITLE = "C-NMR"
 SOURCES = {
-    "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/cnmr/mps_classifier_cnmr/results_600/training_log.csv"),
-    "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/cnmr/tree_tensor_network/results_600/training_log.csv"),
+    "MPS": ("epoch_csv", ROOT / "artifacts/Error_Analyse/MPS/C-NMR/training_log.csv"),
+    "TTN": ("epoch_csv", ROOT / "artifacts/Error_Analyse/TTN/C-NMR/training_log.csv"),
     "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/cnmr/original/training_logs.csv"),
     "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models_600/c_nmr/training_logs.csv"),
 }
@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts/plots/c_nmr_learning_curves.png",
+        default=ROOT / "artifacts/plots/learning_curves/c_nmr_learning_curves.png",
         help="Output PNG path.",
     )
     return parser.parse_args()
@@ -65,6 +65,7 @@ READERS = {
     "cnn_csv": read_cnn_log,
     "xgb_csv": read_xgb_log,
 }
+
 
 
 def load_series(split: str) -> tuple[dict[str, tuple[list[float], list[float], list[float]]], list[str]]:

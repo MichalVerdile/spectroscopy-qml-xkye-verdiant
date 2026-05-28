@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[3]
 TITLE = "MS/MS-"
 SOURCES = {
-    "MPS": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/training_log.csv"),
-    "TTN": ("epoch_csv", ROOT / "src/spectroscopy_qml/msms_neg/tree_tensor_network/results_600/training_log.csv"),
+    "MPS": ("epoch_csv", ROOT / "artifacts/Error_Analyse/MPS/MSMS-/training_log.csv"),
+    "TTN": ("epoch_csv", ROOT / "artifacts/Error_Analyse/TTN/MSMS-/training_log.csv"),
+    "CNN": ("cnn_csv", ROOT / "benchmark/cnn/models/neg_msms/original/training_logs.csv"),
     "XGBoost": ("xgb_csv", ROOT / "benchmark/xgb/models/neg_msms/training_logs.csv"),
 }
 
@@ -51,10 +52,20 @@ def read_xgb_log(path: Path, split: str) -> tuple[list[float], list[float], list
     return x, micro, macro
 
 
+def read_cnn_log(path: Path, split: str) -> tuple[list[float], list[float], list[float]]:
+    rows = [row for row in read_csv(path) if row.get("event") == "epoch_finished" and row.get("epoch")]
+    x = [float(row["epoch"]) for row in rows]
+    micro = [float(row[f"{split}_f1_micro"]) for row in rows]
+    macro = [float(row[f"{split}_f1_macro"]) for row in rows]
+    return x, micro, macro
+
+
 READERS = {
     "epoch_csv": read_epoch_log,
+    "cnn_csv": read_cnn_log,
     "xgb_csv": read_xgb_log,
 }
+
 
 
 def load_series(split: str) -> tuple[dict[str, tuple[list[float], list[float], list[float]]], list[str]]:
