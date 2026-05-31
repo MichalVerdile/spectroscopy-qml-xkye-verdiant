@@ -1,0 +1,233 @@
+\section{Error analysis across modalities}
+\label{app:error_analysis_all}
+
+To complement the final test scores and the learning curves, we inspect the
+label-wise error structure of all models across all five modalities.
+For each model and modality, the corresponding plots report the missed-positive
+error rate for each functional group, defined as the proportion of false
+negatives relative to the number of positive test examples for that label.
+This view is useful because aggregate micro-F1 can remain comparatively strong
+even when several functional groups are predicted poorly.
+All error-analysis plots are reported on the held-out test set rather than on
+the validation set, since the validation split is already used for model
+selection and early stopping.
+
+\subsection{IR}
+
+IR yields the most balanced error profiles overall.
+This is consistent with the main quantitative comparison, where the adapted CNN
+is strongest and MPS is the closest tensor-network competitor.
+Across all four models, the same groups repeatedly appear among the most
+difficult labels, most notably thial, azo compound, hydrazone, phosphine, and
+sulfoxide.
+The key point is therefore not that one model exhibits a unique IR-specific
+failure mode, but that the residual IR errors are concentrated in a small set of
+chemically difficult labels whose spectral signatures overlap strongly with
+related groups.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_IR_test_error_analysis_detailed.png}
+    \caption{Detailed IR test-set error analysis for the adapted CNN. The CNN yields the most favorable overall IR error profile, but still shows concentrated failure on a small set of difficult functional groups, especially thial, azo compound, hydrazone, phosphine, and sulfoxide.}
+    \label{fig:error_analysis_ir_cnn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/MPS_IR_test_error_analysis_detailed.png}
+    \caption{Detailed IR test-set error analysis for MPS. MPS remains the closest tensor-network competitor to the CNN on IR and shows a broadly similar pattern of difficult labels, indicating that the remaining errors are largely shared across architectures rather than being MPS-specific.}
+    \label{fig:error_analysis_ir_mps}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/TTN_IR_test_error_analysis_detailed.png}
+    \caption{Detailed IR test-set error analysis for TTN. TTN exhibits a broader tail of high-error labels than CNN and MPS, but the dominant failure cases remain concentrated in the same chemically difficult groups.}
+    \label{fig:error_analysis_ir_ttn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/XGB_IR_test_error_analysis_detailed.png}
+    \caption{Detailed IR test-set error analysis for XGBoost. XGBoost shows the weakest IR macro-F1 among the evaluated models, and its error profile confirms that a larger fraction of labels falls into the severe-error regime than for CNN and MPS.}
+    \label{fig:error_analysis_ir_xgb}
+\end{figure}
+
+\subsection{$^{1}$H-NMR}
+
+For $^{1}$H-NMR, all models show substantially higher label-wise error than on
+IR, with a visibly larger mass of labels in the high-error regime.
+The adapted CNN remains the most balanced model overall, while TTN and XGBoost
+show broader tails of severe per-label errors and MPS remains weaker on many
+minority labels.
+At the same time, the difficult functional groups are again highly consistent
+across models, especially sulfonic acid, thial, isothiocyanate, isocyanate, and
+thiol.
+This suggests that the main challenge is not merely optimization instability,
+but the limited separability of several functional groups under the present
+$^{1}$H-NMR representation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_H-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for the adapted CNN. Among the evaluated models, the CNN retains the most balanced overall $^{1}$H-NMR error profile, although several rare and chemically specific labels still remain highly error-prone.}
+    \label{fig:error_analysis_hnmr_cnn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/MPS_H-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for MPS. MPS shows substantial difficulty on many minority labels and a broad concentration of errors in the high-error regime, indicating limited separability under the present representation.}
+    \label{fig:error_analysis_hnmr_mps}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/TTN_H-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for TTN. TTN improves over MPS on several labels but still exhibits a large set of severe per-label failures, especially for rare and chemically specific groups.}
+    \label{fig:error_analysis_hnmr_ttn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/XGB_H_NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for XGBoost. XGBoost remains competitive on aggregate scores, but the error plot shows that this performance is still accompanied by a broad tail of labels with very high missed-positive error rates.}
+    \label{fig:error_analysis_hnmr_xgb}
+\end{figure}
+
+\subsection{$^{13}$C-NMR}
+
+The $^{13}$C-NMR error analysis mirrors the main results in the body of the
+paper.
+XGBoost shows the most favorable overall label-wise error profile, while both
+tensor-network models remain clearly more robust than the adapted CNN, whose
+performance collapses for many minority labels.
+MPS and TTN reduce the number of near-complete failures relative to the CNN, but
+still retain a substantial set of difficult functional groups.
+The most problematic labels again include sulfonic acid, thial,
+isothiocyanate, azo compound, and phosphine, indicating that the difficulty of
+$^{13}$C-NMR is concentrated in a recurring subset of rare and chemically
+specific targets.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_C-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{13}$C-NMR test-set error analysis for the adapted CNN. The CNN exhibits a pronounced collapse on many minority labels, confirming that its weak macro-F1 on this modality is driven by broad per-label failure rather than a small number of isolated outliers.}
+    \label{fig:error_analysis_cnmr_cnn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/MPS_C-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{13}$C-NMR test-set error analysis for MPS. Relative to the adapted CNN, MPS reduces the number of near-complete label failures and produces a more graded error distribution, which is consistent with its substantially higher macro-F1.}
+    \label{fig:error_analysis_cnmr_mps}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/TTN_C-NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{13}$C-NMR test-set error analysis for TTN. TTN yields a clearly more robust per-label profile than the adapted CNN and remains competitive with MPS, especially in reducing broad collapse on rare labels.}
+    \label{fig:error_analysis_cnmr_ttn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/XGB_C_NMR_test_error_analysis_detailed.png}
+    \caption{Detailed $^{13}$C-NMR test-set error analysis for XGBoost. XGBoost shows the most favorable overall label-wise error profile on this modality, which matches its strongest aggregate performance in the main quantitative comparison.}
+    \label{fig:error_analysis_cnmr_xgb}
+\end{figure}
+
+\subsection{MS/MS$^{+}$}
+
+Positive-ion MS/MS is markedly more difficult than IR and both NMR modalities.
+Among the four models, MPS exhibits the least collapsed label-wise error
+distribution, whereas CNN, TTN, and XGBoost place a large fraction of
+functional groups close to complete missed-positive failure.
+This observation is consistent with the learning curves, where no model obtains
+uniformly strong performance across both common and rare labels.
+Under the current one-dimensional representation, MPS preserves some
+minority-label signal, but the modality remains challenging for all evaluated
+architectures.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_MSMS+_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{+}$ test-set error analysis for the adapted CNN. The CNN assigns extremely high missed-positive error to a large portion of the label space, indicating that the present representation is poorly aligned with its inductive bias on positive-ion fragmentation spectra.}
+    \label{fig:error_analysis_msms_pos_cnn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/MPS_MSMS+_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{+}$ test-set error analysis for MPS. MPS produces the most graded error distribution among the four models and retains at least partial discrimination for several minority labels, although the modality remains difficult overall.}
+    \label{fig:error_analysis_msms_pos_mps}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/TTN_MSMS+_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{+}$ test-set error analysis for TTN. TTN shows a broad concentration of labels in the severe-error regime, indicating that hierarchical aggregation alone is insufficient to recover reliable minority-label performance under the current representation.}
+    \label{fig:error_analysis_msms_pos_ttn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/XGB_MSMS+_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{+}$ test-set error analysis for XGBoost. XGBoost behaves similarly to CNN and TTN in showing near-complete failure for a large fraction of labels, which suggests that the main bottleneck lies in the representation rather than in a specific model family.}
+    \label{fig:error_analysis_msms_pos_xgb}
+\end{figure}
+
+\subsection{MS/MS$^{-}$}
+
+Negative-ion MS/MS shows essentially the same global pattern as positive-ion
+MS/MS.
+MPS again yields the most graded error distribution, while the remaining three
+models are dominated by severe per-label failures.
+The persistence of this structure across both ionization modes suggests that the
+main bottleneck is not a single architecture choice, but the difficulty of
+representing sparse fragmentation spectra in the current fixed-length
+one-dimensional setup.
+For this reason, improvements on MS/MS are likely to depend at least as much on
+representation design as on the choice of classifier.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_MSMS-_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{-}$ test-set error analysis for the adapted CNN. As in positive-ion mode, the CNN places most labels in the severe-error regime, indicating broad failure on sparse fragmentation spectra.}
+    \label{fig:error_analysis_msms_neg_cnn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/MPS_MSMS-_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{-}$ test-set error analysis for MPS. MPS again yields the least collapsed error distribution and preserves the most interpretable label-wise structure, although performance remains far from strong in absolute terms.}
+    \label{fig:error_analysis_msms_neg_mps}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/TTN_MSMS-_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{-}$ test-set error analysis for TTN. TTN remains dominated by severe per-label failures, showing that the current hierarchy alone does not resolve the representation challenge of negative-ion fragmentation spectra.}
+    \label{fig:error_analysis_msms_neg_ttn}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{images/Error_Analysis/XGB_MSMS-_test_error_analysis_detailed.png}
+    \caption{Detailed MS/MS$^{-}$ test-set error analysis for XGBoost. XGBoost again shows broad collapse across most labels, reinforcing the conclusion that improvements on MS/MS will likely require representation changes rather than only classifier replacement.}
+    \label{fig:error_analysis_msms_neg_xgb}
+\end{figure}
+
+Overall, the error-analysis plots reinforce three conclusions from the main
+paper.
+First, IR is the most favorable modality, with relatively balanced error
+profiles and shared residual failure modes across models.
+Second, both NMR modalities remain substantially harder, especially for rare and
+chemically specific functional groups.
+Third, the MS/MS modalities are the most difficult setting in this benchmark,
+and their weakness is broad enough across models that improving the input
+representation appears at least as important as changing the classifier.
+Across all modalities, labels such as sulfonic acid, thial, azo compound,
+hydrazone, isothiocyanate, and phosphine repeatedly appear among the most
+difficult groups, indicating that the dominant sources of error are tied to the
+chemical structure of the benchmark rather than to a single model family.

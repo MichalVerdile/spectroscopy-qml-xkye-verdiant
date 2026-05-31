@@ -1,0 +1,246 @@
+\subsection{Error Analysis}
+\label{subsec:error-analysis}
+
+To complement the aggregate evaluation metrics, a detailed error analysis was
+performed on the held-out test set for all four models and all five spectral
+modalities. The analysis focuses on the missed-positive error rate for each
+functional group, defined as the proportion of false negatives relative to the
+number of positive samples for that label. This perspective is particularly
+informative in the present multi-label setting, because global metrics such as
+micro-F1 can remain comparatively high even when individual functional groups
+are predicted poorly. Reporting the error analysis on the test set is
+methodologically preferable to using the validation set, as the latter was used
+during model selection and threshold tuning and therefore does not provide the
+same degree of independence.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/CNN_IR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/MPS_IR_test_error_analysis_detailed.png}
+    \end{minipage}
+
+    \vspace{0.5em}
+
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/TTN_IR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/XGB_IR_test_error_analysis_detailed.png}
+    \end{minipage}
+    \caption{Test-set error analysis for IR spectra across all four models.}
+    \label{fig:error-analysis-ir}
+\end{figure}
+
+\subsubsection{IR}
+
+Among all modalities, IR spectra yielded the most balanced error profiles. The
+CNN achieved the strongest overall result with a macro-F1 score of 0.681 and a
+mean per-label error rate of 35.3\%, closely followed by the MPS with a
+macro-F1 of 0.671 and a mean error rate of 36.1\%. The TTN remained competitive
+in terms of average error distribution, but its macro-F1 decreased to 0.564,
+indicating less reliable performance on the more difficult and less frequent
+labels. XGBoost showed the weakest IR performance, with both a lower macro-F1
+score (0.537) and a clearly larger fraction of severely affected groups.
+
+Despite the comparatively strong results for IR, several functional groups were
+consistently difficult across models. In particular, thial and azo compound
+showed very high missed-positive rates for all architectures, while hydrazone,
+phosphine, sulfoxide, and acid anhydride also appeared repeatedly among the
+most error-prone labels. This indicates that the remaining IR errors are not
+distributed uniformly, but are concentrated in a small subset of chemically
+challenging groups.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/CNN_H-NMR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/MPS_H-NMR_test_error_analysis_detailed.png}
+    \end{minipage}
+
+    \vspace{0.5em}
+
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/TTN_H-NMR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/XGB_H_NMR_test_error_analysis_detailed.png}
+    \end{minipage}
+    \caption{Test-set error analysis for $^1$H-NMR spectra across all four models.}
+    \label{fig:error-analysis-hnmr}
+\end{figure}
+
+\subsubsection{$^1$H-NMR}
+
+The error analysis for $^1$H-NMR reveals a markedly more difficult prediction
+task than IR. The CNN again produced the strongest overall result, combining the
+highest macro-F1 score (0.493) with the lowest mean label-wise error rate
+(59.7\%). The remaining models performed substantially worse in terms of class
+balance. XGBoost reached a macro-F1 of 0.368, TTN 0.314, and MPS 0.256, while
+all three showed broad error concentration across many labels. Notably, the MPS
+displayed a mean error rate similar to the CNN, but its substantially lower
+macro-F1 indicates that its remaining predictions were less evenly distributed
+across functional groups.
+
+Across all four models, sulfonic acid and thial were consistently among the
+most difficult labels, frequently reaching error rates close to 100\%. Further
+recurring failure cases included isothiocyanate, isocyanate, thiol, acid
+anhydride, and hydrazone. Overall, the $^1$H-NMR results suggest that the
+models can capture some global signal structure, but still struggle to separate
+multiple chemically similar functional groups with sufficient robustness.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/CNN_C-NMR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/MPS_C-NMR_test_error_analysis_detailed.png}
+    \end{minipage}
+
+    \vspace{0.5em}
+
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/TTN_C-NMR_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/XGB_C_NMR_test_error_analysis_detailed.png}
+    \end{minipage}
+    \caption{Test-set error analysis for $^{13}$C-NMR spectra across all four models.}
+    \label{fig:error-analysis-cnmr}
+\end{figure}
+
+\subsubsection{$^{13}$C-NMR}
+
+The $^{13}$C-NMR setting exhibits a mixed picture and highlights the importance
+of complementing global scores with label-wise error analysis. XGBoost achieved
+the best macro-F1 score in this modality (0.413), while MPS showed the lowest
+mean per-label error rate (58.1\%). TTN followed closely behind with a mean
+error of 63.3\%, whereas the CNN performed weakest overall, with a macro-F1 of
+only 0.150 and a mean error rate of 82.2\%. This divergence between macro-F1
+and average per-label error shows that some models are better at maintaining
+balanced predictions across labels, while others produce lower average error
+rates but remain inconsistent for specific functional groups.
+
+The most difficult $^{13}$C-NMR labels were again highly consistent across
+models. Sulfonic acid and thial were universally problematic, and high error
+rates were also observed for isothiocyanate, azo compound, phosphine, thiol,
+and isocyanate. Compared with IR, the error distributions were shifted more
+strongly toward high values, indicating that $^{13}$C-NMR alone provides less
+discriminative information for a large fraction of the target groups.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/CNN_MSMS+_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/MPS_MSMS+_test_error_analysis_detailed.png}
+    \end{minipage}
+
+    \vspace{0.5em}
+
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/TTN_MSMS+_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/XGB_MSMS+_test_error_analysis_detailed.png}
+    \end{minipage}
+    \caption{Test-set error analysis for positive-ion MS/MS spectra across all four models.}
+    \label{fig:error-analysis-msms-pos}
+\end{figure}
+
+\subsubsection{MS/MS (+)}
+
+For positive-ion MS/MS spectra, the error analysis reveals a clear separation
+between MPS and the remaining three models. MPS achieved the best macro-F1
+score (0.175) and by far the lowest mean per-label error rate (44.8\%), whereas
+CNN, TTN, and XGBoost all exhibited mean error rates above 85\% and extremely
+high medians close to 100\%. In practical terms, this means that for these
+three models the majority of functional groups were missed almost completely on
+the test set, even though their micro-F1 scores remained superficially higher
+than the macro-F1 values would suggest.
+
+The MPS error profile for MS/MS (+) was still far from ideal, but it was much
+more graded and therefore more interpretable than those of the other models.
+Its most difficult labels included sulfonic acid, hydrazone, enol, alcohol,
+alkene, and phenol. By contrast, CNN, TTN, and XGBoost assigned near-maximal
+error rates to a large portion of the label space, indicating that these models
+failed to extract sufficiently transferable representations from the positive-ion
+fragmentation patterns.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/CNN_MSMS-_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/MPS_MSMS-_test_error_analysis_detailed.png}
+    \end{minipage}
+
+    \vspace{0.5em}
+
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/TTN_MSMS-_test_error_analysis_detailed.png}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.49\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{images/Error_Analysis/XGB_MSMS-_test_error_analysis_detailed.png}
+    \end{minipage}
+    \caption{Test-set error analysis for negative-ion MS/MS spectra across all four models.}
+    \label{fig:error-analysis-msms-neg}
+\end{figure}
+
+\subsubsection{MS/MS (-)}
+
+The negative-ion MS/MS results closely mirror the behavior observed for MS/MS
+(+). MPS again achieved the most favorable error distribution, with the best
+macro-F1 score (0.171) and the lowest mean per-label error rate (43.2\%).
+CNN, TTN, and XGBoost again showed a near-collapse of label-wise performance,
+with mean error rates between 86.1\% and 89.4\% and medians close to 100\%.
+This indicates that the weak aggregate performance of these models on MS/MS is
+not caused by a few isolated outlier labels, but by a broad and systematic
+failure across most of the functional group space.
+
+Within the MPS model, the main sources of error for MS/MS (-) were sulfonic
+acid, hydrazone, alcohol, ketone, sulfide, phenol, imine, and ester. While this
+still reflects substantial difficulty, the distribution was considerably less
+extreme than for the competing approaches. Taken together, the MS/MS analyses
+show that MPS is the only model in this comparison that retained a meaningful
+degree of discrimination for both ionization modes.
+
+Overall, the test-set error analysis confirms three central observations. First,
+IR is the most informative and most stable modality, with CNN and MPS producing
+the most balanced results. Second, $^1$H-NMR and $^{13}$C-NMR are substantially
+more challenging, with performance strongly depending on the model and with
+recurrent failure cases for rare and chemically specific labels. Third, the
+MS/MS modalities are by far the hardest setting in this benchmark, and only MPS
+maintains a label-wise error profile that remains meaningfully interpretable.
+Across nearly all modalities, labels such as sulfonic acid, thial, azo
+compound, isothiocyanate, hydrazone, and phosphine repeatedly appeared among the
+most difficult groups, suggesting that these functional groups represent a
+persistent source of ambiguity across both classical and tensor-network-based
+approaches.
