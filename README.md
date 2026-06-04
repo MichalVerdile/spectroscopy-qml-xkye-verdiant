@@ -1,248 +1,246 @@
 # Spectroscopy-QML Thesis
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![Type checked: mypy](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://github.com/python/mypy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Research Question:** Can we leverage the quantum-mechanical origins of spectroscopic data to design better ML models?
+> Research: leverage quantum-mechanical origins of spectroscopic data to design better ML models.
 
-This repository contains the research code and experiments for exploring domain-specific machine learning architectures for spectroscopic data analysis.
+This repository contains code and experiments for functional-group classification from multi-modal spectroscopic data (H-NMR, C-NMR, IR, MS/MS).
 
-## Project Overview
+**Quick links:** [benchmark scripts](benchmark/), [configs](configs/), [data layout](data/), [src package](src/)
 
-We investigate machine learning approaches for multi-modal spectroscopic data including:
-- **H-NMR** (Hydrogen Nuclear Magnetic Resonance)
-- **C-NMR** (Carbon-13 Nuclear Magnetic Resonance)
-- **IR** (Infrared Spectroscopy)
-- **MS/MS** (Tandem Mass Spectrometry - positive/negative modes)
+**Reproducible environment (first)**
 
-**Task:** Functional group classification (37 classes) from spectroscopic signatures
+- **Python:** 3.12 recommended.
+- Preferred: create an isolated virtual environment and install pinned dependencies from `requirements.txt`.
 
-**Data Format:** Parquet files containing spectra + SMILES molecular representations
+Windows PowerShell (recommended for Windows users):
 
-## Repository Structure
+```powershell
+# create venv with Python 3.12
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 
-```
-spectroscopy-qml-thesis/
-├── src/spectroscopy_qml/      # Main Python package (placeholder modules)
-│   ├── __init__.py
-│   ├── data/                  # Data loading and preprocessing
-│   ├── models/                # Model architectures
-│   ├── training/              # Training loops and utilities
-│   ├── evaluation/            # Metrics and evaluation
-│   └── utils/                 # Shared utilities (logging, config, etc.)
-├── jupyter/                   # Jupyter notebooks for exploration
-├── benchmark/                 # Baseline implementations
-│   ├── run_xgb_baseline.py    # XGBoost baseline (placeholder)
-│   └── run_cnn_jung_baseline.py  # CNN baseline (placeholder)
-├── tests/                     # Unit and integration tests
-├── configs/                   # YAML configuration files for experiments
-├── data/                      # Data directory (not tracked by git)
-│   ├── raw/                   # Original Parquet files
-│   ├── processed/             # Preprocessed data
-│   └── README.md              # Data documentation
-├── results/                   # Experiment outputs (not tracked by git)
-├── .github/                   # GitHub Actions CI and templates
-├── pyproject.toml             # Project metadata and tool configs
-├── requirements.txt           # Pinned dependencies
-├── .pre-commit-config.yaml    # Pre-commit hooks configuration
-└── README.md                  # This file
+# install pinned dependencies
+pip install -r requirements.txt
+
+# (optional) install dev extras if present
+pip install -e .[dev]
 ```
 
-## Quick Start
+macOS / Linux (bash):
 
-### Prerequisites
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .[dev]
+```
 
-- **Python 3.12** (required)
-- **uv** (recommended) or pip for dependency management
-- Git for version control
+Notes:
+- If you use `uv` as an alternative, replace the `pip` steps with `uv pip install -r requirements.txt` as needed.
+- Some experiments may require GPU drivers and CUDA for PyTorch; see `requirements.txt` for the PyTorch spec and install the matching CUDA build if you plan to run on GPU.
 
-### Installation
+**Reproducibility: run main experiments**
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/spectroscopy-qml-thesis.git
-   cd spectroscopy-qml-thesis
+This project provides baseline experiment scripts for XGBoost and CNN benchmarks. Two convenient entry points:
+
+- XGBoost baseline (Python):
+
+```powershell
+# PowerShell / bash
+python benchmark/xgb/scripts/run_xgb_baseline.py --config configs/xgb_baseline.yaml
+```
+
+or via the included shell helper: [benchmark/xgb/run_xgboost.sh](benchmark/xgb/run_xgboost.sh#L1)
+
+- CNN baseline (Python):
+
+```powershell
+python benchmark/cnn/scripts/run_cnn_jung_baseline.py --config configs/cnn_baseline.yaml
+```
+
+or via the helper: [benchmark/cnn/run_cnn.sh](benchmark/cnn/run_cnn.sh#L1)
+
+Recommended reproducible workflow:
+
+1. Prepare data under `data/` as described below.
+2. Edit or confirm experiment settings in the YAML config (examples in `configs/`).
+3. Run the script above and capture `results/` output (each script writes outputs under `benchmark/.../results/` or a configured `results/` path).
+
+If you need to run cross-validation or k-fold experiments, check the `configs/` files and the `scripts/` subfolders under `benchmark/` for the available flags.
+
+**Reproduce MPS and TTN experiments (per modality)**
+
+The codebase contains dedicated entry scripts for the MPS and TTN experiments for each modality. Run the scripts below from the repository root. Each `run.py` or `train.py` exposes `--help` for available options; common useful flags are `--device` (auto|cpu|cuda|mps), `--data-dir`, and `--output-dir`.
+
+- C‑NMR
+
+   - MPS (run / train):
+
+   ```powershell
+   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --train
+   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --evaluate
+   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --check
    ```
 
-2. **Install uv** (if not already installed)
-   ```bash
-   # macOS/Linux
-   curl -LsSf https://astral.sh/uv/install.sh | sh
+   - TTN (experiment 10.2):
 
-   # Windows (PowerShell)
-   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```powershell
+   python src/spectroscopy_qml/cnmr/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/cnmr_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/cnmr/tree_tensor_network/train.py --help
    ```
 
-3. **Create a virtual environment and install dependencies**
-   ```bash
-   # Create venv with Python 3.12
-   uv venv --python 3.12
+- H‑NMR
 
-   # Activate the environment
-   # Windows (PowerShell):
-   .venv\Scripts\Activate.ps1
-   # Windows (CMD):
-   .venv\Scripts\activate.bat
-   # macOS/Linux:
-   source .venv/bin/activate
+   - MPS:
 
-   # Install all dependencies (including dev tools)
-   uv pip install -r requirements.txt
-   uv pip install -e ".[dev]"
+   ```powershell
+   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --train
+   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --evaluate
+   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --check
    ```
 
-4. **Set up pre-commit hooks** (optional but recommended)
-   ```bash
-   pre-commit install
+   - TTN:
+
+   ```powershell
+   python src/spectroscopy_qml/hnmr/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/hnmr_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/hnmr/tree_tensor_network/train.py --help
    ```
 
-## Development Workflow
+- IR
 
-### Running Quality Checks
+   - MPS (two variants exist: `mps_classifier` and `mps_classifier_over` — use the one matching your config):
 
-```bash
-# Lint code (auto-fix when possible)
-ruff check src/ benchmark/ tests/ --fix
+   ```powershell
+   python src/spectroscopy_qml/ir/mps_classifier/run.py --train
+   python src/spectroscopy_qml/ir/mps_classifier/run.py --evaluate
+   ```
 
-# Format code
-ruff format src/ benchmark/ tests/
+   - TTN:
 
-# Type checking
-mypy src/
+   ```powershell
+   python src/spectroscopy_qml/ir/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/ir_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/ir/tree_tensor_network/train.py --help
+   ```
 
-# Run tests with coverage
-pytest tests/ --cov=src --cov-report=term-missing
+- MS/MS (positive)
 
-# Run all checks at once (as done in CI)
-ruff check src/ benchmark/ tests/ && \
-ruff format --check src/ benchmark/ tests/ && \
-mypy src/ && \
-pytest tests/
+   - MPS:
+
+   ```powershell
+   python src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/run.py --train
+   python src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/run.py --evaluate
+   ```
+
+   - TTN:
+
+   ```powershell
+   python src/spectroscopy_qml/msms_pos/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/msms_pos_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/msms_pos/tree_tensor_network/train.py --help
+   ```
+
+- MS/MS (negative)
+
+   - MPS:
+
+   ```powershell
+   python src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/run.py --train
+   python src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/run.py --evaluate
+   ```
+
+   - TTN:
+
+   ```powershell
+   python src/spectroscopy_qml/msms_neg/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/msms_neg_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/msms_neg/tree_tensor_network/train.py --help
+   ```
+
+Tips:
+
+- Use `--check` (for MPS run scripts) to validate dependencies and quick model sanity checks before launching full training.
+- For reproducible results, fix `--seed` where available and capture the used config file (most training scripts write the args/config to the `--output-dir`).
+- To run on GPU, set `--device cuda` and ensure your PyTorch installation matches your CUDA drivers.
+
+**Repository structure (top-level)**
+
+```
+LICENSE
+pyproject.toml
+requirements.txt
+benchmark/
+   cnn/
+      run_cnn.sh
+      scripts/
+         run_cnn_jung_baseline.py
+      models/
+   xgb/
+      run_xgboost.sh
+      scripts/
+         run_xgb_baseline.py
+      models/
+configs/
+data/
+   raw/
+   processed/
+src/
+   spectroscopy_qml/
+tests/
+README.md
 ```
 
-### Working with Jupyter Notebooks
+**Data layout**
 
-```bash
-# Start Jupyter Lab
-jupyter lab
+Place your data under `data/` (not tracked by git). Example:
 
-# The kernel will use the project's virtual environment
-# Notebooks should be placed in the jupyter/ directory
+```
+data/
+├── raw/                # original parquet files
+└── processed/          # generated preprocessed datasets used for training
 ```
 
-**Note:** Jupyter notebooks are gitignored by default to avoid committing large outputs. Use `jupyter nbconvert --clear-output` if you need to commit notebooks.
-
-## Dependency Management
-
-This project uses **uv** for fast, reliable dependency management with pinned versions in `requirements.txt`.
-
-### Updating Dependencies
-
-```bash
-# Update all dependencies to latest compatible versions
-uv pip compile pyproject.toml -o requirements.txt --upgrade
-
-# Add a new dependency to pyproject.toml first, then:
-uv pip compile pyproject.toml -o requirements.txt
-uv pip install -r requirements.txt
-```
-
-### Alternative: Using pip-tools
-
-If you prefer pip-tools over uv:
-```bash
-pip install pip-tools
-pip-compile pyproject.toml -o requirements.txt
-pip-sync requirements.txt
-```
-
-## Running Experiments
-
-### Baseline Benchmarks
-
-```bash
-# XGBoost baseline (placeholder - not yet implemented)
-python benchmark/run_xgb_baseline.py --config configs/xgb_baseline.yaml
-
-# CNN baseline (placeholder - not yet implemented)
-python benchmark/run_cnn_jung_baseline.py --config configs/cnn_baseline.yaml
-```
-
-### Configuration
-
-All experiments are configured via YAML files in `configs/`. Example structure:
+Config example (`configs/example_config.yaml`):
 
 ```yaml
-# configs/example_config.yaml
 experiment:
-  name: "experiment_name"
-  seed: 42
+   name: example
+   seed: 42
 
 data:
-  path: "data/processed/spectra.parquet"
-  train_split: 0.8
+   path: data/processed/spectra.parquet
+   train_split: 0.8
 
 model:
-  type: "cnn"
-  # ... model-specific params
+   type: cnn
+   batch_size: 64
 ```
 
-## Data Setup
-
-Place your spectroscopic data in the `data/` directory:
+**Testing & quality checks**
 
 ```bash
-data/
-├── raw/
-│   └── spectra_dataset.parquet  # Original data
-├── processed/
-│   └── (generated files)
-└── README.md  # Document your data sources and preprocessing
-```
-
-**Important:** Data files are gitignored. Document your data pipeline in `data/README.md`.
-
-## Testing
-
-```bash
-# Run all tests
+# run tests
 pytest
 
-# Run with coverage report
-pytest --cov=src --cov-report=html
+# lint + format
+ruff check src/ benchmark/ tests/ --fix
+ruff format src/ benchmark/ tests/
 
-# Run only fast tests (skip slow tests marked with @pytest.mark.slow)
-pytest -m "not slow"
-
-# Run specific test file
-pytest tests/test_data_loader.py
+# type checks
+mypy src/
 ```
 
-## Contributing
+**Troubleshooting & tips**
 
-1. Create a new branch for your feature: `git checkout -b feature/my-feature`
-2. Make your changes and ensure all checks pass
-3. Run `pre-commit run --all-files` to ensure code quality
-4. Commit your changes: `git commit -m "Add my feature"`
-5. Push to the branch: `git push origin feature/my-feature`
-6. Open a Pull Request
+- If a script fails due to missing data, ensure the `data.path` in the config points to an existing parquet file.
+- For GPU runs, ensure PyTorch and CUDA versions match your drivers.
+- Logs and model checkpoints are written to the `benchmark/.../results/` folders unless overridden by config.
 
-### Code Quality Standards
+**Contributing**
 
-- **Linting:** Ruff enforces PEP 8 style with additional rules
-- **Formatting:** Ruff formatter (100 char line length)
-- **Type hints:** Required for all functions (checked by mypy)
-- **Tests:** Maintain >80% code coverage
-- **Documentation:** Docstrings for all public APIs (Google style)
+- Create a branch: `git checkout -b feature/my-feature`
+- Run `pre-commit run --all-files` and tests
+- Commit and push, then open a pull request
 
-## License
+**License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- ZHAW for supporting this Bachelor's thesis research
-- RDKit for molecular structure handling
-- PyTorch for deep learning framework
+MIT — see [LICENSE](LICENSE)
