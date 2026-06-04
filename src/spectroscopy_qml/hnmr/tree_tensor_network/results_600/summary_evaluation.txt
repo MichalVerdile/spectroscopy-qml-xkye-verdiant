@@ -1,0 +1,84 @@
+================================================================================
+TTN C-NMR Experiment 10.2 - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/ttn_ir_best.pt
+  Run config: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/run_config.json
+  Split artifact: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/data_split_seed_hnmr42_all.npz
+  Parameters: 11,950,189
+  Thresholds: mean=0.500, std=0.000
+
+Test Set Performance:
+  accuracy: 0.0588
+  f1_micro: 0.6863
+  f1_macro: 0.3144
+  f1_weighted: 0.6935
+  f1_samples: 0.6815
+  precision_micro: 0.6748
+  precision_macro: 0.2935
+  precision_weighted: 0.6904
+  recall_micro: 0.6981
+  recall_macro: 0.3481
+  recall_weighted: 0.6981
+  hamming_accuracy: 0.9176
+
+Test Set Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over test samples, n_bootstrap=2000, ci_level=0.950
+  accuracy: point=0.0588, CI=[0.0572, 0.0604], bootstrap_std=0.0008
+  f1_micro: point=0.6863, CI=[0.6850, 0.6875], bootstrap_std=0.0006
+  f1_macro: point=0.3144, CI=[0.3104, 0.3182], bootstrap_std=0.0020
+  f1_weighted: point=0.6935, CI=[0.6922, 0.6948], bootstrap_std=0.0007
+  f1_samples: point=0.6815, CI=[0.6801, 0.6827], bootstrap_std=0.0007
+  precision_micro: point=0.6748, CI=[0.6733, 0.6763], bootstrap_std=0.0008
+  precision_macro: point=0.2935, CI=[0.2902, 0.2968], bootstrap_std=0.0017
+  precision_weighted: point=0.6904, CI=[0.6890, 0.6918], bootstrap_std=0.0007
+  recall_micro: point=0.6981, CI=[0.6966, 0.6995], bootstrap_std=0.0008
+  recall_macro: point=0.3481, CI=[0.3425, 0.3540], bootstrap_std=0.0030
+  recall_weighted: point=0.6981, CI=[0.6966, 0.6995], bootstrap_std=0.0008
+  hamming_accuracy: point=0.9176, CI=[0.9172, 0.9179], bootstrap_std=0.0002
+
+Validation Set Performance:
+  accuracy: 0.0581
+  f1_micro: 0.6850
+  f1_macro: 0.3172
+  f1_weighted: 0.6921
+  f1_samples: 0.6794
+  precision_micro: 0.6734
+  precision_macro: 0.2962
+  precision_weighted: 0.6887
+  recall_micro: 0.6969
+  recall_macro: 0.3511
+  recall_weighted: 0.6969
+  hamming_accuracy: 0.9172
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9901 (support=76514)
+  Arene: F1=0.9150 (support=61509)
+  Ether: F1=0.7883 (support=44933)
+  Carbamate: F1=0.7109 (support=7618)
+  Amine: F1=0.6432 (support=33587)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=5)
+  Sulfonic acid: F1=0.0000 (support=1)
+  Isothiocyanate: F1=0.0292 (support=74)
+  Acid anhydride: F1=0.0316 (support=62)
+  Thiol: F1=0.0612 (support=286)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=29858, TP=22311, FP=15551, FN=14307, TN=27272, specificity=0.6369, example_fp_indices=[2, 19, 21, 22, 24, 27, 32, 35, 36, 37], example_fn_indices=[5, 13, 14, 15, 42, 60, 67, 71, 74, 85]
+  Alcohol: errors=24420, TP=8326, FP=11440, FN=12980, TN=46695, specificity=0.8032, example_fp_indices=[7, 8, 11, 21, 26, 31, 33, 38, 39, 50], example_fn_indices=[2, 5, 10, 12, 25, 54, 63, 68, 75, 84]
+  Amine: errors=23929, TP=21564, FP=11906, FN=12023, TN=33948, specificity=0.7403, example_fp_indices=[0, 5, 9, 14, 18, 28, 31, 41, 61, 82], example_fn_indices=[1, 3, 6, 7, 12, 13, 22, 26, 37, 42]
+  Amide: errors=20920, TP=11034, FP=10989, FN=9931, TN=47487, specificity=0.8121, example_fp_indices=[12, 13, 40, 47, 49, 50, 51, 55, 56, 57], example_fn_indices=[1, 3, 6, 18, 23, 31, 39, 46, 53, 62]
+  Ether: errors=18805, TP=35020, FP=8892, FN=9913, TN=25616, specificity=0.7423, example_fp_indices=[1, 2, 24, 40, 42, 55, 67, 68, 80, 82], example_fn_indices=[3, 9, 14, 39, 46, 58, 61, 71, 75, 116]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/test_error_analysis_detailed.png
+  Test bootstrap CI CSV: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/test_bootstrap_confidence_intervals.csv
+  Test bootstrap CI JSON: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/test_bootstrap_confidence_intervals.json
+  Validation CSV: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/tree_tensor_network/results_600/validation_error_analysis_detailed.png

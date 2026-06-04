@@ -8,7 +8,7 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.isometric_helpers import (
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.isometric_helpers import (
     RelaxedIsometricMerge,
     SegmentLeafEncoder,
 )

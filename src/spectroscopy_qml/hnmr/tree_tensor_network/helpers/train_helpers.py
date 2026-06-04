@@ -23,14 +23,14 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     load_cnmr_data,
     load_or_create_split_indices,
     prepare_dataloaders_from_split_indices,
 )
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.isometric_helpers import TTNCnmrClassifier5  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.isometric_helpers import TTNCnmrClassifier5  # noqa: E402
 
 
 class EarlyStopping:

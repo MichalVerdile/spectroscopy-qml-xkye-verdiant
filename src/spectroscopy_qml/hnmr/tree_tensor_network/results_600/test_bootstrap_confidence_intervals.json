@@ -1,0 +1,122 @@
+[
+  {
+    "metric": "accuracy",
+    "point_estimate": 0.05881094145340567,
+    "bootstrap_mean": 0.05880042421419669,
+    "bootstrap_std": 0.000822892963112418,
+    "ci_level": 0.95,
+    "ci_lower": 0.05721101194597249,
+    "ci_upper": 0.06040961216500296,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "f1_micro",
+    "point_estimate": 0.6862927626936726,
+    "bootstrap_mean": 0.6862683913994152,
+    "bootstrap_std": 0.000640700546016834,
+    "ci_level": 0.95,
+    "ci_lower": 0.6849981189747426,
+    "ci_upper": 0.6875139643136806,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "f1_macro",
+    "point_estimate": 0.3143588866299488,
+    "bootstrap_mean": 0.31425861286294005,
+    "bootstrap_std": 0.002024624071241017,
+    "ci_level": 0.95,
+    "ci_lower": 0.3103758182059869,
+    "ci_upper": 0.31824565642412717,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "f1_weighted",
+    "point_estimate": 0.6934934521195023,
+    "bootstrap_mean": 0.6934734445417002,
+    "bootstrap_std": 0.0006536845957112492,
+    "ci_level": 0.95,
+    "ci_lower": 0.6921954835210843,
+    "ci_upper": 0.6947542734542329,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "f1_samples",
+    "point_estimate": 0.6814590020793464,
+    "bootstrap_mean": 0.6814311638194667,
+    "bootstrap_std": 0.000654981996584628,
+    "ci_level": 0.95,
+    "ci_lower": 0.6801378402355379,
+    "ci_upper": 0.6826757471875,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "precision_micro",
+    "point_estimate": 0.6748477348651511,
+    "bootstrap_mean": 0.6748120144716563,
+    "bootstrap_std": 0.000764151323482207,
+    "ci_level": 0.95,
+    "ci_lower": 0.6733084079387857,
+    "ci_upper": 0.6762744971957518,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "precision_macro",
+    "point_estimate": 0.2935365831591833,
+    "bootstrap_mean": 0.29350120919289224,
+    "bootstrap_std": 0.0017009896324953581,
+    "ci_level": 0.95,
+    "ci_lower": 0.2902031008936186,
+    "ci_upper": 0.29680751878198786,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "precision_weighted",
+    "point_estimate": 0.6903954521384785,
+    "bootstrap_mean": 0.6903775040046405,
+    "bootstrap_std": 0.00069605614694839,
+    "ci_level": 0.95,
+    "ci_lower": 0.688997961591376,
+    "ci_upper": 0.691752141496097,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "recall_micro",
+    "point_estimate": 0.6981326899116788,
+    "bootstrap_mean": 0.6981210036255887,
+    "bootstrap_std": 0.0007640794458784658,
+    "ci_level": 0.95,
+    "ci_lower": 0.6965719954204526,
+    "ci_upper": 0.699533246846044,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "recall_macro",
+    "point_estimate": 0.34813550552505446,
+    "bootstrap_mean": 0.34814995099236123,
+    "bootstrap_std": 0.002987193590281395,
+    "ci_level": 0.95,
+    "ci_lower": 0.34252883446145055,
+    "ci_upper": 0.3540336200968866,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "recall_weighted",
+    "point_estimate": 0.6981326899116788,
+    "bootstrap_mean": 0.6981210036255887,
+    "bootstrap_std": 0.0007640794458784658,
+    "ci_level": 0.95,
+    "ci_lower": 0.6965719954204526,
+    "ci_upper": 0.699533246846044,
+    "n_bootstrap": 2000
+  },
+  {
+    "metric": "hamming_accuracy",
+    "point_estimate": 0.9175662237179589,
+    "bootstrap_mean": 0.9175596390249844,
+    "bootstrap_std": 0.00017889218314349337,
+    "ci_level": 0.95,
+    "ci_lower": 0.9171987659037797,
+    "ci_upper": 0.9178996515176826,
+    "n_bootstrap": 2000
+  }
+]

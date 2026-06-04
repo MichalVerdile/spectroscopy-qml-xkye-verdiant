@@ -8,7 +8,7 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.segment_helpers import (
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.segment_helpers import (
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
     validate_target_segment_overlap,

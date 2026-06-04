@@ -9,10 +9,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-from src.spectroscopy_qml.cnmr.mps_classifier_cnmr.data_loader import (
+from src.spectroscopy_qml.hnmr.mps_classifier_hnmr.data_loader import (
     FUNCTIONAL_GROUPS,
-    CnmrSpectraDataset,
-    load_cnmr_data as mps_load_cnmr_data,
+    IRSpectraDataset,
+    load_ir_data as mps_load_cnmr_data,
     multilabel_train_test_split,
 )
 
@@ -339,9 +339,9 @@ def prepare_dataloaders_from_split_indices(
     print(f"  Test:  {len(X_test)} samples ({len(X_test) / len(X):.1%})")
     print("  Split: fixed artifact")
 
-    train_dataset = CnmrSpectraDataset(X_train, y_train)
-    val_dataset = CnmrSpectraDataset(X_val, y_val)
-    test_dataset = CnmrSpectraDataset(X_test, y_test)
+    train_dataset = IRSpectraDataset(X_train, y_train)
+    val_dataset = IRSpectraDataset(X_val, y_val)
+    test_dataset = IRSpectraDataset(X_test, y_test)
 
     train_loader = DataLoader(
         train_dataset,
