@@ -15,6 +15,7 @@ round t, the weak learner is trained on the current logistic pseudo-residuals.
 from __future__ import annotations
 
 import argparse
+import os
 import copy
 import csv
 import json
@@ -566,6 +567,84 @@ def write_summary(
 
 
 
+def get_label_checkpoint_path(output_dir: Path, label_index: int) -> Path:
+    """Return the resume checkpoint path for one functional-group ensemble."""
+    return Path(output_dir) / "label_checkpoints" / f"label_{label_index:03d}.pt"
+
+
+def torch_load_checkpoint(path: Path) -> dict:
+    """Load a checkpoint across older/newer PyTorch versions."""
+    try:
+        return torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:
+        return torch.load(path, map_location="cpu")
+
+
+def atomic_torch_save(payload: dict, path: Path) -> None:
+    """Write a torch checkpoint atomically so an interruption cannot corrupt it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    torch.save(payload, temporary_path)
+    temporary_path.replace(path)
+
+
+def save_label_checkpoint(
+    path: Path,
+    *,
+    label_index: int,
+    label_name: str,
+    base_score: float,
+    label_ensemble: BoostedTTNBinaryEnsemble,
+    train_logits: np.ndarray,
+    val_logits: np.ndarray,
+    test_logits: np.ndarray,
+    log_rows: list[list[object]],
+    args: argparse.Namespace,
+) -> None:
+    """Save everything needed to continue training this label later."""
+    payload = {
+        "label_index": int(label_index),
+        "label_name": str(label_name),
+        "base_score": float(base_score),
+        "estimators": len(label_ensemble.learners),
+        "ensemble_state_dict": label_ensemble.to("cpu").state_dict(),
+        "train_logits": train_logits.astype(np.float32, copy=False),
+        "val_logits": val_logits.astype(np.float32, copy=False),
+        "test_logits": test_logits.astype(np.float32, copy=False),
+        "log_rows": log_rows,
+        "completed_stage": len(label_ensemble.learners),
+        "run_config": vars(args).copy(),
+    }
+    atomic_torch_save(payload, path)
+
+
+def try_load_label_checkpoint(
+    path: Path,
+    *,
+    args: argparse.Namespace,
+    label_index: int,
+    label_name: str,
+) -> dict | None:
+    """Load a per-label checkpoint if resume is enabled and the file exists."""
+    if not bool(args.resume) or not path.exists():
+        return None
+
+    checkpoint = torch_load_checkpoint(path)
+    if int(checkpoint.get("label_index", -1)) != int(label_index):
+        raise RuntimeError(f"Checkpoint label index mismatch in {path}.")
+    if str(checkpoint.get("label_name", label_name)) != str(label_name):
+        raise RuntimeError(f"Checkpoint label name mismatch in {path}.")
+
+    estimator_count = int(checkpoint.get("estimators", 0))
+    if estimator_count > int(args.n_estimators):
+        raise RuntimeError(
+            f"Checkpoint {path} already contains {estimator_count} estimators, "
+            f"but --n-estimators is {args.n_estimators}. Increase --n-estimators "
+            "or remove the checkpoint."
+        )
+    return checkpoint
+
+
 def resolve_parallel_worker_device(device_name: str, label_index: int) -> torch.device:
     """Resolve the device inside a worker process.
 
@@ -614,15 +693,45 @@ def train_one_label_boosted_ttn(payload: dict) -> dict:
     y_val_label = y_val[:, label_index]
     y_test_label = y_test[:, label_index]
 
-    base_score = compute_base_logit(y_train_label)
-    train_logits = np.full(len(y_train_label), base_score, dtype=np.float32)
-    val_logits = np.full(len(y_val_label), base_score, dtype=np.float32)
-    test_logits = np.full(len(y_test_label), base_score, dtype=np.float32)
-
-    label_ensemble = BoostedTTNBinaryEnsemble(
-        base_score=base_score,
-        learning_rate=args.boost_learning_rate,
+    label_checkpoint_path = get_label_checkpoint_path(Path(args.output_dir), label_index)
+    loaded_checkpoint = try_load_label_checkpoint(
+        label_checkpoint_path,
+        args=args,
+        label_index=label_index,
+        label_name=label_name,
     )
+
+    if loaded_checkpoint is None:
+        base_score = compute_base_logit(y_train_label)
+        train_logits = np.full(len(y_train_label), base_score, dtype=np.float32)
+        val_logits = np.full(len(y_val_label), base_score, dtype=np.float32)
+        test_logits = np.full(len(y_test_label), base_score, dtype=np.float32)
+        label_ensemble = BoostedTTNBinaryEnsemble(
+            base_score=base_score,
+            learning_rate=args.boost_learning_rate,
+        )
+        log_rows: list[list[object]] = []
+        start_stage = 1
+    else:
+        base_score = float(loaded_checkpoint["base_score"])
+        estimator_count = int(loaded_checkpoint["estimators"])
+        train_logits = loaded_checkpoint["train_logits"].astype(np.float32, copy=False)
+        val_logits = loaded_checkpoint["val_logits"].astype(np.float32, copy=False)
+        test_logits = loaded_checkpoint["test_logits"].astype(np.float32, copy=False)
+        label_ensemble = BoostedTTNBinaryEnsemble(
+            base_score=base_score,
+            learning_rate=args.boost_learning_rate,
+        )
+        for _ in range(estimator_count):
+            label_ensemble.add_learner(build_weak_learner(args), freeze=True)
+        label_ensemble.load_state_dict(loaded_checkpoint["ensemble_state_dict"])
+        label_ensemble = label_ensemble.to("cpu")
+        log_rows = list(loaded_checkpoint.get("log_rows", []))
+        start_stage = estimator_count + 1
+        print(
+            f"Resuming label {label_index:02d} {label_name} "
+            f"from stage {estimator_count}/{args.n_estimators}."
+        )
 
     train_positive_rate = float(np.mean(y_train_label))
     residual_balance_train = compute_residual_sample_weights(
@@ -644,9 +753,7 @@ def train_one_label_boosted_ttn(payload: dict) -> dict:
     print(f"Base logit:           {base_score:.4f}")
     print(f"Positive resid weight:{positive_residual_weight:.4f}")
 
-    log_rows: list[list[object]] = []
-
-    for stage in range(1, args.n_estimators + 1):
+    for stage in range(start_stage, args.n_estimators + 1):
         stage_seed = args.seed + 10_000 * label_index + stage
         torch.manual_seed(stage_seed)
 
@@ -760,6 +867,21 @@ def train_one_label_boosted_ttn(payload: dict) -> dict:
             f"val_f1@0.5={val_f1_0p5:.4f}"
         )
 
+        if args.checkpoint_every_stage:
+            save_label_checkpoint(
+                label_checkpoint_path,
+                label_index=label_index,
+                label_name=label_name,
+                base_score=base_score,
+                label_ensemble=label_ensemble,
+                train_logits=train_logits,
+                val_logits=val_logits,
+                test_logits=test_logits,
+                log_rows=log_rows,
+                args=args,
+            )
+            print(f"Saved stage checkpoint: {label_checkpoint_path}")
+
     label_ensemble = label_ensemble.to("cpu")
 
     return {
@@ -859,6 +981,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="per_class_f1",
     )
     parser.add_argument("--threshold-grid-step", type=float, default=0.02)
+    parser.add_argument(
+        "--resume",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Resume from per-label stage checkpoints in output-dir/label_checkpoints when present.",
+    )
+    parser.add_argument(
+        "--checkpoint-every-stage",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Save each label ensemble after every completed boosting estimator.",
+    )
 
     return parser
 
