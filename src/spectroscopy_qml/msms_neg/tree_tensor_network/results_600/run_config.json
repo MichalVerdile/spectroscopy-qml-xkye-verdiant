@@ -1,12 +1,12 @@
 {
   "data_dir": "data/raw",
-  "output_dir": "src/spectroscopy_qml/msms_neg/tree_tensor_network/experiment/experiment10_2/results_test",
+  "output_dir": "src/spectroscopy_qml/msms_neg/tree_tensor_network/results_600",
   "split_path": null,
   "overwrite_split": false,
   "input_dim": 600,
   "num_labels": 37,
   "specialist_indices": null,
-  "chi": 144,
+  "chi": 64,
   "segment_window_size": 48,
   "segment_stride": 43,
   "segment_mode": "overlap",
@@ -34,7 +34,6 @@
   "test_ratio": 0.1,
   "num_workers": 8,
   "device": "auto",
-  "gpu_id": 3,
   "seed": 42,
   "loss_type": "bce",
   "focal_gamma": 2.0,
@@ -52,5 +51,5 @@
   "check_only": false,
   "preflight_batch_size": 4,
   "amp": false,
-  "compile": true
+  "compile": false
 }

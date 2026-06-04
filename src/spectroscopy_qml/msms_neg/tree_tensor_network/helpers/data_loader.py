@@ -339,9 +339,9 @@ def prepare_dataloaders_from_split_indices(
     print(f"  Test:  {len(X_test)} samples ({len(X_test) / len(X):.1%})")
     print("  Split: fixed artifact")
 
-    train_dataset = CnmrSpectraDataset(X_train, y_train)
-    val_dataset = CnmrSpectraDataset(X_val, y_val)
-    test_dataset = CnmrSpectraDataset(X_test, y_test)
+    train_dataset = IRSpectraDataset(X_train, y_train)
+    val_dataset = IRSpectraDataset(X_val, y_val)
+    test_dataset = IRSpectraDataset(X_test, y_test)
 
     train_loader = DataLoader(
         train_dataset,
