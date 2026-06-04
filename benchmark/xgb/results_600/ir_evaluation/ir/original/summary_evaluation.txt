@@ -1,0 +1,73 @@
+================================================================================
+XGBoost IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/xgb/models_600/ir/ir_xgboost_model.pickle
+  Results directory: benchmark/xgb/results_600/ir_evaluation/ir/original
+  Column: ir_spectra (ir_spectra)
+  Mode: original
+  Seed: 42
+  Boosted rounds across outputs: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 42, 'n_folds': None, 'best_fold': None, 'val_size': 79441, 'test_size': 79441, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.'}
+
+Test Set Performance:
+  accuracy: 0.2269
+  f1_micro: 0.8347
+  f1_macro: 0.5366
+  f1_weighted: 0.8109
+  f1_samples: 0.8292
+  precision_micro: 0.8914
+  precision_macro: 0.8750
+  precision_weighted: 0.8838
+  recall_micro: 0.7847
+  recall_macro: 0.4633
+  recall_weighted: 0.7847
+  hamming_accuracy: 0.9599
+
+Validation Set Performance:
+  accuracy: 0.2205
+  f1_micro: 0.8339
+  f1_macro: 0.5355
+  f1_weighted: 0.8101
+  f1_samples: 0.8280
+  precision_micro: 0.8915
+  precision_macro: 0.8475
+  precision_weighted: 0.8845
+  recall_micro: 0.7833
+  recall_macro: 0.4643
+  recall_weighted: 0.7833
+  hamming_accuracy: 0.9597
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9894 (support=76431)
+  Alcohol: F1=0.9758 (support=21235)
+  Carboxylic acid: F1=0.9743 (support=7947)
+  Arene: F1=0.9658 (support=61531)
+  Isocyanate: F1=0.9571 (support=81)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Sulfonic acid: F1=0.0000 (support=1)
+  Hydrazone: F1=0.0887 (support=516)
+  Acid anhydride: F1=0.0938 (support=60)
+  Azo compound: F1=0.1053 (support=36)
+  Imine: F1=0.1070 (support=581)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=22029, TP=22948, FP=8489, FN=13540, TN=34464, specificity=0.8024, example_fp_indices=[26, 32, 36, 46, 62, 69, 70, 77, 92, 113], example_fn_indices=[1, 6, 15, 16, 21, 22, 28, 35, 43, 52]
+  Ether: errors=20507, TP=36006, FP=11667, FN=8840, TN=22928, specificity=0.6628, example_fp_indices=[25, 35, 45, 50, 51, 55, 57, 76, 78, 93], example_fn_indices=[4, 17, 23, 28, 40, 66, 71, 81, 84, 86]
+  Amide: errors=11129, TP=13304, FP=3490, FN=7639, TN=55008, specificity=0.9403, example_fp_indices=[21, 70, 71, 87, 90, 98, 111, 123, 136, 235], example_fn_indices=[25, 41, 43, 48, 50, 55, 59, 62, 72, 88]
+  Sulfide: errors=10230, TP=710, FP=221, FN=10009, TN=68501, specificity=0.9968, example_fp_indices=[232, 949, 1515, 1670, 2222, 2235, 2772, 2991, 3278, 3332], example_fn_indices=[4, 11, 22, 28, 34, 36, 45, 61, 72, 75]
+  Amine: errors=9628, TP=27110, FP=2869, FN=6759, TN=42703, specificity=0.9370, example_fp_indices=[10, 50, 58, 81, 91, 178, 181, 204, 232, 252], example_fn_indices=[15, 16, 31, 51, 67, 83, 85, 93, 155, 158]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/xgb/results_600/ir_evaluation/ir/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/xgb/results_600/ir_evaluation/ir/original/test_error_analysis_metrics.json
+  Test plot: benchmark/xgb/results_600/ir_evaluation/ir/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/xgb/results_600/ir_evaluation/ir/original/test_top_problem_groups.png
+  Validation CSV: benchmark/xgb/results_600/ir_evaluation/ir/original/validation_error_analysis.csv
+  Validation metrics JSON: benchmark/xgb/results_600/ir_evaluation/ir/original/validation_error_analysis_metrics.json
+  Validation plot: benchmark/xgb/results_600/ir_evaluation/ir/original/validation_error_analysis_detailed.png
+  Validation top-problem plot: benchmark/xgb/results_600/ir_evaluation/ir/original/validation_top_problem_groups.png
