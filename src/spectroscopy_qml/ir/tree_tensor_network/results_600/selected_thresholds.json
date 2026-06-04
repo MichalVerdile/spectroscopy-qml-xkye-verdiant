@@ -1,5 +1,5 @@
 {
-  "best_epoch": 2,
+  "best_epoch": 25,
   "threshold_mode": "per_class",
   "threshold_target_metric": "per_class_f1",
   "threshold_mean": 0.5,

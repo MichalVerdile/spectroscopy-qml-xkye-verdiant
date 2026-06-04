@@ -1,0 +1,59 @@
+================================================================================
+CNN IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/cnn/models/cnmr/original/cnmr_model.keras
+  Results directory: benchmark/cnn/results_600/cnmr_evaluation/cnmr/original
+  Column: c_nmr_spectra (c_nmr_spectra)
+  Mode: original
+  Seed: None
+  Parameters: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 3245, 'n_folds': None, 'best_fold': None, 'val_size': None, 'test_size': 158881, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.', 'validation_note': 'No saved validation predictions/targets were found; validation artifacts were skipped.'}
+
+Test Set Performance:
+  accuracy: 0.0028
+  f1_micro: 0.5766
+  f1_macro: 0.1502
+  f1_weighted: 0.5274
+  f1_samples: 0.5685
+  precision_micro: 0.5756
+  precision_macro: 0.4279
+  precision_weighted: 0.7437
+  recall_micro: 0.5777
+  recall_macro: 0.1780
+  recall_weighted: 0.5777
+  hamming_accuracy: 0.8904
+
+Validation Set Performance:
+  skipped: no saved validation predictions/targets were available in this old results.pickle, and exact X_val/y_val arrays were not available for safe re-inference.
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9813 (support=153062)
+  Arene: F1=0.8737 (support=122985)
+  Ether: F1=0.7223 (support=89825)
+  Carbamate: F1=0.6632 (support=15316)
+  Ester: F1=0.6279 (support=29821)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Acid anhydride: F1=0.0000 (support=118)
+  Acyl halide: F1=0.0000 (support=828)
+  Azo compound: F1=0.0000 (support=111)
+  Phosphine: F1=0.0000 (support=139)
+  Isothiocyanate: F1=0.0000 (support=158)
+
+Top 5 Functional Groups by Total Errors:
+  Aldehyde: errors=150081, TP=3618, FP=149648, FN=433, TN=5182, specificity=0.0335, example_fp_indices=[1, 2, 3, 5, 6, 7, 8, 9, 10, 11], example_fn_indices=[757, 974, 1617, 1775, 2620, 2819, 3098, 3123, 3128, 3908]
+  Haloalkane: errors=69692, TP=4060, FP=565, FN=69127, TN=85129, specificity=0.9934, example_fp_indices=[363, 561, 898, 1768, 1855, 1967, 2204, 2413, 2553, 2602], example_fn_indices=[2, 3, 5, 6, 8, 9, 10, 11, 12, 13]
+  Ether: errors=69058, TP=89817, FP=69050, FN=8, TN=6, specificity=0.0001, example_fp_indices=[0, 1, 6, 10, 13, 17, 19, 21, 24, 25], example_fn_indices=[2304, 27015, 75804, 75929, 78488, 82754, 122950, 133360]
+  Amine: errors=62210, TP=5729, FP=792, FN=61418, TN=90942, specificity=0.9914, example_fp_indices=[45, 164, 533, 1140, 1277, 1594, 1839, 1934, 1996, 2263], example_fn_indices=[0, 1, 4, 5, 12, 13, 14, 24, 27, 28]
+  Alcohol: errors=42173, TP=312, FP=78, FN=42095, TN=116396, specificity=0.9993, example_fp_indices=[1131, 4743, 5930, 6294, 9012, 9160, 11813, 13438, 15584, 16654], example_fn_indices=[2, 15, 21, 22, 25, 31, 33, 36, 40, 42]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/cnn/results_600/cnmr_evaluation/cnmr/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/cnn/results_600/cnmr_evaluation/cnmr/original/test_error_analysis_metrics.json
+  Test plot: benchmark/cnn/results_600/cnmr_evaluation/cnmr/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/cnn/results_600/cnmr_evaluation/cnmr/original/test_top_problem_groups.png
+  Validation artifacts: skipped; see validation_results.txt for explanation.

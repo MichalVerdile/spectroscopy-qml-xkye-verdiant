@@ -1,0 +1,73 @@
+================================================================================
+XGBoost IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/xgb/models_600/c_nmr/cnmr/original/cnmr_xgboost_model.pickle
+  Results directory: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original
+  Column: c_nmr_spectra (c_nmr_spectra)
+  Mode: original
+  Seed: 42
+  Boosted rounds across outputs: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 42, 'n_folds': None, 'best_fold': None, 'val_size': 79441, 'test_size': 79441, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.'}
+
+Test Set Performance:
+  accuracy: 0.1973
+  f1_micro: 0.7886
+  f1_macro: 0.4126
+  f1_weighted: 0.7494
+  f1_samples: 0.7797
+  precision_micro: 0.8842
+  precision_macro: 0.7996
+  precision_weighted: 0.8704
+  recall_micro: 0.7117
+  recall_macro: 0.3372
+  recall_weighted: 0.7117
+  hamming_accuracy: 0.9507
+
+Validation Set Performance:
+  accuracy: 0.1971
+  f1_micro: 0.7877
+  f1_macro: 0.4103
+  f1_weighted: 0.7485
+  f1_samples: 0.7789
+  precision_micro: 0.8833
+  precision_macro: 0.7808
+  precision_weighted: 0.8684
+  recall_micro: 0.7108
+  recall_macro: 0.3335
+  recall_weighted: 0.7108
+  hamming_accuracy: 0.9505
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9939 (support=76492)
+  Arene: F1=0.9545 (support=61588)
+  Ether: F1=0.8842 (support=44963)
+  Ketone: F1=0.8513 (support=6682)
+  Carbamate: F1=0.8427 (support=7735)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Thiol: F1=0.0068 (support=291)
+  Isothiocyanate: F1=0.0244 (support=79)
+  Acyl halide: F1=0.0748 (support=407)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=22067, TP=23347, FP=8679, FN=13388, TN=34027, specificity=0.7968, example_fp_indices=[9, 20, 23, 30, 34, 40, 46, 54, 63, 64], example_fn_indices=[3, 5, 8, 14, 17, 26, 35, 44, 50, 51]
+  Amine: errors=20117, TP=19187, FP=5909, FN=14208, TN=40137, specificity=0.8717, example_fp_indices=[6, 13, 24, 44, 61, 92, 103, 105, 111, 117], example_fn_indices=[5, 7, 18, 21, 29, 32, 37, 40, 42, 43]
+  Alcohol: errors=17915, TP=5788, FP=2307, FN=15608, TN=55738, specificity=0.9603, example_fp_indices=[43, 139, 158, 171, 173, 188, 196, 289, 302, 407], example_fn_indices=[7, 10, 30, 40, 48, 49, 53, 59, 75, 78]
+  Amide: errors=12499, TP=12754, FP=4065, FN=8434, TN=54188, specificity=0.9302, example_fp_indices=[5, 13, 18, 49, 75, 105, 107, 129, 131, 169], example_fn_indices=[12, 23, 30, 52, 58, 76, 79, 81, 88, 92]
+  Ether: errors=10395, TP=39691, FP=5123, FN=5272, TN=29355, specificity=0.8514, example_fp_indices=[35, 42, 64, 115, 130, 136, 156, 183, 207, 246], example_fn_indices=[22, 43, 46, 58, 62, 73, 117, 186, 196, 200]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/test_error_analysis_metrics.json
+  Test plot: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/test_top_problem_groups.png
+  Validation CSV: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/validation_error_analysis.csv
+  Validation metrics JSON: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/validation_error_analysis_metrics.json
+  Validation plot: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/validation_error_analysis_detailed.png
+  Validation top-problem plot: benchmark/xgb/results_600/cnmr_evaluation/cnmr/original/validation_top_problem_groups.png

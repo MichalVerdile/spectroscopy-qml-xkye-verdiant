@@ -1,0 +1,63 @@
+Boosted TTN C-NMR Summary
+================================================================================
+Model: one boosted scalar-output TTN ensemble per functional group
+Elapsed seconds:           4718.66
+Fixed split artifact:      c_nmr/boosted_tree_tensor_network/boosted_results/data_split_seed42_all.npz
+Functional groups:         37
+Boosting rounds requested: 20
+Weak learner epochs:       70
+Boost learning rate:       0.05
+Boost target:              newton
+Threshold mean:            0.316216
+Threshold std:             0.180979
+
+Validation metrics:
+  f1_micro: 0.383667
+  f1_macro: 0.296208
+  precision_micro: 0.250453
+  recall_micro: 0.819618
+
+Test metrics:
+  f1_micro: 0.375574
+  f1_macro: 0.239710
+  precision_micro: 0.245351
+  recall_micro: 0.800391
+
+Per-label ensemble sizes:
+  Acid anhydride: base_logit=0.500000, estimators=20
+  Acyl halide: base_logit=0.500000, estimators=20
+  Alcohol: base_logit=0.500000, estimators=20
+  Aldehyde: base_logit=0.500000, estimators=20
+  Alkane: base_logit=0.500000, estimators=20
+  Alkene: base_logit=0.500000, estimators=20
+  Alkyne: base_logit=0.500000, estimators=20
+  Amide: base_logit=0.500000, estimators=20
+  Amine: base_logit=0.500000, estimators=20
+  Arene: base_logit=0.500000, estimators=20
+  Azo compound: base_logit=0.500000, estimators=20
+  Carbamate: base_logit=0.500000, estimators=20
+  Carboxylic acid: base_logit=0.500000, estimators=20
+  Enamine: base_logit=0.500000, estimators=20
+  Enol: base_logit=0.500000, estimators=20
+  Ester: base_logit=0.500000, estimators=20
+  Ether: base_logit=0.500000, estimators=20
+  Haloalkane: base_logit=0.500000, estimators=20
+  Hydrazine: base_logit=0.500000, estimators=20
+  Hydrazone: base_logit=0.500000, estimators=20
+  Imide: base_logit=0.500000, estimators=20
+  Imine: base_logit=0.500000, estimators=20
+  Isocyanate: base_logit=0.500000, estimators=20
+  Isothiocyanate: base_logit=0.500000, estimators=20
+  Ketone: base_logit=0.500000, estimators=20
+  Nitrile: base_logit=0.500000, estimators=20
+  Phenol: base_logit=0.500000, estimators=20
+  Phosphine: base_logit=0.500000, estimators=20
+  Sulfide: base_logit=0.500000, estimators=20
+  Sulfonamide: base_logit=0.500000, estimators=20
+  Sulfonate: base_logit=0.500000, estimators=20
+  Sulfone: base_logit=0.500000, estimators=20
+  Sulfonic acid: base_logit=0.500000, estimators=20
+  Sulfoxide: base_logit=0.500000, estimators=20
+  Thial: base_logit=0.500000, estimators=20
+  Thioamide: base_logit=0.500000, estimators=20
+  Thiol: base_logit=0.500000, estimators=20

@@ -1,0 +1,73 @@
+================================================================================
+XGBoost IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/xgb/models_600/h_nmr/hnmr/original/hnmr_xgboost_model.pickle
+  Results directory: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original
+  Column: h_nmr_spectra (h_nmr_spectra)
+  Mode: original
+  Seed: 42
+  Boosted rounds across outputs: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 42, 'n_folds': None, 'best_fold': None, 'val_size': 79441, 'test_size': 79441, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.'}
+
+Test Set Performance:
+  accuracy: 0.1390
+  f1_micro: 0.7651
+  f1_macro: 0.3677
+  f1_weighted: 0.7122
+  f1_samples: 0.7568
+  precision_micro: 0.8885
+  precision_macro: 0.8620
+  precision_weighted: 0.8880
+  recall_micro: 0.6718
+  recall_macro: 0.2851
+  recall_weighted: 0.6718
+  hamming_accuracy: 0.9468
+
+Validation Set Performance:
+  accuracy: 0.1388
+  f1_micro: 0.7634
+  f1_macro: 0.3791
+  f1_weighted: 0.7102
+  f1_samples: 0.7552
+  precision_micro: 0.8871
+  precision_macro: 0.9169
+  precision_weighted: 0.8862
+  recall_micro: 0.6699
+  recall_macro: 0.2907
+  recall_weighted: 0.6699
+  hamming_accuracy: 0.9464
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9972 (support=76499)
+  Arene: F1=0.9566 (support=61401)
+  Carbamate: F1=0.9068 (support=7753)
+  Ether: F1=0.8566 (support=44967)
+  Ester: F1=0.7323 (support=14900)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Acid anhydride: F1=0.0000 (support=55)
+  Sulfonic acid: F1=0.0000 (support=0)
+  Thial: F1=0.0000 (support=5)
+  Isothiocyanate: F1=0.0282 (support=70)
+  Thiol: F1=0.0328 (support=300)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=24586, TP=22625, FP=10684, FN=13902, TN=32230, specificity=0.7510, example_fp_indices=[4, 5, 18, 20, 22, 23, 24, 27, 35, 38], example_fn_indices=[7, 8, 25, 28, 34, 40, 41, 44, 45, 48]
+  Amine: errors=19081, TP=20964, FP=6301, FN=12780, TN=39396, specificity=0.8621, example_fp_indices=[2, 11, 17, 19, 21, 24, 40, 51, 66, 69], example_fn_indices=[1, 13, 18, 29, 33, 50, 79, 88, 93, 102]
+  Alcohol: errors=18706, TP=2923, FP=507, FN=18199, TN=57812, specificity=0.9913, example_fp_indices=[76, 217, 261, 318, 666, 679, 765, 938, 987, 1160], example_fn_indices=[3, 5, 11, 16, 20, 21, 22, 23, 27, 33]
+  Amide: errors=16002, TP=6948, FP=2016, FN=13986, TN=56491, specificity=0.9655, example_fp_indices=[19, 24, 76, 82, 125, 143, 145, 151, 223, 329], example_fn_indices=[7, 9, 21, 23, 25, 29, 36, 42, 46, 47]
+  Ether: errors=12977, TP=38745, FP=6755, FN=6222, TN=27719, specificity=0.8041, example_fp_indices=[18, 43, 53, 55, 63, 66, 81, 86, 97, 105], example_fn_indices=[12, 20, 26, 35, 44, 73, 76, 89, 95, 109]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/test_error_analysis_metrics.json
+  Test plot: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/test_top_problem_groups.png
+  Validation CSV: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/validation_error_analysis.csv
+  Validation metrics JSON: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/validation_error_analysis_metrics.json
+  Validation plot: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/validation_error_analysis_detailed.png
+  Validation top-problem plot: benchmark/xgb/results_600/hnmr_evaluation/hnmr/original/validation_top_problem_groups.png

@@ -16,7 +16,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[3]
+SRC_DIR = Path(__file__).resolve().parents[4]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
@@ -72,7 +72,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("c_nmr/tree_tensor_network/results"),
+        default=Path("src/spectroscopy_qml/msms_neg/tree_tensor_network/results_600"),
     )
     parser.add_argument("--split-path", type=Path, default=None)
     parser.add_argument("--overwrite-split", action="store_true")
@@ -157,7 +157,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--amp",
         action=argparse.BooleanOptionalAction,
-        default=True,
+        default=False,
         help="Enable mixed-precision (AMP) training for ~2x speedup.",
     )
     parser.add_argument(

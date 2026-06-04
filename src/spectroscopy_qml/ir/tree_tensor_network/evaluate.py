@@ -21,7 +21,7 @@ from sklearn.metrics import (
 from torch.utils.data import DataLoader
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[5]
+SRC_DIR = Path(__file__).resolve().parents[4]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
@@ -513,7 +513,7 @@ def _count_model_parameters(model: nn.Module) -> int:
 @click.option(
     "--output_dir",
     type=click.Path(path_type=Path),
-    default=Path("ir/tree_tensor_network/results"),
+    default=Path("src/spectroscopy_qml/ir/tree_tensor_network/results_600"),
     help="Run directory or parent results directory for experiment 10.2",
 )
 @click.option(

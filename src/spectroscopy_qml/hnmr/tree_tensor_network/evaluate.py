@@ -21,26 +21,26 @@ from sklearn.metrics import (
 from torch.utils.data import DataLoader
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SRC_DIR = Path(__file__).resolve().parents[5]
+SRC_DIR = Path(__file__).resolve().parents[4]
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
-    CnmrSpectraDataset,
+    IRSpectraDataset,
     load_cnmr_data,
 )
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     count_available_data_files,
     resolve_device,
     resolve_used_file_count,
 )
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
     resolve_cache_path,
 )
-from src.spectroscopy_qml.cnmr.tree_tensor_network.model import (  # noqa: E402
+from src.spectroscopy_qml.hnmr.tree_tensor_network.model import (  # noqa: E402
     TTNCnmrClassifier10_2,
 )
 
@@ -109,7 +109,7 @@ def _resolve_split_path(run_config: dict, run_dir: Path, data_dir: Path) -> Path
     total_data_files = count_available_data_files(data_dir)
     used_data_files = resolve_used_file_count(total_data_files, run_config.get("max_files"))
     split_suffix = "all" if run_config.get("max_files") is None else f"files{used_data_files}"
-    return run_dir / f"data_split_seed{int(run_config['seed'])}_{split_suffix}.npz"
+    return run_dir / f"data_split_seed_hnmr{int(run_config['seed'])}_{split_suffix}.npz"
 
 
 def _strip_compile_prefix_if_needed(state_dict: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
@@ -127,7 +127,7 @@ def _create_eval_dataloader(
     num_workers: int,
     pin_memory: bool,
 ) -> DataLoader:
-    dataset = CnmrSpectraDataset(X_split, y_split)
+    dataset = IRSpectraDataset(X_split, y_split)
     return DataLoader(
         dataset,
         batch_size=batch_size,
@@ -152,6 +152,137 @@ def _build_eval_loaders(
     val_loader = _create_eval_dataloader(X[val_indices], y[val_indices], batch_size, num_workers, pin_memory)
     test_loader = _create_eval_dataloader(X[test_indices], y[test_indices], batch_size, num_workers, pin_memory)
     return val_loader, test_loader
+
+
+def compute_multilabel_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+    """Compute global multilabel classification metrics."""
+    return {
+        "accuracy": accuracy_score(y_true, y_pred),
+        "f1_micro": f1_score(y_true, y_pred, average="micro", zero_division=0),
+        "f1_macro": f1_score(y_true, y_pred, average="macro", zero_division=0),
+        "f1_weighted": f1_score(y_true, y_pred, average="weighted", zero_division=0),
+        "f1_samples": f1_score(y_true, y_pred, average="samples", zero_division=0),
+        "precision_micro": precision_score(y_true, y_pred, average="micro", zero_division=0),
+        "precision_macro": precision_score(y_true, y_pred, average="macro", zero_division=0),
+        "precision_weighted": precision_score(y_true, y_pred, average="weighted", zero_division=0),
+        "recall_micro": recall_score(y_true, y_pred, average="micro", zero_division=0),
+        "recall_macro": recall_score(y_true, y_pred, average="macro", zero_division=0),
+        "recall_weighted": recall_score(y_true, y_pred, average="weighted", zero_division=0),
+    }
+
+
+def compute_global_metrics_with_hamming(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+) -> dict[str, float]:
+    """Compute global metrics including multilabel Hamming accuracy."""
+    metrics = compute_multilabel_metrics(y_true, y_pred)
+    metrics["hamming_accuracy"] = float((y_true == y_pred).mean())
+    return metrics
+
+
+def bootstrap_confidence_intervals(
+    results: dict,
+    n_bootstrap: int = 2000,
+    ci_level: float = 0.95,
+    random_seed: int = 42,
+) -> pd.DataFrame:
+    """Estimate percentile bootstrap confidence intervals over test samples.
+
+    The bootstrap resamples complete samples/rows from y_true and y_pred.
+
+    This estimates uncertainty caused by the finite test set.
+    It does not include uncertainty from retraining, hyperparameter search,
+    checkpoint selection, or threshold tuning.
+    """
+    if n_bootstrap <= 0:
+        raise ValueError("n_bootstrap must be > 0")
+
+    if not 0.0 < ci_level < 1.0:
+        raise ValueError("ci_level must be between 0 and 1")
+
+    y_true = results["y_true"]
+    y_pred = results["y_pred"]
+
+    n_samples = y_true.shape[0]
+    if n_samples < 2:
+        raise ValueError("Bootstrap confidence intervals require at least 2 samples")
+
+    rng = np.random.default_rng(random_seed)
+
+    point_metrics = compute_global_metrics_with_hamming(y_true, y_pred)
+    metric_names = list(point_metrics.keys())
+
+    bootstrap_values = {
+        metric_name: np.empty(n_bootstrap, dtype=float)
+        for metric_name in metric_names
+    }
+
+    for bootstrap_idx in range(n_bootstrap):
+        sample_indices = rng.integers(0, n_samples, size=n_samples)
+
+        sampled_y_true = y_true[sample_indices]
+        sampled_y_pred = y_pred[sample_indices]
+
+        sampled_metrics = compute_global_metrics_with_hamming(
+            sampled_y_true,
+            sampled_y_pred,
+        )
+
+        for metric_name in metric_names:
+            bootstrap_values[metric_name][bootstrap_idx] = sampled_metrics[metric_name]
+
+    alpha = 1.0 - ci_level
+    lower_percentile = 100.0 * alpha / 2.0
+    upper_percentile = 100.0 * (1.0 - alpha / 2.0)
+
+    rows = []
+    for metric_name in metric_names:
+        values = bootstrap_values[metric_name]
+
+        rows.append(
+            {
+                "metric": metric_name,
+                "point_estimate": float(point_metrics[metric_name]),
+                "bootstrap_mean": float(values.mean()),
+                "bootstrap_std": float(values.std(ddof=1)),
+                "ci_level": float(ci_level),
+                "ci_lower": float(np.percentile(values, lower_percentile)),
+                "ci_upper": float(np.percentile(values, upper_percentile)),
+                "n_bootstrap": int(n_bootstrap),
+            }
+        )
+
+    return pd.DataFrame(rows)
+
+
+def save_bootstrap_ci_artifacts(
+    results: dict,
+    output_dir: Path,
+    split_name: str,
+    n_bootstrap: int,
+    ci_level: float,
+    random_seed: int,
+) -> tuple[Path, Path, pd.DataFrame]:
+    """Save bootstrap confidence intervals as CSV and JSON."""
+    ci_df = bootstrap_confidence_intervals(
+        results,
+        n_bootstrap=n_bootstrap,
+        ci_level=ci_level,
+        random_seed=random_seed,
+    )
+
+    ci_csv_path = output_dir / f"{split_name}_bootstrap_confidence_intervals.csv"
+    ci_json_path = output_dir / f"{split_name}_bootstrap_confidence_intervals.json"
+
+    ci_df.to_csv(ci_csv_path, index=False)
+
+    ci_json_path.write_text(
+        json.dumps(ci_df.to_dict(orient="records"), indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    return ci_csv_path, ci_json_path, ci_df
 
 
 def evaluate_model(
@@ -183,19 +314,7 @@ def evaluate_model(
     y_pred = np.vstack(all_preds)
     y_prob = np.vstack(all_probs)
 
-    metrics = {
-        "accuracy": accuracy_score(y_true, y_pred),
-        "f1_micro": f1_score(y_true, y_pred, average="micro", zero_division=0),
-        "f1_macro": f1_score(y_true, y_pred, average="macro", zero_division=0),
-        "f1_weighted": f1_score(y_true, y_pred, average="weighted", zero_division=0),
-        "f1_samples": f1_score(y_true, y_pred, average="samples", zero_division=0),
-        "precision_micro": precision_score(y_true, y_pred, average="micro", zero_division=0),
-        "precision_macro": precision_score(y_true, y_pred, average="macro", zero_division=0),
-        "precision_weighted": precision_score(y_true, y_pred, average="weighted", zero_division=0),
-        "recall_micro": recall_score(y_true, y_pred, average="micro", zero_division=0),
-        "recall_macro": recall_score(y_true, y_pred, average="macro", zero_division=0),
-        "recall_weighted": recall_score(y_true, y_pred, average="weighted", zero_division=0),
-    }
+    metrics = compute_multilabel_metrics(y_true, y_pred)
 
     f1_per_class = f1_score(y_true, y_pred, average=None, zero_division=0)
     precision_per_class = precision_score(y_true, y_pred, average=None, zero_division=0)
@@ -273,9 +392,10 @@ def build_error_analysis_dataframe(results: dict, functional_groups: list[str]) 
 
 
 def build_global_error_metrics(results: dict) -> dict[str, float]:
-    metrics = results["metrics"].copy()
-    metrics["hamming_accuracy"] = float((results["y_true"] == results["y_pred"]).mean())
-    return metrics
+    return compute_global_metrics_with_hamming(
+        results["y_true"],
+        results["y_pred"],
+    )
 
 
 def plot_error_analysis_detail(
@@ -513,7 +633,7 @@ def _count_model_parameters(model: nn.Module) -> int:
 @click.option(
     "--output_dir",
     type=click.Path(path_type=Path),
-    default=Path("c_nmr/tree_tensor_network/results"),
+    default=Path("src/spectroscopy_qml/hnmr/tree_tensor_network/results_600"),
     help="Run directory or parent results directory for experiment 10.2",
 )
 @click.option(
@@ -541,6 +661,26 @@ def _count_model_parameters(model: nn.Module) -> int:
     show_default=True,
     help="Device to use for evaluation",
 )
+@click.option(
+    "--bootstrap-iterations",
+    type=int,
+    default=2000,
+    show_default=True,
+    help="Number of bootstrap resamples for test-set confidence intervals. Use 0 to disable.",
+)
+@click.option(
+    "--bootstrap-ci",
+    type=float,
+    default=0.95,
+    show_default=True,
+    help="Confidence level for percentile bootstrap intervals.",
+)
+@click.option(
+    "--bootstrap-seed",
+    type=int,
+    default=None,
+    help="Random seed for bootstrap resampling. Defaults to seed from run_config.json.",
+)
 def main(
     model_path: Path | None,
     data_dir: Path | None,
@@ -549,6 +689,9 @@ def main(
     thresholds_path: Path | None,
     split_path: Path | None,
     device: str,
+    bootstrap_iterations: int,
+    bootstrap_ci: float,
+    bootstrap_seed: int | None,
 ) -> None:
     print("=" * 80)
     print("TTN C-NMR Experiment 10.2 Evaluation")
@@ -557,7 +700,7 @@ def main(
     run_dir = run_config_path.parent if run_config_path is not None else _resolve_run_dir(output_dir)
     run_config_path = run_config_path or (run_dir / "run_config.json")
     thresholds_path = thresholds_path or (run_dir / "selected_thresholds.json")
-    model_path = model_path or (run_dir / "ttn_cnmr_best.pt")
+    model_path = model_path or (run_dir / "ttn_ir_best.pt")
     results_dir = run_dir
     results_dir.mkdir(parents=True, exist_ok=True)
 
@@ -651,6 +794,45 @@ def main(
     print(f"Test error-analysis metrics saved to: {test_metrics_path}")
     print(f"Test error-analysis plot saved to: {test_plot_path}")
 
+    test_ci_csv_path = None
+    test_ci_json_path = None
+    test_ci_df = None
+
+    if bootstrap_iterations > 0:
+        print("\n" + "=" * 80)
+        print("Computing Bootstrap Confidence Intervals on Test Set")
+        print("=" * 80)
+
+        effective_bootstrap_seed = (
+            bootstrap_seed
+            if bootstrap_seed is not None
+            else int(run_config.get("seed", 42))
+        )
+
+        test_ci_csv_path, test_ci_json_path, test_ci_df = save_bootstrap_ci_artifacts(
+            test_results,
+            results_dir,
+            split_name="test",
+            n_bootstrap=bootstrap_iterations,
+            ci_level=bootstrap_ci,
+            random_seed=effective_bootstrap_seed,
+        )
+
+        print(f"Bootstrap iterations: {bootstrap_iterations}")
+        print(f"Confidence level: {bootstrap_ci:.3f}")
+        print(f"Bootstrap seed: {effective_bootstrap_seed}")
+        print(f"Test bootstrap CI CSV saved to: {test_ci_csv_path}")
+        print(f"Test bootstrap CI JSON saved to: {test_ci_json_path}")
+
+        print("\nBootstrap confidence intervals:")
+        print(
+            test_ci_df[
+                ["metric", "point_estimate", "ci_lower", "ci_upper", "bootstrap_std"]
+            ].to_string(index=False)
+        )
+    else:
+        print("\nBootstrap confidence intervals disabled.")
+
     print("\n" + "=" * 80)
     print("Evaluating on Validation Set")
     print("=" * 80)
@@ -692,6 +874,21 @@ def main(
         for metric, value in test_results["metrics"].items():
             handle.write(f"  {metric}: {value:.4f}\n")
         handle.write(f"  hamming_accuracy: {build_global_error_metrics(test_results)['hamming_accuracy']:.4f}\n")
+
+        if test_ci_df is not None:
+            handle.write("\nTest Set Bootstrap Confidence Intervals:\n")
+            handle.write(
+                f"  Method: percentile bootstrap over test samples, "
+                f"n_bootstrap={bootstrap_iterations}, ci_level={bootstrap_ci:.3f}\n"
+            )
+
+            for _, row in test_ci_df.iterrows():
+                handle.write(
+                    f"  {row['metric']}: "
+                    f"point={row['point_estimate']:.4f}, "
+                    f"CI=[{row['ci_lower']:.4f}, {row['ci_upper']:.4f}], "
+                    f"bootstrap_std={row['bootstrap_std']:.4f}\n"
+                )
 
         handle.write("\nValidation Set Performance:\n")
         for metric, value in val_results["metrics"].items():
@@ -740,6 +937,11 @@ def main(
         handle.write(f"  Test CSV: {test_csv_path}\n")
         handle.write(f"  Test metrics JSON: {test_metrics_path}\n")
         handle.write(f"  Test plot: {test_plot_path}\n")
+
+        if test_ci_csv_path is not None:
+            handle.write(f"  Test bootstrap CI CSV: {test_ci_csv_path}\n")
+            handle.write(f"  Test bootstrap CI JSON: {test_ci_json_path}\n")
+
         handle.write(f"  Validation CSV: {val_csv_path}\n")
         handle.write(f"  Validation metrics JSON: {val_metrics_path}\n")
         handle.write(f"  Validation plot: {val_plot_path}\n")

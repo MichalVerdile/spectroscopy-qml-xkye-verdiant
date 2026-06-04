@@ -1,0 +1,73 @@
+================================================================================
+CNN IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/cnn/models/pos_msms/original/pos_msms_model.keras
+  Results directory: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original
+  Column: pos_msms (msms_positive_40ev)
+  Mode: original
+  Seed: None
+  Parameters: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 42, 'n_folds': None, 'best_fold': None, 'val_size': 79441, 'test_size': 79441, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.'}
+
+Test Set Performance:
+  accuracy: 0.0345
+  f1_micro: 0.6433
+  f1_macro: 0.1275
+  f1_weighted: 0.5505
+  f1_samples: 0.6357
+  precision_micro: 0.8035
+  precision_macro: 0.4305
+  precision_weighted: 0.7043
+  recall_micro: 0.5364
+  recall_macro: 0.1117
+  recall_weighted: 0.5364
+  hamming_accuracy: 0.9232
+
+Validation Set Performance:
+  accuracy: 0.0353
+  f1_micro: 0.6426
+  f1_macro: 0.1271
+  f1_weighted: 0.5495
+  f1_samples: 0.6349
+  precision_micro: 0.8026
+  precision_macro: 0.4462
+  precision_weighted: 0.7024
+  recall_micro: 0.5358
+  recall_macro: 0.1113
+  recall_weighted: 0.5358
+  hamming_accuracy: 0.9230
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9814 (support=76552)
+  Arene: F1=0.8880 (support=61543)
+  Ether: F1=0.6670 (support=44893)
+  Haloalkane: F1=0.6218 (support=36438)
+  Amine: F1=0.4662 (support=33528)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Acid anhydride: F1=0.0000 (support=67)
+  Alkyne: F1=0.0000 (support=1585)
+  Azo compound: F1=0.0000 (support=42)
+  Hydrazine: F1=0.0000 (support=905)
+  Phosphine: F1=0.0000 (support=59)
+
+Top 5 Functional Groups by Total Errors:
+  Ether: errors=30743, TP=30790, FP=16640, FN=14103, TN=17908, specificity=0.5184, example_fp_indices=[5, 6, 12, 21, 22, 24, 25, 28, 35, 37], example_fn_indices=[3, 4, 16, 17, 26, 39, 46, 51, 54, 55]
+  Amine: errors=28149, TP=12294, FP=6915, FN=21234, TN=38998, specificity=0.8494, example_fp_indices=[1, 25, 26, 27, 29, 36, 37, 46, 53, 68], example_fn_indices=[3, 11, 14, 15, 17, 18, 21, 22, 24, 30]
+  Haloalkane: errors=23160, TP=19038, FP=5760, FN=17400, TN=37243, specificity=0.8661, example_fp_indices=[21, 34, 35, 47, 60, 71, 88, 98, 100, 103], example_fn_indices=[3, 9, 14, 16, 20, 24, 27, 32, 33, 36]
+  Alcohol: errors=21384, TP=1116, FP=1326, FN=20058, TN=56941, specificity=0.9772, example_fp_indices=[22, 39, 46, 74, 201, 279, 288, 353, 358, 389], example_fn_indices=[1, 7, 9, 12, 14, 18, 21, 23, 25, 28]
+  Amide: errors=20498, TP=2374, FP=1863, FN=18635, TN=56569, specificity=0.9681, example_fp_indices=[15, 175, 231, 273, 291, 292, 304, 365, 368, 419], example_fn_indices=[1, 2, 19, 25, 26, 28, 33, 36, 37, 39]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/test_error_analysis_metrics.json
+  Test plot: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/test_top_problem_groups.png
+  Validation CSV: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/validation_error_analysis.csv
+  Validation metrics JSON: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/validation_error_analysis_metrics.json
+  Validation plot: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/validation_error_analysis_detailed.png
+  Validation top-problem plot: benchmark/cnn/results_600/pos_msms_evaluation/pos_msms/original/validation_top_problem_groups.png

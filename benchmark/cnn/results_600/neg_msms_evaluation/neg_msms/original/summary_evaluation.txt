@@ -1,0 +1,59 @@
+================================================================================
+CNN IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/cnn/models/neg_msms/original/neg_msms_model.keras
+  Results directory: benchmark/cnn/results_600/neg_msms_evaluation/neg_msms/original
+  Column: neg_msms (msms_negative_40ev)
+  Mode: original
+  Seed: None
+  Parameters: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 3245, 'n_folds': None, 'best_fold': None, 'val_size': None, 'test_size': 158881, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.', 'validation_note': 'No saved validation predictions/targets were found; validation artifacts were skipped.'}
+
+Test Set Performance:
+  accuracy: 0.0359
+  f1_micro: 0.6451
+  f1_macro: 0.1309
+  f1_weighted: 0.5550
+  f1_samples: 0.6403
+  precision_micro: 0.7749
+  precision_macro: 0.4629
+  precision_weighted: 0.6936
+  recall_micro: 0.5526
+  recall_macro: 0.1176
+  recall_weighted: 0.5526
+  hamming_accuracy: 0.9215
+
+Validation Set Performance:
+  skipped: no saved validation predictions/targets were available in this old results.pickle, and exact X_val/y_val arrays were not available for safe re-inference.
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9811 (support=152973)
+  Arene: F1=0.8786 (support=122943)
+  Haloalkane: F1=0.6496 (support=73341)
+  Ether: F1=0.6396 (support=90011)
+  Amine: F1=0.4778 (support=67269)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Acid anhydride: F1=0.0000 (support=129)
+  Aldehyde: F1=0.0000 (support=4088)
+  Azo compound: F1=0.0000 (support=105)
+  Hydrazine: F1=0.0000 (support=1742)
+  Phosphine: F1=0.0000 (support=121)
+
+Top 5 Functional Groups by Total Errors:
+  Ether: errors=63614, TP=56443, FP=30046, FN=33568, TN=38824, specificity=0.5637, example_fp_indices=[6, 19, 22, 25, 27, 28, 37, 44, 54, 56], example_fn_indices=[3, 9, 10, 15, 16, 18, 24, 32, 36, 38]
+  Amine: errors=55994, TP=25612, FP=14337, FN=41657, TN=77275, specificity=0.8435, example_fp_indices=[7, 52, 58, 72, 83, 91, 96, 114, 125, 139], example_fn_indices=[1, 2, 4, 5, 9, 10, 11, 13, 20, 21]
+  Haloalkane: errors=54311, TP=50340, FP=31310, FN=23001, TN=54230, specificity=0.6340, example_fp_indices=[1, 2, 8, 9, 10, 15, 24, 30, 32, 34], example_fn_indices=[4, 11, 14, 20, 21, 22, 27, 37, 40, 44]
+  Alcohol: errors=42840, TP=1621, FP=2152, FN=40688, TN=114420, specificity=0.9815, example_fp_indices=[20, 218, 225, 299, 452, 537, 891, 909, 1009, 1037], example_fn_indices=[8, 17, 19, 24, 25, 27, 29, 32, 37, 39]
+  Amide: errors=41268, TP=4509, FP=3837, FN=37431, TN=113104, specificity=0.9672, example_fp_indices=[24, 55, 80, 101, 126, 189, 229, 277, 458, 496], example_fn_indices=[3, 17, 18, 32, 40, 44, 45, 58, 66, 70]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/cnn/results_600/neg_msms_evaluation/neg_msms/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/cnn/results_600/neg_msms_evaluation/neg_msms/original/test_error_analysis_metrics.json
+  Test plot: benchmark/cnn/results_600/neg_msms_evaluation/neg_msms/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/cnn/results_600/neg_msms_evaluation/neg_msms/original/test_top_problem_groups.png
+  Validation artifacts: skipped; see validation_results.txt for explanation.

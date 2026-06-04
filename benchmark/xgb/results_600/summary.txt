@@ -2,135 +2,135 @@
 Model Evaluation Summary
 ================================================================================
 
-Result: c_nmr_val
-  Accuracy:           0.2241
-  F1 Score (micro):   0.8014
-  F1 Score (macro):   0.4687
-  F1 Score (weighted): 0.7719
-  F1 Score (samples): 0.7923
-  Precision (micro):  0.8840
-  Recall (micro):     0.7329
-  Precision (macro):  0.7544
-  Recall (macro):     0.3868
-  Precision (weighted): 0.8654
-  Recall (weighted): 0.7329
-  Subset Accuracy:    0.2241
-  Hamming Accuracy:   0.9531
+Result: neg_msms_test
+  Accuracy:           0.0263
+  F1 Score (micro):   0.6377
+  F1 Score (macro):   0.1120
+  F1 Score (weighted): 0.5268
+  F1 Score (samples): 0.6325
+  Precision (micro):  0.7743
+  Recall (micro):     0.5421
+  Precision (macro):  0.4194
+  Recall (macro):     0.1065
+  Precision (weighted): 0.7372
+  Recall (weighted): 0.5421
+  Subset Accuracy:    0.0263
+  Hamming Accuracy:   0.9205
 
   Bootstrap Confidence Intervals:
     Method: percentile bootstrap over evaluation samples, n_bootstrap=2000, ci_level=0.950, seed=42
-    accuracy: point=0.2241, CI=[0.2212, 0.2271], bootstrap_std=0.0015
-    subset_accuracy: point=0.2241, CI=[0.2212, 0.2271], bootstrap_std=0.0015
-    f1_micro: point=0.8014, CI=[0.8001, 0.8026], bootstrap_std=0.0006
-    f1_macro: point=0.4687, CI=[0.4476, 0.4809], bootstrap_std=0.0089
-    f1_weighted: point=0.7719, CI=[0.7704, 0.7733], bootstrap_std=0.0007
-    precision_micro: point=0.8840, CI=[0.8826, 0.8854], bootstrap_std=0.0007
-    precision_macro: point=0.7544, CI=[0.7187, 0.7738], bootstrap_std=0.0141
-    precision_weighted: point=0.8654, CI=[0.8637, 0.8671], bootstrap_std=0.0009
-    recall_micro: point=0.7329, CI=[0.7314, 0.7344], bootstrap_std=0.0008
-    recall_macro: point=0.3868, CI=[0.3712, 0.4023], bootstrap_std=0.0083
-    recall_weighted: point=0.7329, CI=[0.7314, 0.7344], bootstrap_std=0.0008
-    hamming_accuracy: point=0.9531, CI=[0.9528, 0.9534], bootstrap_std=0.0001
-    f1_samples: point=0.7923, CI=[0.7910, 0.7936], bootstrap_std=0.0007
-    Bootstrap CI CSV: benchmark/xgb/results_600/c_nmr_val_bootstrap_confidence_intervals.csv
-    Bootstrap CI JSON: benchmark/xgb/results_600/c_nmr_val_bootstrap_confidence_intervals.json
+    accuracy: point=0.0263, CI=[0.0252, 0.0275], bootstrap_std=0.0006
+    subset_accuracy: point=0.0263, CI=[0.0252, 0.0275], bootstrap_std=0.0006
+    f1_micro: point=0.6377, CI=[0.6366, 0.6389], bootstrap_std=0.0006
+    f1_macro: point=0.1120, CI=[0.1113, 0.1128], bootstrap_std=0.0004
+    f1_weighted: point=0.5268, CI=[0.5254, 0.5284], bootstrap_std=0.0007
+    precision_micro: point=0.7743, CI=[0.7728, 0.7758], bootstrap_std=0.0008
+    precision_macro: point=0.4194, CI=[0.3302, 0.4371], bootstrap_std=0.0275
+    precision_weighted: point=0.7372, CI=[0.7132, 0.7477], bootstrap_std=0.0088
+    recall_micro: point=0.5421, CI=[0.5409, 0.5433], bootstrap_std=0.0006
+    recall_macro: point=0.1065, CI=[0.1060, 0.1069], bootstrap_std=0.0002
+    recall_weighted: point=0.5421, CI=[0.5409, 0.5433], bootstrap_std=0.0006
+    hamming_accuracy: point=0.9205, CI=[0.9202, 0.9207], bootstrap_std=0.0001
+    f1_samples: point=0.6325, CI=[0.6313, 0.6338], bootstrap_std=0.0006
+    Bootstrap CI CSV: benchmark/xgb/results_600/neg_msms_test_bootstrap_confidence_intervals.csv
+    Bootstrap CI JSON: benchmark/xgb/results_600/neg_msms_test_bootstrap_confidence_intervals.json
 
-Result: c_nmr_test
-  Accuracy:           0.2234
-  F1 Score (micro):   0.8018
-  F1 Score (macro):   0.4449
-  F1 Score (weighted): 0.7721
-  F1 Score (samples): 0.7927
-  Precision (micro):  0.8851
-  Recall (micro):     0.7327
-  Precision (macro):  0.7065
-  Recall (macro):     0.3694
-  Precision (weighted): 0.8665
-  Recall (weighted): 0.7327
-  Subset Accuracy:    0.2234
-  Hamming Accuracy:   0.9531
-
-  Bootstrap Confidence Intervals:
-    Method: percentile bootstrap over evaluation samples, n_bootstrap=2000, ci_level=0.950, seed=42
-    accuracy: point=0.2234, CI=[0.2206, 0.2262], bootstrap_std=0.0014
-    subset_accuracy: point=0.2234, CI=[0.2206, 0.2262], bootstrap_std=0.0014
-    f1_micro: point=0.8018, CI=[0.8005, 0.8029], bootstrap_std=0.0006
-    f1_macro: point=0.4449, CI=[0.4372, 0.4521], bootstrap_std=0.0038
-    f1_weighted: point=0.7721, CI=[0.7706, 0.7735], bootstrap_std=0.0007
-    precision_micro: point=0.8851, CI=[0.8839, 0.8864], bootstrap_std=0.0007
-    precision_macro: point=0.7065, CI=[0.6818, 0.7325], bootstrap_std=0.0131
-    precision_weighted: point=0.8665, CI=[0.8649, 0.8680], bootstrap_std=0.0008
-    recall_micro: point=0.7327, CI=[0.7312, 0.7342], bootstrap_std=0.0008
-    recall_macro: point=0.3694, CI=[0.3643, 0.3749], bootstrap_std=0.0027
-    recall_weighted: point=0.7327, CI=[0.7312, 0.7342], bootstrap_std=0.0008
-    hamming_accuracy: point=0.9531, CI=[0.9528, 0.9534], bootstrap_std=0.0001
-    f1_samples: point=0.7927, CI=[0.7914, 0.7940], bootstrap_std=0.0006
-    Bootstrap CI CSV: benchmark/xgb/results_600/c_nmr_test_bootstrap_confidence_intervals.csv
-    Bootstrap CI JSON: benchmark/xgb/results_600/c_nmr_test_bootstrap_confidence_intervals.json
-
-Result: ir_val
-  Accuracy:           0.2346
-  F1 Score (micro):   0.8381
-  F1 Score (macro):   0.5458
-  F1 Score (weighted): 0.8187
-  F1 Score (samples): 0.8331
-  Precision (micro):  0.8865
-  Recall (micro):     0.7946
-  Precision (macro):  0.7755
-  Recall (macro):     0.4835
-  Precision (weighted): 0.8721
-  Recall (weighted): 0.7946
-  Subset Accuracy:    0.2346
-  Hamming Accuracy:   0.9603
+Result: neg_msms_val
+  Accuracy:           0.0268
+  F1 Score (micro):   0.6374
+  F1 Score (macro):   0.1122
+  F1 Score (weighted): 0.5268
+  F1 Score (samples): 0.6323
+  Precision (micro):  0.7741
+  Recall (micro):     0.5418
+  Precision (macro):  0.3751
+  Recall (macro):     0.1065
+  Precision (weighted): 0.7264
+  Recall (weighted): 0.5418
+  Subset Accuracy:    0.0268
+  Hamming Accuracy:   0.9204
 
   Bootstrap Confidence Intervals:
     Method: percentile bootstrap over evaluation samples, n_bootstrap=2000, ci_level=0.950, seed=42
-    accuracy: point=0.2346, CI=[0.2318, 0.2376], bootstrap_std=0.0015
-    subset_accuracy: point=0.2346, CI=[0.2318, 0.2376], bootstrap_std=0.0015
-    f1_micro: point=0.8381, CI=[0.8372, 0.8390], bootstrap_std=0.0005
-    f1_macro: point=0.5458, CI=[0.5347, 0.5571], bootstrap_std=0.0058
-    f1_weighted: point=0.8187, CI=[0.8176, 0.8198], bootstrap_std=0.0006
-    precision_micro: point=0.8865, CI=[0.8854, 0.8875], bootstrap_std=0.0005
-    precision_macro: point=0.7755, CI=[0.7201, 0.7845], bootstrap_std=0.0175
-    precision_weighted: point=0.8721, CI=[0.8708, 0.8734], bootstrap_std=0.0007
-    recall_micro: point=0.7946, CI=[0.7934, 0.7960], bootstrap_std=0.0006
-    recall_macro: point=0.4835, CI=[0.4759, 0.4924], bootstrap_std=0.0041
-    recall_weighted: point=0.7946, CI=[0.7934, 0.7960], bootstrap_std=0.0006
-    hamming_accuracy: point=0.9603, CI=[0.9601, 0.9606], bootstrap_std=0.0001
-    f1_samples: point=0.8331, CI=[0.8321, 0.8340], bootstrap_std=0.0005
-    Bootstrap CI CSV: benchmark/xgb/results_600/ir_val_bootstrap_confidence_intervals.csv
-    Bootstrap CI JSON: benchmark/xgb/results_600/ir_val_bootstrap_confidence_intervals.json
+    accuracy: point=0.0268, CI=[0.0257, 0.0279], bootstrap_std=0.0006
+    subset_accuracy: point=0.0268, CI=[0.0257, 0.0279], bootstrap_std=0.0006
+    f1_micro: point=0.6374, CI=[0.6363, 0.6386], bootstrap_std=0.0006
+    f1_macro: point=0.1122, CI=[0.1114, 0.1131], bootstrap_std=0.0004
+    f1_weighted: point=0.5268, CI=[0.5254, 0.5282], bootstrap_std=0.0007
+    precision_micro: point=0.7741, CI=[0.7725, 0.7756], bootstrap_std=0.0008
+    precision_macro: point=0.3751, CI=[0.3133, 0.4019], bootstrap_std=0.0232
+    precision_weighted: point=0.7264, CI=[0.7071, 0.7409], bootstrap_std=0.0086
+    recall_micro: point=0.5418, CI=[0.5406, 0.5430], bootstrap_std=0.0006
+    recall_macro: point=0.1065, CI=[0.1061, 0.1070], bootstrap_std=0.0002
+    recall_weighted: point=0.5418, CI=[0.5406, 0.5430], bootstrap_std=0.0006
+    hamming_accuracy: point=0.9204, CI=[0.9201, 0.9207], bootstrap_std=0.0001
+    f1_samples: point=0.6323, CI=[0.6310, 0.6335], bootstrap_std=0.0006
+    Bootstrap CI CSV: benchmark/xgb/results_600/neg_msms_val_bootstrap_confidence_intervals.csv
+    Bootstrap CI JSON: benchmark/xgb/results_600/neg_msms_val_bootstrap_confidence_intervals.json
 
-Result: ir_test
-  Accuracy:           0.2332
-  F1 Score (micro):   0.8380
-  F1 Score (macro):   0.5457
-  F1 Score (weighted): 0.8193
-  F1 Score (samples): 0.8326
-  Precision (micro):  0.8855
-  Recall (micro):     0.7954
-  Precision (macro):  0.7461
-  Recall (macro):     0.4838
-  Precision (weighted): 0.8718
-  Recall (weighted): 0.7954
-  Subset Accuracy:    0.2332
-  Hamming Accuracy:   0.9603
+Result: pos_msms_test
+  Accuracy:           0.0265
+  F1 Score (micro):   0.6345
+  F1 Score (macro):   0.1049
+  F1 Score (weighted): 0.5227
+  F1 Score (samples): 0.6281
+  Precision (micro):  0.8061
+  Recall (micro):     0.5232
+  Precision (macro):  0.4100
+  Recall (macro):     0.0990
+  Precision (weighted): 0.7381
+  Recall (weighted): 0.5232
+  Subset Accuracy:    0.0265
+  Hamming Accuracy:   0.9222
 
   Bootstrap Confidence Intervals:
     Method: percentile bootstrap over evaluation samples, n_bootstrap=2000, ci_level=0.950, seed=42
-    accuracy: point=0.2332, CI=[0.2304, 0.2361], bootstrap_std=0.0015
-    subset_accuracy: point=0.2332, CI=[0.2304, 0.2361], bootstrap_std=0.0015
-    f1_micro: point=0.8380, CI=[0.8371, 0.8390], bootstrap_std=0.0005
-    f1_macro: point=0.5457, CI=[0.5374, 0.5526], bootstrap_std=0.0039
-    f1_weighted: point=0.8193, CI=[0.8181, 0.8203], bootstrap_std=0.0006
-    precision_micro: point=0.8855, CI=[0.8844, 0.8865], bootstrap_std=0.0005
-    precision_macro: point=0.7461, CI=[0.7192, 0.7570], bootstrap_std=0.0087
-    precision_weighted: point=0.8718, CI=[0.8704, 0.8730], bootstrap_std=0.0006
-    recall_micro: point=0.7954, CI=[0.7942, 0.7967], bootstrap_std=0.0006
-    recall_macro: point=0.4838, CI=[0.4775, 0.4898], bootstrap_std=0.0032
-    recall_weighted: point=0.7954, CI=[0.7942, 0.7967], bootstrap_std=0.0006
-    hamming_accuracy: point=0.9603, CI=[0.9601, 0.9605], bootstrap_std=0.0001
-    f1_samples: point=0.8326, CI=[0.8316, 0.8336], bootstrap_std=0.0005
-    Bootstrap CI CSV: benchmark/xgb/results_600/ir_test_bootstrap_confidence_intervals.csv
-    Bootstrap CI JSON: benchmark/xgb/results_600/ir_test_bootstrap_confidence_intervals.json
+    accuracy: point=0.0265, CI=[0.0254, 0.0277], bootstrap_std=0.0006
+    subset_accuracy: point=0.0265, CI=[0.0254, 0.0277], bootstrap_std=0.0006
+    f1_micro: point=0.6345, CI=[0.6334, 0.6357], bootstrap_std=0.0006
+    f1_macro: point=0.1049, CI=[0.1038, 0.1062], bootstrap_std=0.0006
+    f1_weighted: point=0.5227, CI=[0.5213, 0.5241], bootstrap_std=0.0007
+    precision_micro: point=0.8061, CI=[0.8045, 0.8077], bootstrap_std=0.0008
+    precision_macro: point=0.4100, CI=[0.3399, 0.4281], bootstrap_std=0.0230
+    precision_weighted: point=0.7381, CI=[0.7172, 0.7473], bootstrap_std=0.0070
+    recall_micro: point=0.5232, CI=[0.5220, 0.5245], bootstrap_std=0.0006
+    recall_macro: point=0.0990, CI=[0.0984, 0.0997], bootstrap_std=0.0003
+    recall_weighted: point=0.5232, CI=[0.5220, 0.5245], bootstrap_std=0.0006
+    hamming_accuracy: point=0.9222, CI=[0.9220, 0.9225], bootstrap_std=0.0001
+    f1_samples: point=0.6281, CI=[0.6269, 0.6293], bootstrap_std=0.0006
+    Bootstrap CI CSV: benchmark/xgb/results_600/pos_msms_test_bootstrap_confidence_intervals.csv
+    Bootstrap CI JSON: benchmark/xgb/results_600/pos_msms_test_bootstrap_confidence_intervals.json
+
+Result: pos_msms_val
+  Accuracy:           0.0262
+  F1 Score (micro):   0.6350
+  F1 Score (macro):   0.1055
+  F1 Score (weighted): 0.5231
+  F1 Score (samples): 0.6291
+  Precision (micro):  0.8067
+  Recall (micro):     0.5235
+  Precision (macro):  0.4509
+  Recall (macro):     0.0993
+  Precision (weighted): 0.7443
+  Recall (weighted): 0.5235
+  Subset Accuracy:    0.0262
+  Hamming Accuracy:   0.9223
+
+  Bootstrap Confidence Intervals:
+    Method: percentile bootstrap over evaluation samples, n_bootstrap=2000, ci_level=0.950, seed=42
+    accuracy: point=0.0262, CI=[0.0251, 0.0273], bootstrap_std=0.0006
+    subset_accuracy: point=0.0262, CI=[0.0251, 0.0273], bootstrap_std=0.0006
+    f1_micro: point=0.6350, CI=[0.6337, 0.6362], bootstrap_std=0.0006
+    f1_macro: point=0.1055, CI=[0.1041, 0.1068], bootstrap_std=0.0007
+    f1_weighted: point=0.5231, CI=[0.5217, 0.5245], bootstrap_std=0.0007
+    precision_micro: point=0.8067, CI=[0.8052, 0.8083], bootstrap_std=0.0008
+    precision_macro: point=0.4509, CI=[0.3878, 0.4626], bootstrap_std=0.0211
+    precision_weighted: point=0.7443, CI=[0.7301, 0.7534], bootstrap_std=0.0060
+    recall_micro: point=0.5235, CI=[0.5222, 0.5248], bootstrap_std=0.0006
+    recall_macro: point=0.0993, CI=[0.0986, 0.1000], bootstrap_std=0.0004
+    recall_weighted: point=0.5235, CI=[0.5222, 0.5248], bootstrap_std=0.0006
+    hamming_accuracy: point=0.9223, CI=[0.9220, 0.9226], bootstrap_std=0.0001
+    f1_samples: point=0.6291, CI=[0.6278, 0.6303], bootstrap_std=0.0006
+    Bootstrap CI CSV: benchmark/xgb/results_600/pos_msms_val_bootstrap_confidence_intervals.csv
+    Bootstrap CI JSON: benchmark/xgb/results_600/pos_msms_val_bootstrap_confidence_intervals.json
 
