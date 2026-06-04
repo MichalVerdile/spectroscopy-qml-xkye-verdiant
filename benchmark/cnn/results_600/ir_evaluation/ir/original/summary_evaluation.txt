@@ -1,0 +1,59 @@
+================================================================================
+CNN IR - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: benchmark/cnn/models/ir/original/ir_model.keras
+  Results directory: benchmark/cnn/results_600/ir_evaluation/ir/original
+  Column: ir_spectra (ir_spectra)
+  Mode: original
+  Seed: None
+  Parameters: 0
+  Evaluation mode: saved binary predictions from results.pickle; no model re-inference; thresholds ignored.
+  Thresholds: mean=0.500, std=0.000
+  Split info: {'source': 'saved binary predictions/targets from results.pickle', 'seed': 3245, 'n_folds': None, 'best_fold': None, 'val_size': None, 'test_size': 158881, 'note': 'No model re-inference was run because this results.pickle does not contain exact X_test/X_val arrays.', 'validation_note': 'No saved validation predictions/targets were found; validation artifacts were skipped.'}
+
+Test Set Performance:
+  accuracy: 0.4124
+  f1_micro: 0.8940
+  f1_macro: 0.6812
+  f1_weighted: 0.8875
+  f1_samples: 0.8902
+  precision_micro: 0.9220
+  precision_macro: 0.8289
+  precision_weighted: 0.9160
+  recall_micro: 0.8677
+  recall_macro: 0.6200
+  recall_weighted: 0.8677
+  hamming_accuracy: 0.9734
+
+Validation Set Performance:
+  skipped: no saved validation predictions/targets were available in this old results.pickle, and exact X_val/y_val arrays were not available for safe re-inference.
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9920 (support=153033)
+  Alcohol: F1=0.9881 (support=42763)
+  Carboxylic acid: F1=0.9873 (support=15901)
+  Arene: F1=0.9799 (support=122920)
+  Isocyanate: F1=0.9738 (support=174)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=9)
+  Sulfonic acid: F1=0.0000 (support=0)
+  Azo compound: F1=0.0339 (support=115)
+  Phosphine: F1=0.3205 (support=117)
+  Hydrazone: F1=0.3364 (support=1049)
+
+Top 5 Functional Groups by Total Errors:
+  Haloalkane: errors=32934, TP=53679, FP=13333, FN=19601, TN=72268, specificity=0.8442, example_fp_indices=[21, 25, 38, 39, 44, 50, 55, 89, 95, 97], example_fn_indices=[0, 10, 13, 17, 18, 24, 41, 57, 82, 86]
+  Ether: errors=27594, TP=74915, FP=12738, FN=14856, TN=56372, specificity=0.8157, example_fp_indices=[32, 40, 65, 87, 88, 107, 152, 167, 169, 173], example_fn_indices=[1, 9, 42, 58, 77, 82, 84, 90, 93, 112]
+  Sulfide: errors=16269, TP=8652, FP=3257, FN=13012, TN=133960, specificity=0.9763, example_fp_indices=[41, 50, 65, 207, 239, 334, 496, 739, 803, 828], example_fn_indices=[6, 8, 22, 35, 58, 59, 66, 94, 95, 102]
+  Amide: errors=11770, TP=35235, FP=5045, FN=6725, TN=111876, specificity=0.9569, example_fp_indices=[6, 13, 24, 46, 124, 156, 225, 246, 318, 328], example_fn_indices=[48, 59, 62, 74, 82, 104, 125, 135, 145, 166]
+  Ester: errors=10762, TP=23248, FP=4159, FN=6603, TN=124871, specificity=0.9678, example_fp_indices=[5, 67, 106, 118, 151, 163, 218, 246, 316, 327], example_fn_indices=[28, 37, 50, 58, 127, 140, 178, 225, 226, 239]
+
+Generated Error Analysis Artifacts:
+  Test CSV: benchmark/cnn/results_600/ir_evaluation/ir/original/test_error_analysis.csv
+  Test metrics JSON: benchmark/cnn/results_600/ir_evaluation/ir/original/test_error_analysis_metrics.json
+  Test plot: benchmark/cnn/results_600/ir_evaluation/ir/original/test_error_analysis_detailed.png
+  Test top-problem plot: benchmark/cnn/results_600/ir_evaluation/ir/original/test_top_problem_groups.png
+  Validation artifacts: skipped; see validation_results.txt for explanation.

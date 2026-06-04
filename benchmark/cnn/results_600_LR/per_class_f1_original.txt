@@ -1,0 +1,199 @@
+================================================================================
+Per-Class F1 Scores - ORIGINAL
+================================================================================
+
+Model: cnmr
+  Acid anhydride       : 0.0000
+  Acyl halide          : 0.0000
+  Alcohol              : 0.0000
+  Aldehyde             : 0.0000
+  Alkane               : 0.9811
+  Alkene               : 0.0000
+  Alkyne               : 0.0000
+  Amide                : 0.0000
+  Amine                : 0.5919
+  Arene                : 0.8734
+  Azo compound         : 0.0000
+  Carbamate            : 0.0000
+  Carboxylic acid      : 0.0000
+  Enamine              : 0.0000
+  Enol                 : 0.0000
+  Ester                : 0.0000
+  Ether                : 0.7229
+  Haloalkane           : 0.6324
+  Hydrazine            : 0.0000
+  Hydrazone            : 0.0000
+  Imide                : 0.0000
+  Imine                : 0.0000
+  Isocyanate           : 0.0000
+  Isothiocyanate       : 0.0000
+  Ketone               : 0.1541
+  Nitrile              : 0.0000
+  Phenol               : 0.0000
+  Phosphine            : 0.0000
+  Sulfide              : 0.0000
+  Sulfonamide          : 0.0000
+  Sulfonate            : 0.0000
+  Sulfone              : 0.0000
+  Sulfonic acid        : 0.0000
+  Sulfoxide            : 0.0000
+  Thial                : 0.0000
+  Thioamide            : 0.0000
+  Thiol                : 0.0000
+
+Model: hnmr
+  Acid anhydride       : 0.0000
+  Acyl halide          : 0.0000
+  Alcohol              : 0.0000
+  Aldehyde             : 0.0020
+  Alkane               : 0.9811
+  Alkene               : 0.0121
+  Alkyne               : 0.0000
+  Amide                : 0.0007
+  Amine                : 0.4744
+  Arene                : 0.0000
+  Azo compound         : 0.0000
+  Carbamate            : 0.0021
+  Carboxylic acid      : 0.0000
+  Enamine              : 0.0000
+  Enol                 : 0.0000
+  Ester                : 0.0048
+  Ether                : 0.1312
+  Haloalkane           : 0.0000
+  Hydrazine            : 0.0000
+  Hydrazone            : 0.0000
+  Imide                : 0.0000
+  Imine                : 0.0000
+  Isocyanate           : 0.0000
+  Isothiocyanate       : 0.0000
+  Ketone               : 0.0000
+  Nitrile              : 0.0000
+  Phenol               : 0.0000
+  Phosphine            : 0.0000
+  Sulfide              : 0.0000
+  Sulfonamide          : 0.0000
+  Sulfonate            : 0.0000
+  Sulfone              : 0.0000
+  Sulfonic acid        : 0.0000
+  Sulfoxide            : 0.0000
+  Thial                : 0.0000
+  Thioamide            : 0.0000
+  Thiol                : 0.0000
+
+Model: ir
+  Acid anhydride       : 0.4638
+  Acyl halide          : 0.5573
+  Alcohol              : 0.9883
+  Aldehyde             : 0.6943
+  Alkane               : 0.9906
+  Alkene               : 0.7208
+  Alkyne               : 0.7271
+  Amide                : 0.8532
+  Amine                : 0.9204
+  Arene                : 0.9800
+  Azo compound         : 0.0385
+  Carbamate            : 0.9085
+  Carboxylic acid      : 0.9879
+  Enamine              : 0.5670
+  Enol                 : 0.5961
+  Ester                : 0.8084
+  Ether                : 0.8397
+  Haloalkane           : 0.7670
+  Hydrazine            : 0.6985
+  Hydrazone            : 0.3249
+  Imide                : 0.7867
+  Imine                : 0.3800
+  Isocyanate           : 0.9831
+  Isothiocyanate       : 0.8714
+  Ketone               : 0.5915
+  Nitrile              : 0.9281
+  Phenol               : 0.8841
+  Phosphine            : 0.2973
+  Sulfide              : 0.5474
+  Sulfonamide          : 0.9005
+  Sulfonate            : 0.9392
+  Sulfone              : 0.8189
+  Sulfonic acid        : 0.0000
+  Sulfoxide            : 0.4267
+  Thial                : 0.0000
+  Thioamide            : 0.6194
+  Thiol                : 0.9149
+
+Model: neg_msms
+  Acid anhydride       : 0.0000
+  Acyl halide          : 0.0000
+  Alcohol              : 0.0344
+  Aldehyde             : 0.0000
+  Alkane               : 0.9811
+  Alkene               : 0.0180
+  Alkyne               : 0.0013
+  Amide                : 0.1269
+  Amine                : 0.5020
+  Arene                : 0.8794
+  Azo compound         : 0.0000
+  Carbamate            : 0.1301
+  Carboxylic acid      : 0.0053
+  Enamine              : 0.0053
+  Enol                 : 0.0079
+  Ester                : 0.2289
+  Ether                : 0.6548
+  Haloalkane           : 0.6489
+  Hydrazine            : 0.0000
+  Hydrazone            : 0.0000
+  Imide                : 0.0013
+  Imine                : 0.0000
+  Isocyanate           : 0.0000
+  Isothiocyanate       : 0.0000
+  Ketone               : 0.0024
+  Nitrile              : 0.0398
+  Phenol               : 0.0034
+  Phosphine            : 0.0000
+  Sulfide              : 0.1355
+  Sulfonamide          : 0.1133
+  Sulfonate            : 0.0153
+  Sulfone              : 0.0041
+  Sulfonic acid        : 0.0000
+  Sulfoxide            : 0.0000
+  Thial                : 0.0000
+  Thioamide            : 0.0000
+  Thiol                : 0.0000
+
+Model: pos_msms
+  Acid anhydride       : 0.0000
+  Acyl halide          : 0.0099
+  Alcohol              : 0.0196
+  Aldehyde             : 0.0000
+  Alkane               : 0.9811
+  Alkene               : 0.0071
+  Alkyne               : 0.0000
+  Amide                : 0.1428
+  Amine                : 0.4770
+  Arene                : 0.8894
+  Azo compound         : 0.0000
+  Carbamate            : 0.0326
+  Carboxylic acid      : 0.0078
+  Enamine              : 0.0111
+  Enol                 : 0.0522
+  Ester                : 0.0477
+  Ether                : 0.6893
+  Haloalkane           : 0.6144
+  Hydrazine            : 0.0000
+  Hydrazone            : 0.0000
+  Imide                : 0.0000
+  Imine                : 0.0164
+  Isocyanate           : 0.0000
+  Isothiocyanate       : 0.0000
+  Ketone               : 0.0032
+  Nitrile              : 0.1167
+  Phenol               : 0.0022
+  Phosphine            : 0.0000
+  Sulfide              : 0.0462
+  Sulfonamide          : 0.0532
+  Sulfonate            : 0.0022
+  Sulfone              : 0.0032
+  Sulfonic acid        : 0.0000
+  Sulfoxide            : 0.0000
+  Thial                : 0.0000
+  Thioamide            : 0.0000
+  Thiol                : 0.0000
+

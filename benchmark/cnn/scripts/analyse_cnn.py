@@ -881,10 +881,10 @@ def load_bundle_from_results_pickle(results_pickle: Path) -> tuple[PredictionBun
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Detailed error analysis for FunctionalGroupCNN.")
 
-    parser.add_argument("--output-dir", type=Path, default="benchmark/cnn/results_whole/evaluation")
+    parser.add_argument("--output-dir", type=Path, default="benchmark/cnn/results/evaluation")
 
     # Fast path: use saved results.pickle directly.
-    parser.add_argument("--results-pickle", type=Path, default="benchmark/cnn/models_whole/ir/original/results.pickle")
+    parser.add_argument("--results-pickle", type=Path, default="benchmark/cnn/models/ir/original/results.pickle")
 
     # Full reload path: reconstruct data + load saved model.
     parser.add_argument("--analytical-data", type=Path, default=None)

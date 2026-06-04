@@ -9,7 +9,8 @@ import click
 import numpy as np
 import pandas as pd
 from keras import backend as K
-from keras.callbacks import Callback, LearningRateScheduler
+from keras import ops
+from keras.callbacks import Callback, EarlyStopping, ReduceLROnPlateau
 from keras.layers import (
     Activation,
     BatchNormalization,
@@ -138,6 +139,25 @@ class F1ScoreCallback(Callback):
                 average="macro",
                 zero_division=0,
             )
+
+
+class LearningRateLogger(Callback):
+    """
+    Stores the current optimizer learning rate in Keras' logs/history so it is
+    exported to the CSV training logs together with the other epoch metrics.
+    """
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+
+        learning_rate = self.model.optimizer.learning_rate
+
+        # If learning_rate is a schedule, evaluate it at the current optimizer step.
+        if callable(learning_rate):
+            learning_rate = learning_rate(self.model.optimizer.iterations)
+
+        learning_rate = float(ops.convert_to_numpy(learning_rate))
+        logs["learning_rate"] = learning_rate
 
 
 def match_group(mol: Chem.Mol, func_group) -> int:
@@ -328,7 +348,7 @@ def train_model(
     model = Model(inputs=input_tensor, outputs=output_tensor)
     model.summary()
 
-    optimizer = Adam()
+    optimizer = Adam(learning_rate=2.5e-4)
 
     if weighted == 1:
 
@@ -368,36 +388,45 @@ def train_model(
     else:
         model.compile(optimizer=optimizer, loss="binary_crossentropy")
 
-    def custom_learning_rate_schedular(epoch):
-        if epoch < 31:
-            return 2.5e-4
-        elif 31 <= epoch < 37:
-            return 2.5000001187436283e-05
-        elif 37 <= epoch < 42:
-            return 2.5000001187436284e-06
-
-        return 2.5000001187436284e-06
-
     print("Start training")
 
     X_test = X_test.reshape(X_test.shape[0], 600, 1)
 
-    lrs = LearningRateScheduler(custom_learning_rate_schedular)
+    monitor_metric = "val_loss" if X_val is not None and y_val is not None else "loss"
+
+    lr_scheduler = ReduceLROnPlateau(
+        monitor=monitor_metric,
+        factor=0.7,
+        patience=10,
+        mode="min",
+        min_lr=1e-8,
+        verbose=1,
+    )
+
+    early_stopping = EarlyStopping(
+        monitor=monitor_metric,
+        patience=20,
+        mode="min",
+        restore_best_weights=True,
+        verbose=1,
+    )
 
     fit_kwargs = {
         "x": X_train,
         "y": y_train,
-        "epochs": 42,
+        "epochs": 200,
         "batch_size": 1024,
         "verbose": 1,
         "callbacks": [
-            lrs,
             F1ScoreCallback(
                 X_train=X_train,
                 y_train=y_train,
                 X_val=X_val,
                 y_val=y_val,
             ),
+            lr_scheduler,
+            early_stopping,
+            LearningRateLogger(),
         ],
     }
 

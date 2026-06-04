@@ -1,0 +1,501 @@
+sample_index,num_false_negatives,num_false_positives,error_count,true_labels,predicted_labels,false_negative_labels,false_positive_labels
+2336,8,2,10,Alcohol | Alkane | Alkene | Amide | Enamine | Enol | Ester | Ether | Ketone,Alkane | Amine | Sulfide,Alcohol | Alkene | Amide | Enamine | Enol | Ester | Ether | Ketone,Amine | Sulfide
+5729,9,1,10,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone,Aldehyde | Alkane | Arene,Acid anhydride | Alcohol | Alkene | Amine | Enamine | Enol | Ester | Ether | Ketone,Aldehyde
+54945,8,2,10,Alkane | Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Sulfide,Alcohol | Alkane | Phenol,Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Sulfide,Alcohol | Phenol
+58478,8,2,10,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Ether | Ketone | Sulfide,Amine | Haloalkane,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Ether | Ketone | Sulfide,Amine | Haloalkane
+60467,10,0,10,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone,Alkane,Acid anhydride | Alcohol | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone,
+76544,10,0,10,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Arene | Carbamate | Enamine | Enol | Ester | Ether | Ketone,Alkane | Arene,Acid anhydride | Alcohol | Alkene | Amine | Carbamate | Enamine | Enol | Ester | Ether | Ketone,
+17341,8,1,9,Alcohol | Alkane | Alkene | Carboxylic acid | Ester | Ether | Ketone | Sulfide,Haloalkane,Alcohol | Alkane | Alkene | Carboxylic acid | Ester | Ether | Ketone | Sulfide,Haloalkane
+26774,7,2,9,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ester | Ether | Phenol,Alkane | Amide | Sulfide,Alcohol | Amine | Arene | Carboxylic acid | Ester | Ether | Phenol,Amide | Sulfide
+28718,7,2,9,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Enamine | Imide | Phenol,Alkane | Arene | Ether | Haloalkane,Alcohol | Alkene | Amide | Carboxylic acid | Enamine | Imide | Phenol,Ether | Haloalkane
+42135,6,3,9,Alkane | Alkene | Amine | Enamine | Haloalkane | Nitrile | Thioamide,Aldehyde | Alkane | Amide | Arene,Alkene | Amine | Enamine | Haloalkane | Nitrile | Thioamide,Aldehyde | Amide | Arene
+45754,6,3,9,Alkane | Alkene | Amide | Enamine | Ester | Ether | Haloalkane | Ketone,Alcohol | Alkane | Alkene | Amine | Nitrile,Amide | Enamine | Ester | Ether | Haloalkane | Ketone,Alcohol | Amine | Nitrile
+47810,8,1,9,Acid anhydride | Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone,Alkane | Amide | Arene | Haloalkane | Ketone,Acid anhydride | Alcohol | Alkene | Amine | Enamine | Enol | Ester | Ether,Haloalkane
+52509,5,4,9,Alkane | Alkyne | Amide | Amine | Arene | Hydrazine,Alcohol | Alkane | Haloalkane | Ketone | Sulfide,Alkyne | Amide | Amine | Arene | Hydrazine,Alcohol | Haloalkane | Ketone | Sulfide
+54247,6,3,9,Alkene | Amide | Amine | Enamine | Ketone | Sulfide,Alcohol | Arene | Haloalkane,Alkene | Amide | Amine | Enamine | Ketone | Sulfide,Alcohol | Arene | Haloalkane
+56863,9,0,9,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Enamine | Enol | Ester | Ether | Ketone,Alkane,Acid anhydride | Alcohol | Alkene | Amine | Enamine | Enol | Ester | Ether | Ketone,
+71069,5,4,9,Alkane | Alkene | Amine | Enamine | Ester | Ether,Alcohol | Aldehyde | Alkane | Carboxylic acid | Haloalkane,Alkene | Amine | Enamine | Ester | Ether,Alcohol | Aldehyde | Carboxylic acid | Haloalkane
+74892,8,1,9,Alcohol | Aldehyde | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ester | Ether | Haloalkane,Alkane | Amide | Arene | Haloalkane,Alcohol | Aldehyde | Alkene | Amine | Carboxylic acid | Enamine | Ester | Ether,Amide
+1009,5,3,8,Alkane | Alkene | Arene | Ester | Ether | Nitrile,Alcohol | Alkane | Haloalkane | Phenol,Alkene | Arene | Ester | Ether | Nitrile,Alcohol | Haloalkane | Phenol
+2145,6,2,8,Alcohol | Alkane | Amine | Arene | Ester | Ether | Phenol,Alkane | Haloalkane | Nitrile,Alcohol | Amine | Arene | Ester | Ether | Phenol,Haloalkane | Nitrile
+2380,4,4,8,Alkane | Amide | Amine | Arene | Ketone | Sulfide,Alcohol | Alkane | Arene | Ester | Ether | Haloalkane,Amide | Amine | Ketone | Sulfide,Alcohol | Ester | Ether | Haloalkane
+4554,7,1,8,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Nitrile | Sulfone,Aldehyde | Alkane,Alkene | Amine | Arene | Enamine | Haloalkane | Nitrile | Sulfone,Aldehyde
+6018,6,2,8,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ester | Ether,Alkane | Amide | Arene | Ether | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Ester,Amide | Haloalkane
+6744,6,2,8,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Sulfonamide | Sulfoxide,Alkane | Amide | Haloalkane,Alcohol | Amine | Arene | Carboxylic acid | Sulfonamide | Sulfoxide,Amide | Haloalkane
+8180,6,2,8,Alkane | Alkene | Amide | Arene | Ether | Haloalkane | Ketone | Sulfide,Alcohol | Alkane | Amine | Arene,Alkene | Amide | Ether | Haloalkane | Ketone | Sulfide,Alcohol | Amine
+10774,7,1,8,Alkane | Amide | Amine | Arene | Ether | Haloalkane | Imide | Sulfide | Sulfonamide,Aldehyde | Alkane | Arene,Amide | Amine | Ether | Haloalkane | Imide | Sulfide | Sulfonamide,Aldehyde
+17480,7,1,8,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Phenol | Sulfide,Alkane | Haloalkane,Alcohol | Amine | Arene | Carboxylic acid | Ether | Phenol | Sulfide,Haloalkane
+18517,7,1,8,Alcohol | Alkane | Alkene | Enol | Ester | Ether | Sulfide | Sulfone,Alkane | Haloalkane,Alcohol | Alkene | Enol | Ester | Ether | Sulfide | Sulfone,Haloalkane
+18832,8,0,8,Alcohol | Alkane | Amide | Arene | Ester | Ether | Haloalkane | Phenol | Sulfonamide,Alkane,Alcohol | Amide | Arene | Ester | Ether | Haloalkane | Phenol | Sulfonamide,
+19863,6,2,8,Alcohol | Alkane | Alkene | Amine | Arene | Enol | Ketone | Thioamide,Aldehyde | Alkane | Arene | Sulfide,Alcohol | Alkene | Amine | Enol | Ketone | Thioamide,Aldehyde | Sulfide
+19882,8,0,8,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Hydrazine | Hydrazone | Phenol,Alkane | Arene,Alcohol | Alkene | Amide | Amine | Enamine | Hydrazine | Hydrazone | Phenol,
+21225,6,2,8,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Enamine | Ether | Phenol | Sulfide,Aldehyde | Alkane | Arene | Ether | Haloalkane,Alcohol | Alkene | Carboxylic acid | Enamine | Phenol | Sulfide,Aldehyde | Haloalkane
+23294,5,3,8,Alcohol | Alkane | Amine | Sulfide | Sulfonamide | Sulfone,Alkane | Amide | Arene | Haloalkane,Alcohol | Amine | Sulfide | Sulfonamide | Sulfone,Amide | Arene | Haloalkane
+26779,5,3,8,Alkane | Amine | Ester | Ether | Sulfide | Sulfonamide | Sulfone,Alkane | Arene | Haloalkane | Nitrile | Sulfone,Amine | Ester | Ether | Sulfide | Sulfonamide,Arene | Haloalkane | Nitrile
+27081,6,2,8,Alkane | Alkene | Amine | Enamine | Imine | Nitrile,Haloalkane | Sulfide,Alkane | Alkene | Amine | Enamine | Imine | Nitrile,Haloalkane | Sulfide
+27106,6,2,8,Alcohol | Alkane | Amide | Arene | Ether | Nitrile | Phenol,Alkane | Amine | Haloalkane,Alcohol | Amide | Arene | Ether | Nitrile | Phenol,Amine | Haloalkane
+29522,7,1,8,Alcohol | Alkene | Amide | Arene | Enamine | Imide | Nitrile | Phenol,Arene | Haloalkane,Alcohol | Alkene | Amide | Enamine | Imide | Nitrile | Phenol,Haloalkane
+30211,7,1,8,Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Sulfide | Sulfonamide,Alcohol | Alkane | Arene | Ether | Haloalkane,Alkene | Amine | Enamine | Enol | Ester | Sulfide | Sulfonamide,Haloalkane
+30779,6,2,8,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Ether | Sulfide | Thioamide,Amide | Arene | Ether | Haloalkane | Imide,Alcohol | Alkane | Alkene | Carboxylic acid | Sulfide | Thioamide,Haloalkane | Imide
+31123,6,2,8,Alcohol | Alkane | Alkyne | Arene | Carboxylic acid | Ether | Haloalkane | Sulfide,Alkane | Amine | Arene | Sulfonamide,Alcohol | Alkyne | Carboxylic acid | Ether | Haloalkane | Sulfide,Amine | Sulfonamide
+31526,5,3,8,Alkane | Amide | Amine | Arene | Haloalkane,Alcohol | Alkene | Carboxylic acid,Alkane | Amide | Amine | Arene | Haloalkane,Alcohol | Alkene | Carboxylic acid
+31728,6,2,8,Alkane | Alkene | Amine | Arene | Enamine | Ether | Nitrile,Alcohol | Alkane | Haloalkane,Alkene | Amine | Arene | Enamine | Ether | Nitrile,Alcohol | Haloalkane
+35718,5,3,8,Alkane | Alkene | Amine | Arene | Enamine | Nitrile | Sulfide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkene | Amine | Enamine | Nitrile | Sulfide,Alcohol | Carboxylic acid | Haloalkane
+35854,8,0,8,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Imide | Phenol | Sulfide,Alcohol | Arene | Haloalkane | Phenol,Alkane | Alkene | Amide | Amine | Enamine | Ether | Imide | Sulfide,
+36933,5,3,8,Alkane | Alkene | Arene | Carbamate | Enamine | Ester | Ether | Haloalkane,Alcohol | Alkane | Amine | Arene | Ether | Phenol,Alkene | Carbamate | Enamine | Ester | Haloalkane,Alcohol | Amine | Phenol
+38198,7,1,8,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enol | Ketone | Phenol | Sulfide,Alkane | Amide | Arene | Haloalkane,Alcohol | Alkene | Amine | Enol | Ketone | Phenol | Sulfide,Haloalkane
+38804,6,2,8,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Hydrazine,Alcohol | Alkane | Arene | Haloalkane | Thiol,Alkene | Amine | Enamine | Ester | Ether | Hydrazine,Alcohol | Thiol
+39926,5,3,8,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Ketone,Alcohol | Alkane | Amine | Arene | Haloalkane | Phenol,Alkene | Enamine | Ester | Ether | Ketone,Alcohol | Haloalkane | Phenol
+40710,8,0,8,Alcohol | Alkane | Amine | Arene | Ester | Ether | Haloalkane | Hydrazone | Phenol | Sulfide | Thioamide,Alkane | Arene | Haloalkane,Alcohol | Amine | Ester | Ether | Hydrazone | Phenol | Sulfide | Thioamide,
+41610,6,2,8,Alkane | Amide | Arene | Ether | Haloalkane | Sulfide,Alcohol | Carboxylic acid,Alkane | Amide | Arene | Ether | Haloalkane | Sulfide,Alcohol | Carboxylic acid
+42526,5,3,8,Alkane | Amide | Amine | Arene | Haloalkane | Imide,Alcohol | Alkane | Alkene | Ketone,Amide | Amine | Arene | Haloalkane | Imide,Alcohol | Alkene | Ketone
+43280,7,1,8,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane | Ketone,Amine,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane | Ketone,Amine
+43598,8,0,8,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ether | Haloalkane,Alkane,Alcohol | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ether | Haloalkane,
+48180,4,4,8,Alcohol | Alkane | Alkene | Carbamate | Enamine | Enol | Ether,Alkane | Amide | Carbamate | Ether | Haloalkane | Imide | Sulfide,Alcohol | Alkene | Enamine | Enol,Amide | Haloalkane | Imide | Sulfide
+50939,5,3,8,Alkane | Alkene | Amide | Amine | Arene | Enamine | Haloalkane | Nitrile,Alcohol | Alkane | Arene | Haloalkane | Ketone | Phenol,Alkene | Amide | Amine | Enamine | Nitrile,Alcohol | Ketone | Phenol
+51139,6,2,8,Alkane | Alkene | Amine | Enamine | Hydrazine | Imine,Alcohol | Haloalkane,Alkane | Alkene | Amine | Enamine | Hydrazine | Imine,Alcohol | Haloalkane
+51173,5,3,8,Alkane | Alkene | Ester | Ether | Thiol,Alcohol | Carboxylic acid | Haloalkane,Alkane | Alkene | Ester | Ether | Thiol,Alcohol | Carboxylic acid | Haloalkane
+51496,6,2,8,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Haloalkane,Alkane | Ester | Ether,Alcohol | Amide | Amine | Arene | Carboxylic acid | Haloalkane,Ester | Ether
+51985,6,2,8,Alcohol | Alkane | Amine | Arene | Azo compound | Nitrile | Phenol | Sulfonamide,Alkane | Amide | Arene | Ketone,Alcohol | Amine | Azo compound | Nitrile | Phenol | Sulfonamide,Amide | Ketone
+53994,7,1,8,Alcohol | Alkane | Alkene | Arene | Ester | Ether | Ketone | Nitrile | Phenol,Alcohol | Alkane | Carboxylic acid,Alkene | Arene | Ester | Ether | Ketone | Nitrile | Phenol,Carboxylic acid
+54194,6,2,8,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Nitrile,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkene | Amine | Enamine | Ester | Ether | Nitrile,Alcohol | Carboxylic acid
+55673,8,0,8,Acid anhydride | Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone | Phenol,Alcohol | Alkane | Amide | Arene | Phenol,Acid anhydride | Alkene | Amine | Enamine | Enol | Ester | Ether | Ketone,
+56685,7,1,8,Alkane | Alkene | Amide | Amine | Enamine | Hydrazine | Ketone | Sulfide | Sulfonamide,Alkane | Haloalkane | Sulfide,Alkene | Amide | Amine | Enamine | Hydrazine | Ketone | Sulfonamide,Haloalkane
+58135,5,3,8,Alkane | Alkene | Amide | Carbamate | Enamine | Ester | Ether | Sulfide,Alcohol | Alkane | Arene | Ester | Ether | Haloalkane,Alkene | Amide | Carbamate | Enamine | Sulfide,Alcohol | Arene | Haloalkane
+58314,5,3,8,Alkane | Alkene | Amine | Arene | Enamine | Ketone | Sulfide,Alcohol | Alkane | Amide | Arene | Haloalkane,Alkene | Amine | Enamine | Ketone | Sulfide,Alcohol | Amide | Haloalkane
+59928,4,4,8,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane,Alkane | Amide | Amine | Haloalkane | Nitrile | Sulfonamide,Alcohol | Arene | Carboxylic acid | Ether,Amide | Amine | Nitrile | Sulfonamide
+60428,7,1,8,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Imide | Phenol,Alkane | Arene | Ester | Ether | Haloalkane,Alcohol | Alkene | Amide | Amine | Enamine | Imide | Phenol,Ester
+61977,5,3,8,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Nitrile,Alkane | Alkene | Haloalkane | Ketone,Alcohol | Arene | Carboxylic acid | Ether | Nitrile,Alkene | Haloalkane | Ketone
+62309,5,3,8,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Enamine | Sulfide,Alkane | Alkene | Amine | Arene | Ester | Ether,Alcohol | Amide | Carboxylic acid | Enamine | Sulfide,Amine | Ester | Ether
+63252,6,2,8,Alcohol | Alkene | Arene | Carbamate | Enol | Ether | Sulfone,Amide | Arene | Haloalkane,Alcohol | Alkene | Carbamate | Enol | Ether | Sulfone,Amide | Haloalkane
+65147,6,2,8,Alcohol | Alkane | Alkene | Arene | Enol | Ester | Ether,Alkane | Amine | Sulfide,Alcohol | Alkene | Arene | Enol | Ester | Ether,Amine | Sulfide
+66628,6,2,8,Alcohol | Alkane | Alkene | Arene | Azo compound | Enol | Ester | Ether,Alcohol | Arene | Carboxylic acid | Haloalkane,Alkane | Alkene | Azo compound | Enol | Ester | Ether,Carboxylic acid | Haloalkane
+69926,7,1,8,Alkane | Alkene | Amide | Amine | Arene | Ether | Imide | Sulfide,Alkane | Haloalkane,Alkene | Amide | Amine | Arene | Ether | Imide | Sulfide,Haloalkane
+70768,6,2,8,Alcohol | Alkane | Alkene | Amine | Arene | Nitrile | Phenol | Sulfonamide,Alkane | Arene | Ether | Haloalkane,Alcohol | Alkene | Amine | Nitrile | Phenol | Sulfonamide,Ether | Haloalkane
+74357,5,3,8,Alcohol | Alkane | Amide | Amine | Hydrazine | Imide | Phenol,Alcohol | Alkane | Carboxylic acid | Ether | Haloalkane,Amide | Amine | Hydrazine | Imide | Phenol,Carboxylic acid | Ether | Haloalkane
+75364,5,3,8,Alcohol | Alkane | Alkene | Amide | Carboxylic acid | Enamine | Sulfide | Sulfoxide,Alcohol | Alkane | Alkene | Arene | Ether | Haloalkane,Amide | Carboxylic acid | Enamine | Sulfide | Sulfoxide,Arene | Ether | Haloalkane
+77847,3,5,8,Alkane | Alkene | Arene | Ether | Haloalkane | Sulfide,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Ether | Phenol,Alkene | Haloalkane | Sulfide,Alcohol | Amide | Amine | Carboxylic acid | Phenol
+78241,7,1,8,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Haloalkane | Nitrile,Alkane | Arene | Imine,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Haloalkane | Nitrile,Imine
+1020,5,2,7,Alcohol | Alkane | Amide | Arene | Hydrazone | Phenol | Sulfide,Alkane | Amine | Arene | Ether,Alcohol | Amide | Hydrazone | Phenol | Sulfide,Amine | Ether
+1683,6,1,7,Alcohol | Alkane | Amide | Carboxylic acid | Ester | Ether | Sulfide,Alkane | Amine,Alcohol | Amide | Carboxylic acid | Ester | Ether | Sulfide,Amine
+1704,4,3,7,Alcohol | Alkane | Arene | Phenol | Sulfone,Aldehyde | Alkane | Ether | Sulfide,Alcohol | Arene | Phenol | Sulfone,Aldehyde | Ether | Sulfide
+2449,3,4,7,Alcohol | Alkane | Amide | Arene | Sulfonamide,Alkane | Amine | Arene | Ester | Ether | Sulfide,Alcohol | Amide | Sulfonamide,Amine | Ester | Ether | Sulfide
+3466,6,1,7,Alcohol | Alkane | Alkyne | Amide | Arene | Carboxylic acid | Ether | Haloalkane,Alkane | Amine | Haloalkane,Alcohol | Alkyne | Amide | Arene | Carboxylic acid | Ether,Amine
+3700,4,3,7,Alkane | Amide | Amine | Arene | Sulfonate,Alcohol | Alkane | Carboxylic acid | Sulfone,Amide | Amine | Arene | Sulfonate,Alcohol | Carboxylic acid | Sulfone
+3934,6,1,7,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane | Ketone,Alkane | Nitrile,Alcohol | Arene | Carboxylic acid | Ether | Haloalkane | Ketone,Nitrile
+4301,5,2,7,Alcohol | Alkene | Amide | Arene | Enamine | Enol | Haloalkane,Arene | Haloalkane | Nitrile | Sulfide,Alcohol | Alkene | Amide | Enamine | Enol,Nitrile | Sulfide
+4380,5,2,7,Alkane | Amide | Ester | Ether | Imide | Sulfide,Alcohol | Alkane | Carboxylic acid,Amide | Ester | Ether | Imide | Sulfide,Alcohol | Carboxylic acid
+5044,4,3,7,Alkane | Amide | Amine | Arene | Haloalkane | Hydrazine | Imide,Alcohol | Alkane | Arene | Ether | Haloalkane | Phenol,Amide | Amine | Hydrazine | Imide,Alcohol | Ether | Phenol
+5361,7,0,7,Alcohol | Aldehyde | Alkane | Alkene | Arene | Ester | Ether | Phenol,Alkane,Alcohol | Aldehyde | Alkene | Arene | Ester | Ether | Phenol,
+5436,5,2,7,Alkane | Alkene | Amine | Enamine | Nitrile | Sulfone,Alkane | Amide | Haloalkane,Alkene | Amine | Enamine | Nitrile | Sulfone,Amide | Haloalkane
+6726,4,3,7,Alcohol | Alkane | Amide | Arene | Ketone | Nitrile,Alkane | Arene | Ester | Ether | Haloalkane,Alcohol | Amide | Ketone | Nitrile,Ester | Ether | Haloalkane
+6923,7,0,7,Alkane | Alkene | Amide | Amine | Arene | Ether | Haloalkane | Imide | Nitrile | Sulfide,Alkane | Arene | Haloalkane,Alkene | Amide | Amine | Ether | Imide | Nitrile | Sulfide,
+6994,5,2,7,Alcohol | Alkane | Amine | Arene | Haloalkane | Phenol | Sulfonamide,Alcohol | Alkane | Alkene | Ether,Amine | Arene | Haloalkane | Phenol | Sulfonamide,Alkene | Ether
+7032,7,0,7,Alcohol | Alkene | Amide | Amine | Arene | Carboxylic acid | Enamine | Haloalkane | Hydrazine | Imide,Alcohol | Arene | Haloalkane,Alkene | Amide | Amine | Carboxylic acid | Enamine | Hydrazine | Imide,
+7102,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Ether | Phenol | Sulfide | Thioamide,Alkane | Arene | Ether,Alcohol | Alkene | Amide | Amine | Phenol | Sulfide | Thioamide,
+7362,5,2,7,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Imide | Phenol,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Carboxylic acid | Imide | Phenol,Ether | Haloalkane
+8166,6,1,7,Alkane | Alkene | Amine | Arene | Carbamate | Enamine | Ether | Haloalkane | Imine | Ketone | Thioamide,Alkane | Amine | Arene | Ether | Sulfide | Thioamide,Alkene | Carbamate | Enamine | Haloalkane | Imine | Ketone,Sulfide
+9064,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Carbamate | Carboxylic acid | Ether | Haloalkane | Hydrazine,Alkane | Arene | Carbamate | Ether,Alcohol | Alkene | Amide | Amine | Carboxylic acid | Haloalkane | Hydrazine,
+9259,6,1,7,Alkane | Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Hydrazine | Sulfide,Alkane | Amide | Amine | Ester | Ether,Alkene | Arene | Enamine | Haloalkane | Hydrazine | Sulfide,Ester
+9450,6,1,7,Alkane | Amide | Arene | Ester | Ether | Haloalkane | Ketone | Sulfide,Alkane | Alkene | Arene,Amide | Ester | Ether | Haloalkane | Ketone | Sulfide,Alkene
+9698,4,3,7,Alcohol | Alkane | Alkyne | Amide | Arene | Ketone,Alkane | Amine | Arene | Ether | Haloalkane,Alcohol | Alkyne | Amide | Ketone,Amine | Ether | Haloalkane
+9770,4,3,7,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Isothiocyanate | Sulfonamide,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane | Sulfide,Amine | Ester | Isothiocyanate | Sulfonamide,Alcohol | Carboxylic acid | Sulfide
+10982,5,2,7,Alkane | Alkene | Ester | Ether | Ketone,Alcohol | Haloalkane,Alkane | Alkene | Ester | Ether | Ketone,Alcohol | Haloalkane
+11097,5,2,7,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Ketone,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Amine | Carboxylic acid | Ketone,Ether | Haloalkane
+11232,6,1,7,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Imine,Alkane | Arene | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Imine,Haloalkane
+13105,4,3,7,Alkane | Amide | Amine | Haloalkane | Nitrile,Alcohol | Alkane | Ester | Ether,Amide | Amine | Haloalkane | Nitrile,Alcohol | Ester | Ether
+13880,7,0,7,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Haloalkane | Imide | Sulfide,Alkane | Haloalkane,Alcohol | Alkene | Amide | Arene | Carboxylic acid | Imide | Sulfide,
+14089,6,1,7,Acid anhydride | Alcohol | Alkane | Arene | Ester | Ether | Ketone | Phenol,Alcohol | Alkane | Amine,Acid anhydride | Arene | Ester | Ether | Ketone | Phenol,Amine
+14195,6,1,7,Alcohol | Alkane | Alkene | Enol | Haloalkane | Ketone | Sulfoxide,Alkane | Arene,Alcohol | Alkene | Enol | Haloalkane | Ketone | Sulfoxide,Arene
+14674,3,4,7,Alkane | Amide | Arene | Haloalkane | Sulfide,Alkane | Alkene | Amine | Arene | Ester | Ether,Amide | Haloalkane | Sulfide,Alkene | Amine | Ester | Ether
+14943,6,1,7,Alcohol | Alkane | Amide | Arene | Ether | Haloalkane | Nitrile | Phenol,Alkane | Amide | Sulfide,Alcohol | Arene | Ether | Haloalkane | Nitrile | Phenol,Sulfide
+14960,5,2,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Ketone | Sulfide,Aldehyde | Alkane | Amine | Ester | Ether,Alcohol | Arene | Carboxylic acid | Ketone | Sulfide,Aldehyde | Ester
+15068,4,3,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid,Aldehyde | Alkane | Carbamate | Ether,Alcohol | Amine | Arene | Carboxylic acid,Aldehyde | Carbamate | Ether
+15424,5,2,7,Alcohol | Aldehyde | Alkane | Arene | Ether | Ketone | Phenol,Alkane | Amide | Carbamate | Ether,Alcohol | Aldehyde | Arene | Ketone | Phenol,Amide | Carbamate
+15426,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Enol | Haloalkane | Nitrile,Alkane,Alcohol | Alkene | Amide | Amine | Enol | Haloalkane | Nitrile,
+15517,6,1,7,Alkane | Alkene | Amide | Amine | Arene | Enamine | Hydrazone | Sulfide,Alkane | Arene | Haloalkane,Alkene | Amide | Amine | Enamine | Hydrazone | Sulfide,Haloalkane
+15773,7,0,7,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Ester | Ether | Sulfide | Thioamide,Alkane | Arene | Ether,Alcohol | Alkene | Amide | Carboxylic acid | Ester | Sulfide | Thioamide,
+16044,5,2,7,Alcohol | Alkane | Amine | Arene | Hydrazone | Imine | Phenol,Alkane | Arene | Ether | Haloalkane,Alcohol | Amine | Hydrazone | Imine | Phenol,Ether | Haloalkane
+17132,7,0,7,Alcohol | Alkane | Alkene | Arene | Enol | Ether | Haloalkane | Ketone,Alkane,Alcohol | Alkene | Arene | Enol | Ether | Haloalkane | Ketone,
+18049,5,2,7,Alcohol | Alkane | Amine | Arene | Ether | Phenol | Thioamide,Alkane | Alkene | Arene | Haloalkane,Alcohol | Amine | Ether | Phenol | Thioamide,Alkene | Haloalkane
+18120,5,2,7,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Ether | Ketone | Phenol,Alkane | Arene | Ester | Ether | Haloalkane,Alcohol | Alkene | Carboxylic acid | Ketone | Phenol,Ester | Haloalkane
+18255,5,2,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Hydrazone | Sulfide,Alkane | Amide | Arene | Haloalkane,Alcohol | Amine | Carboxylic acid | Hydrazone | Sulfide,Amide | Haloalkane
+18519,5,2,7,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Ketone | Sulfide,Alkane | Amide | Amine | Arene | Haloalkane,Alcohol | Alkene | Carboxylic acid | Ketone | Sulfide,Amide | Haloalkane
+19382,6,1,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Carboxylic acid | Hydrazone,Alkane | Arene | Sulfide,Alcohol | Alkene | Amide | Amine | Carboxylic acid | Hydrazone,Sulfide
+19977,5,2,7,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane | Imide,Amine | Arene | Haloalkane | Nitrile,Alcohol | Alkane | Amide | Carboxylic acid | Imide,Amine | Nitrile
+20041,4,3,7,Alcohol | Alkane | Carboxylic acid | Ether | Hydrazone | Sulfide,Alkane | Amine | Arene | Ether | Sulfonamide,Alcohol | Carboxylic acid | Hydrazone | Sulfide,Amine | Arene | Sulfonamide
+20091,5,2,7,Alkane | Amine | Arene | Ester | Ether | Sulfide | Sulfonamide,Alcohol | Alkane | Arene | Haloalkane,Amine | Ester | Ether | Sulfide | Sulfonamide,Alcohol | Haloalkane
+20268,5,2,7,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Phenol | Sulfide,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Carboxylic acid | Phenol | Sulfide,Ether | Haloalkane
+20341,6,1,7,Alcohol | Alkane | Arene | Carboxylic acid | Ester | Ether | Phenol,Alkane | Haloalkane,Alcohol | Arene | Carboxylic acid | Ester | Ether | Phenol,Haloalkane
+20961,7,0,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Sulfonamide | Sulfonate,Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ester | Ether | Sulfonamide | Sulfonate,
+20990,4,3,7,Alkane | Alkene | Amide | Arene | Enamine | Ether | Haloalkane | Imide,Alcohol | Alkane | Amine | Arene | Ether | Haloalkane | Phenol,Alkene | Amide | Enamine | Imide,Alcohol | Amine | Phenol
+21489,5,2,7,Alkane | Amide | Amine | Arene | Haloalkane | Imide | Ketone,Alcohol | Alkane | Arene | Ether,Amide | Amine | Haloalkane | Imide | Ketone,Alcohol | Ether
+21497,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Haloalkane | Imide | Phenol,Alkane | Amide | Arene,Alcohol | Alkene | Amine | Enamine | Haloalkane | Imide | Phenol,
+21525,5,2,7,Alkane | Amide | Ester | Ether | Haloalkane | Imide,Alcohol | Alkane | Carboxylic acid,Amide | Ester | Ether | Haloalkane | Imide,Alcohol | Carboxylic acid
+21946,6,1,7,Aldehyde | Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Nitrile,Alcohol | Arene | Haloalkane,Aldehyde | Alkane | Alkene | Amine | Enamine | Nitrile,Alcohol
+22080,4,3,7,Alcohol | Alkane | Amine | Ester | Ether | Phenol,Alkane | Amide | Amine | Arene | Haloalkane,Alcohol | Ester | Ether | Phenol,Amide | Arene | Haloalkane
+22427,6,1,7,Alkane | Alkene | Amine | Enamine | Haloalkane | Imine | Ketone,Alkane | Ether,Alkene | Amine | Enamine | Haloalkane | Imine | Ketone,Ether
+22794,5,2,7,Alkane | Amide | Carbamate | Ether | Haloalkane | Imide | Sulfide,Alcohol | Alkane | Arene | Haloalkane,Amide | Carbamate | Ether | Imide | Sulfide,Alcohol | Arene
+22841,5,2,7,Alcohol | Alkane | Arene | Ester | Ether | Ketone | Phenol,Alkane | Amine | Arene | Haloalkane,Alcohol | Ester | Ether | Ketone | Phenol,Amine | Haloalkane
+23420,5,2,7,Alcohol | Alkene | Amide | Arene | Enol | Imide | Sulfide,Arene | Haloalkane | Nitrile | Sulfide,Alcohol | Alkene | Amide | Enol | Imide,Haloalkane | Nitrile
+23671,5,2,7,Alkane | Amine | Arene | Carbamate | Ether | Sulfonamide | Sulfoxide,Alkane | Arene | Haloalkane | Sulfone,Amine | Carbamate | Ether | Sulfonamide | Sulfoxide,Haloalkane | Sulfone
+23819,4,3,7,Alkene | Amide | Arene | Haloalkane | Imide | Sulfide,Alcohol | Alkyne | Arene | Carboxylic acid | Haloalkane,Alkene | Amide | Imide | Sulfide,Alcohol | Alkyne | Carboxylic acid
+24165,6,1,7,Alkane | Alkene | Amine | Enamine | Ester | Ether | Nitrile | Sulfide,Alkane | Ether | Haloalkane,Alkene | Amine | Enamine | Ester | Nitrile | Sulfide,Haloalkane
+25116,6,1,7,Alcohol | Alkane | Alkene | Arene | Ester | Ether | Imine | Phenol,Alkane | Arene | Haloalkane,Alcohol | Alkene | Ester | Ether | Imine | Phenol,Haloalkane
+25420,6,1,7,Alcohol | Alkane | Alkene | Amide | Arene | Enol | Ether | Haloalkane,Alkane | Haloalkane | Sulfide,Alcohol | Alkene | Amide | Arene | Enol | Ether,Sulfide
+25534,4,3,7,Alkane | Alkene | Amide | Arene | Enamine | Ether | Imide,Alcohol | Alkane | Arene | Ether | Haloalkane | Phenol,Alkene | Amide | Enamine | Imide,Alcohol | Haloalkane | Phenol
+25875,6,1,7,Alkane | Alkene | Amide | Carbamate | Enamine | Ether | Haloalkane | Sulfide,Alkane | Amine | Ether,Alkene | Amide | Carbamate | Enamine | Haloalkane | Sulfide,Amine
+26168,4,3,7,Alcohol | Alkane | Amide | Arene | Ether | Haloalkane | Imide,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane,Alcohol | Amide | Ether | Imide,Alkene | Amine | Enamine
+26654,6,1,7,Alcohol | Alkene | Amide | Arene | Enol | Haloalkane | Sulfide | Sulfonamide,Arene | Haloalkane | Nitrile,Alcohol | Alkene | Amide | Enol | Sulfide | Sulfonamide,Nitrile
+26696,6,1,7,Alcohol | Alkane | Alkene | Arene | Ketone | Phenol,Amine,Alcohol | Alkane | Alkene | Arene | Ketone | Phenol,Amine
+26965,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Ketone | Sulfonamide,Alkane | Ether | Haloalkane,Alkene | Amine | Arene | Enamine | Ketone | Sulfonamide,Ether
+27202,5,2,7,Alkene | Amine | Arene | Haloalkane | Hydrazone | Nitrile | Sulfide,Amide | Arene | Ether | Haloalkane,Alkene | Amine | Hydrazone | Nitrile | Sulfide,Amide | Ether
+27399,4,3,7,Alkane | Alkyne | Amine | Arene | Ether | Haloalkane | Sulfide,Alcohol | Alkane | Amide | Amine | Arene | Nitrile,Alkyne | Ether | Haloalkane | Sulfide,Alcohol | Amide | Nitrile
+27611,5,2,7,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Ketone,Alkane | Ester | Ether,Alcohol | Arene | Carboxylic acid | Haloalkane | Ketone,Ester | Ether
+28620,5,2,7,Alkyne | Amine | Arene | Haloalkane | Sulfide | Sulfonamide,Alcohol | Arene | Carboxylic acid,Alkyne | Amine | Haloalkane | Sulfide | Sulfonamide,Alcohol | Carboxylic acid
+29140,5,2,7,Acyl halide | Alkane | Amine | Ether | Haloalkane | Sulfide | Sulfonamide,Alkane | Arene | Haloalkane | Sulfonate,Acyl halide | Amine | Ether | Sulfide | Sulfonamide,Arene | Sulfonate
+29215,6,1,7,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ether | Sulfide | Sulfonamide,Alkane | Amine | Arene | Ether | Haloalkane,Alcohol | Alkene | Carboxylic acid | Enamine | Sulfide | Sulfonamide,Haloalkane
+29550,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Ketone | Nitrile,Alcohol | Alkane | Arene,Alkene | Amine | Enamine | Haloalkane | Ketone | Nitrile,Alcohol
+29978,4,3,7,Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Sulfonamide,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Haloalkane,Amine | Enamine | Enol | Sulfonamide,Amide | Carboxylic acid | Haloalkane
+30047,5,2,7,Alcohol | Alkane | Alkene | Amine | Enamine | Enol | Ketone,Alcohol | Alkane | Haloalkane | Phenol,Alkene | Amine | Enamine | Enol | Ketone,Haloalkane | Phenol
+30948,4,3,7,Acyl halide | Alkane | Amide | Arene | Ether | Haloalkane | Imide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Sulfide,Acyl halide | Amide | Ether | Imide,Alcohol | Carboxylic acid | Sulfide
+31230,6,1,7,Alcohol | Alkane | Alkene | Amide | Carboxylic acid | Enamine | Sulfide | Sulfoxide,Alkane | Alkene | Ether,Alcohol | Amide | Carboxylic acid | Enamine | Sulfide | Sulfoxide,Ether
+31273,3,4,7,Alcohol | Alkane | Amine | Arene,Aldehyde | Alkane | Amide | Ether | Hydrazine,Alcohol | Amine | Arene,Aldehyde | Amide | Ether | Hydrazine
+31369,3,4,7,Aldehyde | Amine | Arene | Ketone | Nitrile,Alcohol | Aldehyde | Alkane | Arene | Carboxylic acid | Haloalkane,Amine | Ketone | Nitrile,Alcohol | Alkane | Carboxylic acid | Haloalkane
+32142,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Ester | Ether,Alkane | Amine,Alcohol | Alkene | Amide | Arene | Enamine | Ester | Ether,
+32679,5,2,7,Alkane | Alkene | Amide | Amine | Arene | Enamine | Sulfide,Alkane | Arene | Haloalkane | Nitrile,Alkene | Amide | Amine | Enamine | Sulfide,Haloalkane | Nitrile
+33344,4,3,7,Alkane | Amine | Arene | Nitrile | Sulfide | Sulfonamide,Alcohol | Amine | Arene | Carboxylic acid | Haloalkane,Alkane | Nitrile | Sulfide | Sulfonamide,Alcohol | Carboxylic acid | Haloalkane
+33847,5,2,7,Alcohol | Alkane | Amide | Arene | Imide | Nitrile | Phenol,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Imide | Nitrile | Phenol,Ether | Haloalkane
+34171,5,2,7,Alkane | Alkene | Amide | Arene | Ether | Sulfide,Alcohol | Arene | Haloalkane,Alkane | Alkene | Amide | Ether | Sulfide,Alcohol | Haloalkane
+34316,5,2,7,Alkane | Alkene | Amide | Arene | Ether | Imide | Nitrile,Alcohol | Alkane | Arene | Haloalkane,Alkene | Amide | Ether | Imide | Nitrile,Alcohol | Haloalkane
+34615,5,2,7,Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Imide,Alcohol | Amine | Arene | Haloalkane | Phenol,Alkene | Amide | Enamine | Ether | Imide,Alcohol | Phenol
+34656,3,4,7,Alkane | Nitrile | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane,Alkane | Nitrile | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane
+35109,6,1,7,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Sulfide,Alkane | Nitrile,Amine | Arene | Ester | Ether | Haloalkane | Sulfide,Nitrile
+35792,7,0,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Hydrazine | Ketone,Alkane | Ester | Ether,Alkene | Amine | Arene | Enamine | Haloalkane | Hydrazine | Ketone,
+35912,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Nitrile,Alkane | Amide | Arene,Alkene | Amine | Enamine | Ester | Ether | Nitrile,Amide
+36405,6,1,7,Alkane | Alkene | Amine | Enamine | Ester | Ether | Haloalkane,Alcohol | Alkane,Alkene | Amine | Enamine | Ester | Ether | Haloalkane,Alcohol
+36667,7,0,7,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Ketone,Alkane | Arene | Ether | Ketone,Acid anhydride | Alcohol | Alkene | Amine | Enamine | Enol | Ester,
+36770,4,3,7,Alkane | Alkene | Amine | Arene | Enamine | Sulfide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkene | Amine | Enamine | Sulfide,Alcohol | Carboxylic acid | Haloalkane
+37162,4,3,7,Alkane | Arene | Ether | Haloalkane | Isocyanate,Alcohol | Amine | Arene | Phenol,Alkane | Ether | Haloalkane | Isocyanate,Alcohol | Amine | Phenol
+37194,5,2,7,Alcohol | Alkane | Alkene | Amide | Arene | Enol | Ether | Imide | Nitrile,Alkane | Alkene | Arene | Ether | Haloalkane | Ketone,Alcohol | Amide | Enol | Imide | Nitrile,Haloalkane | Ketone
+37196,6,1,7,Alcohol | Alkane | Alkene | Amide | Amine | Carboxylic acid | Enamine | Ether,Alkane | Ether | Haloalkane,Alcohol | Alkene | Amide | Amine | Carboxylic acid | Enamine,Haloalkane
+37513,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Imine | Ketone | Sulfone,Alkane | Amide | Arene,Alkene | Amine | Enamine | Imine | Ketone | Sulfone,Amide
+37569,5,2,7,Alcohol | Alkane | Arene | Ketone | Nitrile | Phenol,Alkane | Haloalkane | Sulfide,Alcohol | Arene | Ketone | Nitrile | Phenol,Haloalkane | Sulfide
+37721,5,2,7,Alkane | Alkene | Amide | Arene | Haloalkane | Imine | Ketone,Alcohol | Alkane | Amide | Amine,Alkene | Arene | Haloalkane | Imine | Ketone,Alcohol | Amine
+37771,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Ketone,Alcohol | Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ester | Ether | Ketone,Alcohol
+38442,5,2,7,Alkane | Amide | Amine | Sulfide | Sulfonamide | Sulfone,Alkane | Arene | Haloalkane,Amide | Amine | Sulfide | Sulfonamide | Sulfone,Arene | Haloalkane
+39600,2,5,7,Alkane | Ketone | Sulfide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Nitrile,Ketone | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane | Nitrile
+39798,4,3,7,Alkane | Amine | Arene | Ester | Ether | Nitrile,Alcohol | Alkane | Arene | Haloalkane | Phenol,Amine | Ester | Ether | Nitrile,Alcohol | Haloalkane | Phenol
+40329,5,2,7,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Sulfone,Arene | Haloalkane | Sulfide,Alcohol | Alkane | Alkene | Carboxylic acid | Sulfone,Haloalkane | Sulfide
+41316,5,2,7,Alkane | Amide | Arene | Ester | Ether | Haloalkane | Imide,Alcohol | Alkane | Amine | Arene,Amide | Ester | Ether | Haloalkane | Imide,Alcohol | Amine
+41974,7,0,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enamine | Enol | Haloalkane | Sulfide | Sulfonamide,Alkane | Arene | Haloalkane | Sulfide,Alcohol | Alkene | Amide | Amine | Enamine | Enol | Sulfonamide,
+42222,4,3,7,Alcohol | Alkane | Amide | Carboxylic acid | Sulfide,Alkane | Amine | Carbamate | Ether,Alcohol | Amide | Carboxylic acid | Sulfide,Amine | Carbamate | Ether
+42379,5,2,7,Alkane | Alkene | Amide | Enamine | Ester | Ether | Ketone,Alkane | Alkyne | Amine | Ester,Alkene | Amide | Enamine | Ether | Ketone,Alkyne | Amine
+42542,6,1,7,Alcohol | Alkane | Amide | Arene | Haloalkane | Hydrazone | Phenol,Alkane | Amine,Alcohol | Amide | Arene | Haloalkane | Hydrazone | Phenol,Amine
+42631,3,4,7,Alkane | Amide | Arene | Ester | Ether,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ketone,Amide | Ester | Ether,Alcohol | Amine | Carboxylic acid | Ketone
+42989,5,2,7,Alkane | Alkene | Amine | Arene | Ester | Ether | Ketone,Alcohol | Alkane | Arene | Sulfide,Alkene | Amine | Ester | Ether | Ketone,Alcohol | Sulfide
+44016,4,3,7,Alkane | Amide | Amine | Arene | Sulfone,Alkane | Ester | Ether | Haloalkane,Amide | Amine | Arene | Sulfone,Ester | Ether | Haloalkane
+44493,6,1,7,Alcohol | Alkane | Alkene | Amine | Carboxylic acid | Enamine | Enol,Alkane | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Enol,Haloalkane
+45014,7,0,7,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ester | Ether | Haloalkane,Alkane | Arene | Ether,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Ester | Haloalkane,
+45041,6,1,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Enol | Ether | Ketone | Phenol | Sulfide,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether,Alkene | Amide | Enol | Ketone | Phenol | Sulfide,Carboxylic acid
+46369,6,1,7,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Ether | Phenol,Alkane | Ether | Haloalkane,Alcohol | Alkene | Amide | Amine | Arene | Phenol,Haloalkane
+46678,4,3,7,Alkane | Alkyne | Amine | Ester | Ether | Haloalkane | Sulfonamide,Alcohol | Alkane | Amide | Amine | Carbamate | Ether,Alkyne | Ester | Haloalkane | Sulfonamide,Alcohol | Amide | Carbamate
+46774,6,1,7,Alcohol | Alkane | Amide | Arene | Haloalkane | Ketone | Phenol,Amine | Arene,Alcohol | Alkane | Amide | Haloalkane | Ketone | Phenol,Amine
+47064,4,3,7,Amine | Arene | Ether | Haloalkane | Sulfide | Sulfonamide,Alcohol | Arene | Carboxylic acid | Haloalkane | Phenol,Amine | Ether | Sulfide | Sulfonamide,Alcohol | Carboxylic acid | Phenol
+47261,6,1,7,Alcohol | Alkane | Alkene | Arene | Ether | Ketone | Nitrile | Phenol,Alkane | Arene | Haloalkane,Alcohol | Alkene | Ether | Ketone | Nitrile | Phenol,Haloalkane
+47332,5,2,7,Alkane | Amide | Amine | Arene | Ester | Ether,Alcohol | Alkane | Carboxylic acid,Amide | Amine | Arene | Ester | Ether,Alcohol | Carboxylic acid
+47471,6,1,7,Alcohol | Alkane | Amide | Arene | Ester | Ether | Haloalkane | Phenol | Sulfone,Alkane | Amine | Arene | Haloalkane,Alcohol | Amide | Ester | Ether | Phenol | Sulfone,Amine
+47546,6,1,7,Alcohol | Alkane | Alkene | Arene | Enol | Ether | Imine | Ketone | Sulfone,Alkane | Arene | Ether | Haloalkane,Alcohol | Alkene | Enol | Imine | Ketone | Sulfone,Haloalkane
+47625,5,2,7,Alcohol | Alkane | Arene | Ester | Ether | Nitrile | Phenol,Alkane | Amine | Arene | Haloalkane,Alcohol | Ester | Ether | Nitrile | Phenol,Amine | Haloalkane
+48014,2,5,7,Alkane | Arene | Ether | Sulfide,Alcohol | Alkane | Alkyne | Amine | Arene | Carboxylic acid | Haloalkane,Ether | Sulfide,Alcohol | Alkyne | Amine | Carboxylic acid | Haloalkane
+48705,5,2,7,Alcohol | Alkane | Alkene | Arene | Ester | Ether | Ketone | Sulfide,Alkane | Amine | Arene | Ether | Haloalkane,Alcohol | Alkene | Ester | Ketone | Sulfide,Amine | Haloalkane
+48762,4,3,7,Alkane | Amine | Ether | Haloalkane | Sulfide | Sulfonamide,Alcohol | Alkane | Amide | Haloalkane | Phenol,Amine | Ether | Sulfide | Sulfonamide,Alcohol | Amide | Phenol
+49004,5,2,7,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Phenol,Amine | Arene | Haloalkane,Alcohol | Alkane | Carboxylic acid | Ether | Phenol,Amine | Haloalkane
+49266,7,0,7,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Enamine | Ether | Nitrile | Sulfide,Alkane | Arene | Ether,Alcohol | Alkene | Amide | Carboxylic acid | Enamine | Nitrile | Sulfide,
+49319,6,1,7,Alkane | Alkene | Amine | Arene | Ester | Ether | Haloalkane | Hydrazone | Sulfoxide,Alkane | Amide | Amine | Arene,Alkene | Ester | Ether | Haloalkane | Hydrazone | Sulfoxide,Amide
+49520,4,3,7,Alkane | Carbamate | Ester | Ether | Haloalkane | Sulfide | Sulfone,Alcohol | Alkane | Amine | Arene | Carbamate | Ether,Ester | Haloalkane | Sulfide | Sulfone,Alcohol | Amine | Arene
+49532,4,3,7,Alkane | Amine | Arene | Nitrile | Sulfonamide,Alcohol | Alkane | Carboxylic acid | Haloalkane,Amine | Arene | Nitrile | Sulfonamide,Alcohol | Carboxylic acid | Haloalkane
+50044,5,2,7,Alkane | Alkene | Amine | Arene | Enamine | Ether | Hydrazine | Sulfonamide | Sulfone,Alkane | Amide | Amine | Arene | Ether | Haloalkane,Alkene | Enamine | Hydrazine | Sulfonamide | Sulfone,Amide | Haloalkane
+50300,5,2,7,Alcohol | Alkane | Alkene | Amide | Ester | Ether | Phenol,Alkane | Arene | Ether | Haloalkane,Alcohol | Alkene | Amide | Ester | Phenol,Arene | Haloalkane
+50863,6,1,7,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane | Phenol | Sulfide,Alkane | Arene | Ether,Alcohol | Amide | Carboxylic acid | Haloalkane | Phenol | Sulfide,Ether
+51248,5,2,7,Alkane | Alkene | Alkyne | Amide | Amine | Imide | Sulfonamide,Alcohol | Alkane | Alkene | Haloalkane,Alkyne | Amide | Amine | Imide | Sulfonamide,Alcohol | Haloalkane
+51792,5,2,7,Alkane | Amide | Amine | Haloalkane | Hydrazine | Ketone | Sulfide,Alcohol | Alkane | Amide | Ether,Amine | Haloalkane | Hydrazine | Ketone | Sulfide,Alcohol | Ether
+51970,6,1,7,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Ketone | Sulfide,Alkane | Amine,Alcohol | Arene | Carboxylic acid | Haloalkane | Ketone | Sulfide,Amine
+53514,6,1,7,Alcohol | Alkene | Amine | Arene | Carboxylic acid | Enamine | Haloalkane | Hydrazine | Nitrile,Alcohol | Arene | Haloalkane | Sulfide,Alkene | Amine | Carboxylic acid | Enamine | Hydrazine | Nitrile,Sulfide
+53681,5,2,7,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Sulfide,Alkane | Amine | Haloalkane,Alcohol | Arene | Carboxylic acid | Ether | Sulfide,Amine | Haloalkane
+54548,5,2,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane,Alcohol | Alkane | Arene | Haloalkane | Sulfide,Alkene | Amine | Enamine | Ester | Ether,Alcohol | Sulfide
+57141,5,2,7,Alcohol | Alkane | Alkene | Amide | Arene | Enol | Ester | Ether | Ketone,Alkane | Amine | Arene | Ester | Ether | Nitrile,Alcohol | Alkene | Amide | Enol | Ketone,Amine | Nitrile
+57723,2,5,7,Alkane | Amine | Arene | Nitrile,Alcohol | Alkane | Amide | Arene | Ether | Haloalkane | Sulfide,Amine | Nitrile,Alcohol | Amide | Ether | Haloalkane | Sulfide
+57767,6,1,7,Alcohol | Alkane | Alkene | Arene | Ester | Ether | Ketone | Phenol,Alkane | Arene | Haloalkane,Alcohol | Alkene | Ester | Ether | Ketone | Phenol,Haloalkane
+57826,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Ether | Haloalkane | Hydrazine | Hydrazone,Alkane | Arene | Ester | Ether,Alkene | Amine | Enamine | Haloalkane | Hydrazine | Hydrazone,Ester
+58084,7,0,7,Alcohol | Alkane | Alkene | Amide | Arene | Enol | Ether | Haloalkane | Ketone,Alkane | Haloalkane,Alcohol | Alkene | Amide | Arene | Enol | Ether | Ketone,
+58906,5,2,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Hydrazone | Phenol | Thioamide,Alkane | Amide | Amine | Arene | Haloalkane,Alcohol | Carboxylic acid | Hydrazone | Phenol | Thioamide,Amide | Haloalkane
+58977,4,3,7,Alkane | Alkene | Amine | Carbamate | Enamine | Ether | Haloalkane,Alcohol | Alkane | Amide | Carbamate | Ether | Imide,Alkene | Amine | Enamine | Haloalkane,Alcohol | Amide | Imide
+59766,5,2,7,Alkane | Amine | Arene | Ester | Ether,Alcohol | Haloalkane,Alkane | Amine | Arene | Ester | Ether,Alcohol | Haloalkane
+59844,4,3,7,Alkane | Amide | Arene | Ester | Ether | Haloalkane,Alcohol | Arene | Carboxylic acid | Haloalkane | Ketone,Alkane | Amide | Ester | Ether,Alcohol | Carboxylic acid | Ketone
+60135,4,3,7,Alkane | Amide | Arene | Ether | Haloalkane | Nitrile,Alcohol | Alkane | Amine | Arene | Carboxylic acid,Amide | Ether | Haloalkane | Nitrile,Alcohol | Amine | Carboxylic acid
+60321,5,2,7,Alkane | Amine | Arene | Ester | Ether | Sulfonamide | Sulfone,Alcohol | Alkane | Alkene | Arene,Amine | Ester | Ether | Sulfonamide | Sulfone,Alcohol | Alkene
+61251,7,0,7,Alkene | Amide | Amine | Arene | Haloalkane | Hydrazine | Sulfide | Sulfonamide | Thioamide,Arene | Haloalkane,Alkene | Amide | Amine | Hydrazine | Sulfide | Sulfonamide | Thioamide,
+61620,1,6,7,Amine,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Sulfide,Amine,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Sulfide
+61766,5,2,7,Alkane | Amine | Ester | Ether | Ketone | Sulfonamide,Alkane | Alkene | Haloalkane,Amine | Ester | Ether | Ketone | Sulfonamide,Alkene | Haloalkane
+62120,6,1,7,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Sulfone,Alkane | Amide,Amine | Arene | Ester | Ether | Haloalkane | Sulfone,Amide
+62456,5,2,7,Acyl halide | Alkane | Arene | Ester | Ether | Haloalkane,Alcohol | Alkane | Carboxylic acid,Acyl halide | Arene | Ester | Ether | Haloalkane,Alcohol | Carboxylic acid
+62771,5,2,7,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Ketone | Sulfide,Aldehyde | Alkane | Amide | Ether,Alcohol | Arene | Carboxylic acid | Ketone | Sulfide,Aldehyde | Amide
+62777,6,1,7,Alkane | Alkene | Amide | Carbamate | Enamine | Ether | Haloalkane | Nitrile | Sulfide,Alcohol | Alkane | Alkene | Haloalkane,Amide | Carbamate | Enamine | Ether | Nitrile | Sulfide,Alcohol
+63334,5,2,7,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane | Phenol,Alkane | Nitrile | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane | Phenol,Nitrile | Sulfide
+63561,5,2,7,Alcohol | Alkane | Amine | Carboxylic acid | Sulfide | Sulfonamide,Alkane | Arene | Ether,Alcohol | Amine | Carboxylic acid | Sulfide | Sulfonamide,Arene | Ether
+63585,5,2,7,Aldehyde | Alkane | Amide | Arene | Ether | Haloalkane,Alcohol | Alkane | Carboxylic acid,Aldehyde | Amide | Arene | Ether | Haloalkane,Alcohol | Carboxylic acid
+63840,5,2,7,Alkane | Alkene | Arene | Ester | Ether | Haloalkane | Nitrile,Alkane | Amide | Amine | Arene,Alkene | Ester | Ether | Haloalkane | Nitrile,Amide | Amine
+64448,7,0,7,Alkene | Amide | Amine | Arene | Enamine | Haloalkane | Ketone | Nitrile,Arene,Alkene | Amide | Amine | Enamine | Haloalkane | Ketone | Nitrile,
+64682,7,0,7,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Ester | Ether | Imide | Sulfide,Alkane | Arene,Alcohol | Amide | Carboxylic acid | Ester | Ether | Imide | Sulfide,
+64794,5,2,7,Aldehyde | Alkane | Alkene | Amine | Enamine | Ether,Alcohol | Alkane | Amide,Aldehyde | Alkene | Amine | Enamine | Ether,Alcohol | Amide
+64971,5,2,7,Alkane | Arene | Carbamate | Ether | Ketone | Sulfide | Sulfonamide,Alkane | Alkene | Arene | Haloalkane,Carbamate | Ether | Ketone | Sulfide | Sulfonamide,Alkene | Haloalkane
+65360,5,2,7,Alcohol | Alkane | Arene | Ketone | Nitrile | Phenol,Alkane | Haloalkane | Sulfide,Alcohol | Arene | Ketone | Nitrile | Phenol,Haloalkane | Sulfide
+65895,4,3,7,Alcohol | Alkane | Amide | Amine | Carboxylic acid,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Amine | Carboxylic acid,Arene | Ether | Haloalkane
+66772,3,4,7,Amine | Arene | Haloalkane | Nitrile | Sulfone,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane,Amine | Nitrile | Sulfone,Alcohol | Alkane | Carboxylic acid | Ether
+66922,7,0,7,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Enamine | Ester | Ether,Alkane | Arene,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Ester | Ether,
+67470,5,2,7,Alcohol | Alkane | Amide | Arene | Ester | Ether | Phenol,Alkane | Amine | Arene | Haloalkane,Alcohol | Amide | Ester | Ether | Phenol,Amine | Haloalkane
+67510,4,3,7,Alkane | Amine | Arene | Ether | Haloalkane | Sulfonamide,Alcohol | Alkane | Arene | Phenol | Sulfide,Amine | Ether | Haloalkane | Sulfonamide,Alcohol | Phenol | Sulfide
+67645,3,4,7,Alcohol | Alkane | Amide | Carboxylic acid,Alkane | Arene | Ester | Ether | Haloalkane,Alcohol | Amide | Carboxylic acid,Arene | Ester | Ether | Haloalkane
+67857,6,1,7,Alkane | Alkene | Amide | Amine | Arene | Enamine | Ether | Haloalkane | Imine,Alkane | Amine | Arene | Sulfide,Alkene | Amide | Enamine | Ether | Haloalkane | Imine,Sulfide
+67904,4,3,7,Alcohol | Alkane | Alkene | Arene | Enol | Ketone,Alkane | Alkene | Amine | Ester | Ether,Alcohol | Arene | Enol | Ketone,Amine | Ester | Ether
+68176,5,2,7,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Ether | Sulfone,Alkane | Amine | Arene | Haloalkane,Alcohol | Alkene | Carboxylic acid | Ether | Sulfone,Amine | Haloalkane
+68411,5,2,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Sulfone,Alcohol | Alkane | Arene | Ether | Haloalkane,Alkene | Amine | Enamine | Ester | Sulfone,Alcohol | Haloalkane
+68726,4,3,7,Alcohol | Alkane | Amide | Amine | Hydrazine,Alkane | Arene | Ether | Haloalkane,Alcohol | Amide | Amine | Hydrazine,Arene | Ether | Haloalkane
+69093,5,2,7,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Haloalkane,Alkane | Amine | Ester | Ether,Alcohol | Amide | Arene | Carboxylic acid | Haloalkane,Ester | Ether
+69647,5,2,7,Alkane | Alkene | Arene | Ether | Haloalkane | Sulfide | Sulfoxide,Alcohol | Alkane | Amide | Haloalkane,Alkene | Arene | Ether | Sulfide | Sulfoxide,Alcohol | Amide
+70579,5,2,7,Alkane | Amine | Arene | Carbamate | Ether | Haloalkane,Alcohol | Alkane | Phenol,Amine | Arene | Carbamate | Ether | Haloalkane,Alcohol | Phenol
+70947,4,3,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Haloalkane | Imine | Sulfonamide,Alkane | Alkene | Amide | Amine | Arene | Ether | Haloalkane,Alcohol | Carboxylic acid | Imine | Sulfonamide,Alkene | Amide | Ether
+71055,5,2,7,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Hydrazine | Hydrazone,Alcohol | Alkane | Arene | Haloalkane | Phenol,Alkene | Amine | Enamine | Hydrazine | Hydrazone,Alcohol | Phenol
+71148,3,4,7,Alkane | Amine | Arene | Sulfone | Sulfoxide,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane,Amine | Sulfone | Sulfoxide,Alcohol | Carboxylic acid | Ether | Haloalkane
+71448,7,0,7,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Ketone | Sulfoxide,Arene,Alkane | Alkene | Amine | Enamine | Haloalkane | Ketone | Sulfoxide,
+71497,6,1,7,Alcohol | Alkane | Amine | Arene | Haloalkane | Sulfonamide | Sulfone,Alkane | Ether,Alcohol | Amine | Arene | Haloalkane | Sulfonamide | Sulfone,Ether
+71586,3,4,7,Alkane | Alkene | Carbamate | Enamine | Ether | Ketone,Alcohol | Alkane | Amine | Arene | Carbamate | Ether | Phenol,Alkene | Enamine | Ketone,Alcohol | Amine | Arene | Phenol
+72084,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Sulfide,Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ester | Ether | Sulfide,Haloalkane
+72398,5,2,7,Alkane | Amine | Arene | Ester | Ether | Ketone,Alcohol | Alkane | Haloalkane,Amine | Arene | Ester | Ether | Ketone,Alcohol | Haloalkane
+73618,5,2,7,Alkene | Amide | Arene | Haloalkane | Nitrile | Sulfonamide,Alcohol | Arene | Phenol,Alkene | Amide | Haloalkane | Nitrile | Sulfonamide,Alcohol | Phenol
+73666,4,3,7,Alkene | Amide | Amine | Arene | Enamine,Alcohol | Arene | Haloalkane | Phenol,Alkene | Amide | Amine | Enamine,Alcohol | Haloalkane | Phenol
+73981,6,1,7,Alcohol | Alkane | Alkene | Arene | Enol | Ester | Ether | Haloalkane | Ketone,Alcohol | Alkane | Amide | Ether,Alkene | Arene | Enol | Ester | Haloalkane | Ketone,Amide
+74414,3,4,7,Alkane | Amide | Arene | Ether | Haloalkane,Alcohol | Alkane | Amine | Carboxylic acid | Haloalkane | Sulfide,Amide | Arene | Ether,Alcohol | Amine | Carboxylic acid | Sulfide
+74622,4,3,7,Alkane | Alkene | Amide | Arene | Enamine | Ether | Imide,Alkane | Amine | Arene | Ether | Haloalkane | Sulfide,Alkene | Amide | Enamine | Imide,Amine | Haloalkane | Sulfide
+74859,5,2,7,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Imide,Alkane | Amine | Arene | Haloalkane,Alcohol | Alkene | Amide | Carboxylic acid | Imide,Amine | Haloalkane
+75555,6,1,7,Alcohol | Alkane | Amide | Arene | Hydrazone | Phenol | Sulfide,Alkane | Haloalkane,Alcohol | Amide | Arene | Hydrazone | Phenol | Sulfide,Haloalkane
+76587,6,1,7,Alkane | Amide | Amine | Arene | Carbamate | Ether | Haloalkane | Hydrazone | Imide | Nitrile,Alkane | Amine | Ether | Haloalkane | Thioamide,Amide | Arene | Carbamate | Hydrazone | Imide | Nitrile,Thioamide
+76798,3,4,7,Alkane | Alkyne | Arene | Ester | Ether,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane,Alkyne | Ester | Ether,Alcohol | Amide | Carboxylic acid | Haloalkane
+76823,5,2,7,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Hydrazone | Thioamide,Alkane | Arene | Ether | Haloalkane,Alcohol | Amine | Carboxylic acid | Hydrazone | Thioamide,Ether | Haloalkane
+76995,7,0,7,Alcohol | Alkane | Amine | Arene | Carbamate | Ester | Ether | Haloalkane | Phenol | Sulfide | Sulfonamide,Alkane | Carbamate | Ether | Haloalkane,Alcohol | Amine | Arene | Ester | Phenol | Sulfide | Sulfonamide,
+77858,4,3,7,Alkane | Amide | Carbamate | Ether | Haloalkane | Ketone | Sulfide,Alcohol | Alkane | Amine | Carbamate | Ester | Ether,Amide | Haloalkane | Ketone | Sulfide,Alcohol | Amine | Ester
+78139,5,2,7,Alkane | Alkene | Amide | Amine | Arene | Enamine | Nitrile | Sulfide,Alcohol | Alkane | Amine | Arene | Phenol,Alkene | Amide | Enamine | Nitrile | Sulfide,Alcohol | Phenol
+78571,6,1,7,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Nitrile,Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ester | Ether | Nitrile,Haloalkane
+78949,5,2,7,Alcohol | Alkane | Arene | Ester | Ether | Phenol,Alkane | Amide | Sulfide,Alcohol | Arene | Ester | Ether | Phenol,Amide | Sulfide
+78975,4,3,7,Acid anhydride | Alkane | Arene | Ester | Ether,Alcohol | Alkane | Carboxylic acid | Phenol,Acid anhydride | Arene | Ester | Ether,Alcohol | Carboxylic acid | Phenol
+79174,7,0,7,Alcohol | Alkane | Alkene | Arene | Enol | Ester | Ether | Ketone | Sulfide,Alkane | Arene,Alcohol | Alkene | Enol | Ester | Ether | Ketone | Sulfide,
+496,4,2,6,Acyl halide | Amine | Arene | Haloalkane | Sulfonamide,Alcohol | Carboxylic acid | Haloalkane,Acyl halide | Amine | Arene | Sulfonamide,Alcohol | Carboxylic acid
+501,5,1,6,Alcohol | Alkane | Amine | Carboxylic acid | Ester | Ether | Haloalkane,Alkane | Alkene | Haloalkane,Alcohol | Amine | Carboxylic acid | Ester | Ether,Alkene
+640,3,3,6,Alkane | Amide | Carbamate | Ether | Haloalkane,Alcohol | Alkane | Amine | Arene | Ether,Amide | Carbamate | Haloalkane,Alcohol | Amine | Arene
+679,5,1,6,Aldehyde | Alkane | Alkene | Amide | Arene | Ether | Haloalkane,Alcohol | Arene | Haloalkane,Aldehyde | Alkane | Alkene | Amide | Ether,Alcohol
+816,3,3,6,Alkane | Amine | Arene | Nitrile,Alcohol | Alkane | Ether | Phenol,Amine | Arene | Nitrile,Alcohol | Ether | Phenol
+835,4,2,6,Alkane | Alkene | Arene | Carbamate | Ester | Ether | Ketone,Alcohol | Alkane | Arene | Ether | Haloalkane,Alkene | Carbamate | Ester | Ketone,Alcohol | Haloalkane
+905,4,2,6,Alcohol | Alkane | Amine | Sulfide | Sulfonamide | Sulfone,Alcohol | Alkane | Ether | Haloalkane,Amine | Sulfide | Sulfonamide | Sulfone,Ether | Haloalkane
+973,4,2,6,Alcohol | Alkane | Amine | Arene | Carbamate | Ether | Hydrazine,Alkane | Alkene | Arene | Ester | Ether,Alcohol | Amine | Carbamate | Hydrazine,Alkene | Ester
+1143,4,2,6,Alkane | Amide | Amine | Arene | Ether,Alcohol | Alkane | Haloalkane,Amide | Amine | Arene | Ether,Alcohol | Haloalkane
+1207,4,2,6,Alcohol | Alkene | Arene | Enol | Ether | Ketone,Amine | Arene | Ether | Haloalkane,Alcohol | Alkene | Enol | Ketone,Amine | Haloalkane
+1303,5,1,6,Alcohol | Alkane | Alkene | Amide | Carboxylic acid | Enamine | Ether | Sulfide,Alcohol | Alkane | Ether | Haloalkane,Alkene | Amide | Carboxylic acid | Enamine | Sulfide,Haloalkane
+1502,5,1,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Ketone,Alkane | Haloalkane,Alcohol | Arene | Carboxylic acid | Ether | Ketone,Haloalkane
+1531,4,2,6,Alcohol | Aldehyde | Alkane | Carbamate | Carboxylic acid | Ether | Sulfide,Aldehyde | Alkane | Amine | Ester | Ether,Alcohol | Carbamate | Carboxylic acid | Sulfide,Amine | Ester
+1688,3,3,6,Alkane | Alkene | Amine | Enamine | Ketone,Alcohol | Alkane | Alkene | Arene | Ether,Amine | Enamine | Ketone,Alcohol | Arene | Ether
+1707,3,3,6,Alkane | Amine | Arene | Ester | Ether,Alkane | Alkene | Amide | Arene | Imide,Amine | Ester | Ether,Alkene | Amide | Imide
+1745,5,1,6,Alcohol | Alkane | Arene | Ether | Phenol,Haloalkane,Alcohol | Alkane | Arene | Ether | Phenol,Haloalkane
+1800,5,1,6,Alkane | Amine | Arene | Ether | Haloalkane | Sulfone,Alcohol | Alkane,Amine | Arene | Ether | Haloalkane | Sulfone,Alcohol
+2088,4,2,6,Alcohol | Alkane | Arene | Ester | Ether,Alkane | Amide | Haloalkane,Alcohol | Arene | Ester | Ether,Amide | Haloalkane
+2195,4,2,6,Alcohol | Alkane | Alkene | Amide | Arene | Phenol | Sulfide,Alcohol | Alkane | Arene | Carbamate | Ether,Alkene | Amide | Phenol | Sulfide,Carbamate | Ether
+2452,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether,Alkane | Haloalkane,Alcohol | Amine | Arene | Carboxylic acid | Ether,Haloalkane
+2455,6,0,6,Alcohol | Alkane | Alkene | Alkyne | Amide | Amine | Arene | Enol,Alkane | Amine,Alcohol | Alkene | Alkyne | Amide | Arene | Enol,
+2515,4,2,6,Alcohol | Alkane | Alkene | Amide | Arene | Haloalkane,Alkane | Amine | Arene | Sulfide,Alcohol | Alkene | Amide | Haloalkane,Amine | Sulfide
+2570,3,3,6,Aldehyde | Alkane | Amide | Sulfide,Alkane | Arene | Ether | Imide,Aldehyde | Amide | Sulfide,Arene | Ether | Imide
+2886,4,2,6,Alkane | Arene | Ether | Isothiocyanate,Amine | Haloalkane,Alkane | Arene | Ether | Isothiocyanate,Amine | Haloalkane
+2962,3,3,6,Alkane | Alkene | Alkyne | Arene | Ether | Sulfide,Alcohol | Alkane | Amine | Arene | Ether | Haloalkane,Alkene | Alkyne | Sulfide,Alcohol | Amine | Haloalkane
+3025,3,3,6,Alkane | Alkene | Amide | Arene | Carbamate | Enamine | Ether,Alkane | Amine | Arene | Carbamate | Ether | Haloalkane | Nitrile,Alkene | Amide | Enamine,Amine | Haloalkane | Nitrile
+3109,5,1,6,Alkane | Amide | Amine | Arene | Haloalkane | Hydrazone,Alcohol | Arene,Alkane | Amide | Amine | Haloalkane | Hydrazone,Alcohol
+3202,5,1,6,Alcohol | Alkane | Alkene | Amine | Arene | Carboxylic acid | Sulfonamide,Alkane | Arene | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Sulfonamide,Haloalkane
+3289,6,0,6,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Hydrazine,Alkane | Amine | Ether,Alkene | Arene | Enamine | Ester | Haloalkane | Hydrazine,
+3395,4,2,6,Alkane | Amine | Nitrile | Sulfide | Thiol,Alcohol | Amine | Haloalkane,Alkane | Nitrile | Sulfide | Thiol,Alcohol | Haloalkane
+3594,5,1,6,Alkane | Alkene | Amide | Amine | Arene | Enamine | Haloalkane | Imine,Alkane | Amide | Arene | Sulfide,Alkene | Amine | Enamine | Haloalkane | Imine,Sulfide
+3725,5,1,6,Alcohol | Alkane | Amide | Amine | Arene | Ester | Ether | Phenol | Sulfide,Alkane | Amine | Arene | Ether | Ketone,Alcohol | Amide | Ester | Phenol | Sulfide,Ketone
+3737,2,4,6,Alkane | Amide | Ester | Ether,Alcohol | Alkane | Amide | Arene | Haloalkane | Sulfide,Ester | Ether,Alcohol | Arene | Haloalkane | Sulfide
+3803,6,0,6,Acid anhydride | Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Enol | Ester | Ether | Haloalkane | Ketone,Alcohol | Alkane | Alkene | Arene | Enol | Haloalkane,Acid anhydride | Amine | Enamine | Ester | Ether | Ketone,
+3907,5,1,6,Acid anhydride | Alkane | Alkene | Amine | Arene | Ester | Ether,Alkane | Arene | Haloalkane,Acid anhydride | Alkene | Amine | Ester | Ether,Haloalkane
+3990,3,3,6,Haloalkane | Sulfide | Sulfone,Alcohol | Arene | Carboxylic acid,Haloalkane | Sulfide | Sulfone,Alcohol | Arene | Carboxylic acid
+3991,6,0,6,Alcohol | Alkane | Amine | Arene | Ester | Ether | Haloalkane | Phenol | Sulfide | Sulfonamide,Alkane | Amine | Arene | Ether,Alcohol | Ester | Haloalkane | Phenol | Sulfide | Sulfonamide,
+4081,4,2,6,Alkane | Amide | Arene | Ether | Haloalkane | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane,Alkane | Amide | Ether | Sulfide,Alcohol | Carboxylic acid
+4108,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Ketone,Alcohol | Alkane | Arene,Alkene | Amine | Enamine | Haloalkane | Ketone,Alcohol
+4142,6,0,6,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Sulfide | Sulfone,Alkane,Alcohol | Alkene | Arene | Carboxylic acid | Sulfide | Sulfone,
+4193,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Ether | Haloalkane | Hydrazine,Alkyne | Arene | Ether | Haloalkane,Alkane | Alkene | Amine | Enamine | Hydrazine,Alkyne
+4283,4,2,6,Alcohol | Alkane | Amide | Arene | Haloalkane | Ketone | Phenol,Alcohol | Alkane | Amine | Ether | Haloalkane,Amide | Arene | Ketone | Phenol,Amine | Ether
+4565,3,3,6,Alkane | Amine | Arene | Ester | Ether | Hydrazine | Sulfonamide,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Haloalkane,Ester | Hydrazine | Sulfonamide,Alcohol | Carboxylic acid | Haloalkane
+4863,3,3,6,Alcohol | Alkane | Amide | Arene | Haloalkane | Nitrile,Alkane | Amide | Arene | Ester | Ether | Sulfide,Alcohol | Haloalkane | Nitrile,Ester | Ether | Sulfide
+4904,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Haloalkane | Ketone | Sulfonamide,Alkane | Amide | Arene | Haloalkane,Alcohol | Amine | Carboxylic acid | Ketone | Sulfonamide,Amide
+4965,5,1,6,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane | Sulfide,Alkane | Amine | Arene,Alcohol | Amide | Carboxylic acid | Haloalkane | Sulfide,Amine
+4994,5,1,6,Alkane | Alkene | Amine | Enamine | Ester | Ether,Alkane | Sulfide,Alkene | Amine | Enamine | Ester | Ether,Sulfide
+5275,4,2,6,Alkane | Amide | Arene | Ether | Haloalkane | Nitrile,Alcohol | Alkane | Carboxylic acid | Ether,Amide | Arene | Haloalkane | Nitrile,Alcohol | Carboxylic acid
+5369,3,3,6,Alkane | Amide | Amine | Arene | Haloalkane | Nitrile,Alcohol | Alkane | Amide | Arene | Ether | Phenol,Amine | Haloalkane | Nitrile,Alcohol | Ether | Phenol
+5392,6,0,6,Alcohol | Alkane | Alkene | Amide | Arene | Carbamate | Enol | Ether | Haloalkane | Imide,Alkane | Arene | Carbamate | Ether,Alcohol | Alkene | Amide | Enol | Haloalkane | Imide,
+5454,4,2,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Nitrile,Alcohol | Alkane | Amide | Amine,Arene | Carboxylic acid | Ether | Nitrile,Amide | Amine
+5461,4,2,6,Alkane | Alkene | Arene | Ester | Ether | Haloalkane,Alcohol | Alkane | Amine | Arene,Alkene | Ester | Ether | Haloalkane,Alcohol | Amine
+5478,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Ketone,Alkane | Haloalkane,Alkene | Amine | Arene | Enamine | Ketone,Haloalkane
+5530,5,1,6,Alcohol | Alkane | Arene | Carboxylic acid | Nitrile | Phenol,Alkane | Haloalkane,Alcohol | Arene | Carboxylic acid | Nitrile | Phenol,Haloalkane
+5683,5,1,6,Alcohol | Alkane | Arene | Ether | Phenol,Amine,Alcohol | Alkane | Arene | Ether | Phenol,Amine
+5840,4,2,6,Alkane | Alkyne | Arene | Sulfide | Sulfonate,Alcohol | Arene | Nitrile,Alkane | Alkyne | Sulfide | Sulfonate,Alcohol | Nitrile
+5870,6,0,6,Alcohol | Alkane | Amide | Amine | Arene | Ester | Ether | Phenol | Sulfide,Alkane | Amine | Ether,Alcohol | Amide | Arene | Ester | Phenol | Sulfide,
+6107,5,1,6,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Hydrazone | Sulfide,Alcohol | Alkane | Arene | Haloalkane,Amine | Ester | Ether | Hydrazone | Sulfide,Alcohol
+6130,3,3,6,Alkane | Ester | Ether | Sulfide,Alcohol | Alkane | Carboxylic acid | Haloalkane,Ester | Ether | Sulfide,Alcohol | Carboxylic acid | Haloalkane
+6133,4,2,6,Alkane | Arene | Ester | Ether | Haloalkane | Ketone | Nitrile,Alcohol | Alkane | Amine | Arene | Ether,Ester | Haloalkane | Ketone | Nitrile,Alcohol | Amine
+6181,6,0,6,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Haloalkane | Phenol | Sulfide,Alkane | Amine | Haloalkane,Alcohol | Alkene | Amide | Arene | Phenol | Sulfide,
+6290,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ester | Ether | Phenol,Alkane | Amine | Arene | Sulfide,Alcohol | Carboxylic acid | Ester | Ether | Phenol,Sulfide
+6665,4,2,6,Alkane | Amide | Amine | Arene | Ester | Ether | Nitrile,Alcohol | Alkane | Arene | Ether | Haloalkane,Amide | Amine | Ester | Nitrile,Alcohol | Haloalkane
+6687,4,2,6,Alcohol | Amide | Amine | Arene | Carboxylic acid | Ether,Alcohol | Alkane | Arene | Haloalkane,Amide | Amine | Carboxylic acid | Ether,Alkane | Haloalkane
+6720,5,1,6,Alcohol | Alkane | Alkene | Enol | Ester | Ether | Ketone,Alkane | Alkene | Haloalkane,Alcohol | Enol | Ester | Ether | Ketone,Haloalkane
+6757,4,2,6,Alcohol | Arene | Haloalkane | Ketone | Phenol | Sulfide,Amine | Arene | Ether | Haloalkane,Alcohol | Ketone | Phenol | Sulfide,Amine | Ether
+6922,4,2,6,Alcohol | Alkane | Amine | Carboxylic acid | Nitrile | Sulfide,Alkane | Amine | Ether | Haloalkane,Alcohol | Carboxylic acid | Nitrile | Sulfide,Ether | Haloalkane
+7003,3,3,6,Alkane | Alkyne | Arene | Ketone | Nitrile,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkyne | Ketone | Nitrile,Alcohol | Carboxylic acid | Haloalkane
+7071,2,4,6,Amine | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane,Amine | Sulfide,Alcohol | Arene | Carboxylic acid | Haloalkane
+7142,4,2,6,Alkane | Amide | Amine | Arene | Ether | Haloalkane | Ketone,Alcohol | Alkane | Amine | Carboxylic acid | Haloalkane,Amide | Arene | Ether | Ketone,Alcohol | Carboxylic acid
+7280,5,1,6,Alcohol | Alkane | Amine | Arene | Azo compound | Carboxylic acid | Ether | Sulfonamide,Alkane | Arene | Ether | Haloalkane,Alcohol | Amine | Azo compound | Carboxylic acid | Sulfonamide,Haloalkane
+7682,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Haloalkane | Thioamide,Alkane | Alkyne | Arene,Alcohol | Amine | Carboxylic acid | Haloalkane | Thioamide,Alkyne
+7822,4,2,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether,Arene | Haloalkane | Sulfide,Alcohol | Alkane | Carboxylic acid | Ether,Haloalkane | Sulfide
+7851,4,2,6,Alkene | Arene | Ester | Ether | Nitrile,Arene | Haloalkane | Sulfide,Alkene | Ester | Ether | Nitrile,Haloalkane | Sulfide
+8030,5,1,6,Alkane | Alkene | Amide | Arene | Carbamate | Ether | Imide,Alkane | Amine | Arene,Alkene | Amide | Carbamate | Ether | Imide,Amine
+8361,6,0,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Haloalkane | Phenol | Sulfide | Sulfonamide,Alkane | Arene | Ether | Haloalkane,Alcohol | Amine | Carboxylic acid | Phenol | Sulfide | Sulfonamide,
+8385,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Haloalkane | Sulfide,Alkane | Amide | Amine,Alcohol | Arene | Carboxylic acid | Haloalkane | Sulfide,Amide
+8498,4,2,6,Amide | Amine | Arene | Sulfonamide,Alcohol | Haloalkane,Amide | Amine | Arene | Sulfonamide,Alcohol | Haloalkane
+8503,5,1,6,Alcohol | Alkane | Amine | Arene | Ether | Nitrile | Phenol,Alkane | Amine | Haloalkane,Alcohol | Arene | Ether | Nitrile | Phenol,Haloalkane
+8539,3,3,6,Alcohol | Alkane | Amine | Carboxylic acid,Alkane | Haloalkane | Ketone | Nitrile,Alcohol | Amine | Carboxylic acid,Haloalkane | Ketone | Nitrile
+8718,5,1,6,Aldehyde | Alkane | Amine | Arene | Ether | Haloalkane | Sulfide,Alkane | Amide | Arene,Aldehyde | Amine | Ether | Haloalkane | Sulfide,Amide
+9198,4,2,6,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Ester | Ether,Alcohol | Alkane | Amine | Arene | Phenol,Alkene | Carboxylic acid | Ester | Ether,Amine | Phenol
+9211,4,2,6,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Sulfonamide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Amine | Ester | Ether | Sulfonamide,Alcohol | Carboxylic acid
+9260,4,2,6,Aldehyde | Alkane | Alkene | Amide | Amine | Arene,Alkane | Arene | Haloalkane | Sulfide,Aldehyde | Alkene | Amide | Amine,Haloalkane | Sulfide
+9343,6,0,6,Alkane | Alkene | Amine | Arene | Ether | Haloalkane | Ketone | Sulfide,Alkane | Arene,Alkene | Amine | Ether | Haloalkane | Ketone | Sulfide,
+9410,5,1,6,Alkane | Alkyne | Amine | Arene | Ester | Ether | Haloalkane,Alcohol | Alkane | Alkyne,Amine | Arene | Ester | Ether | Haloalkane,Alcohol
+9427,4,2,6,Alcohol | Alkane | Amine | Arene | Ester | Ether | Phenol,Alkane | Arene | Ether | Haloalkane | Sulfide,Alcohol | Amine | Ester | Phenol,Haloalkane | Sulfide
+9508,4,2,6,Alkane | Alkene | Amine | Enamine | Ketone,Alkane | Amide | Arene,Alkene | Amine | Enamine | Ketone,Amide | Arene
+9514,4,2,6,Alkane | Alkene | Arene | Carbamate | Ether | Haloalkane | Nitrile,Alkane | Amide | Amine | Arene | Haloalkane,Alkene | Carbamate | Ether | Nitrile,Amide | Amine
+9561,5,1,6,Alkane | Amide | Amine | Arene | Ether | Haloalkane | Hydrazone,Alcohol | Arene | Haloalkane,Alkane | Amide | Amine | Ether | Hydrazone,Alcohol
+9643,5,1,6,Alcohol | Aldehyde | Alkane | Arene | Carboxylic acid | Ether | Ketone | Sulfide,Alkane | Arene | Haloalkane | Ketone,Alcohol | Aldehyde | Carboxylic acid | Ether | Sulfide,Haloalkane
+9803,4,2,6,Alcohol | Alkane | Amine | Arene | Phenol | Sulfonamide,Alkane | Amide | Amine | Haloalkane,Alcohol | Arene | Phenol | Sulfonamide,Amide | Haloalkane
+10064,3,3,6,Alcohol | Alkane | Amine | Arene | Phenol,Alkane | Amide | Arene | Ether | Haloalkane,Alcohol | Amine | Phenol,Amide | Ether | Haloalkane
+10314,5,1,6,Alkane | Amine | Arene | Ether | Haloalkane | Sulfide | Thioamide,Alcohol | Alkane | Arene,Amine | Ether | Haloalkane | Sulfide | Thioamide,Alcohol
+10376,4,2,6,Alkane | Alkene | Amide | Arene | Enamine | Haloalkane | Nitrile,Alcohol | Alkane | Arene | Ether | Haloalkane,Alkene | Amide | Enamine | Nitrile,Alcohol | Ether
+10526,4,2,6,Alcohol | Alkane | Amine | Carboxylic acid | Ether | Haloalkane,Alkane | Alkene | Ester | Ether,Alcohol | Amine | Carboxylic acid | Haloalkane,Alkene | Ester
+10640,4,2,6,Alkane | Alkene | Amine | Arene | Haloalkane | Ketone | Sulfide,Alkane | Alkene | Amide | Arene | Ether,Amine | Haloalkane | Ketone | Sulfide,Amide | Ether
+10697,3,3,6,Alcohol | Amide | Arene | Carboxylic acid | Phenol,Amide | Arene | Ether | Haloalkane | Nitrile,Alcohol | Carboxylic acid | Phenol,Ether | Haloalkane | Nitrile
+10786,4,2,6,Alcohol | Alkane | Amine | Carboxylic acid | Sulfide,Alkane | Arene | Haloalkane,Alcohol | Amine | Carboxylic acid | Sulfide,Arene | Haloalkane
+10893,5,1,6,Alkane | Alkene | Amine | Enamine | Ether | Nitrile | Sulfide,Alkane | Alkene | Arene,Amine | Enamine | Ether | Nitrile | Sulfide,Arene
+11226,6,0,6,Alcohol | Alkane | Alkene | Amide | Arene | Carboxylic acid | Enamine | Haloalkane | Nitrile,Alcohol | Alkane | Arene,Alkene | Amide | Carboxylic acid | Enamine | Haloalkane | Nitrile,
+11303,4,2,6,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Ketone,Alkane | Arene | Ester | Ether | Haloalkane | Sulfide,Alkene | Amine | Enamine | Ketone,Haloalkane | Sulfide
+11464,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Nitrile | Thioamide,Alcohol | Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Nitrile | Thioamide,Alcohol
+11548,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Ether | Nitrile,Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ether | Nitrile,Haloalkane
+11657,2,4,6,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkane | Amine | Arene | Ester | Ether | Haloalkane | Sulfide,Alcohol | Carboxylic acid,Amine | Ester | Ether | Sulfide
+11680,4,2,6,Alkane | Alkyne | Carbamate | Ether | Imide,Alkane | Amide | Haloalkane,Alkyne | Carbamate | Ether | Imide,Amide | Haloalkane
+11693,5,1,6,Alkane | Amine | Arene | Ester | Ether | Ketone,Alcohol | Alkane,Amine | Arene | Ester | Ether | Ketone,Alcohol
+11745,6,0,6,Alcohol | Alkene | Amine | Arene | Carboxylic acid | Enamine | Haloalkane | Ketone,Arene | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Enamine | Ketone,
+11863,4,2,6,Alkane | Amide | Arene | Ester | Ether | Haloalkane | Imide | Sulfide,Alcohol | Alkane | Amine | Arene | Ester | Ether,Amide | Haloalkane | Imide | Sulfide,Alcohol | Amine
+11976,5,1,6,Alcohol | Alkane | Amide | Arene | Ester | Ether | Phenol,Alkane | Amine | Arene,Alcohol | Amide | Ester | Ether | Phenol,Amine
+12055,5,1,6,Alcohol | Alkane | Alkyne | Amine | Arene | Ether | Haloalkane | Sulfide,Alkane | Alkene | Alkyne | Arene,Alcohol | Amine | Ether | Haloalkane | Sulfide,Alkene
+12141,4,2,6,Alkane | Alkene | Amine | Carbamate | Enamine | Ether | Imine | Nitrile,Alkane | Amine | Carbamate | Ether | Haloalkane | Imide,Alkene | Enamine | Imine | Nitrile,Haloalkane | Imide
+12179,5,1,6,Alcohol | Alkane | Alkene | Amide | Amine | Carboxylic acid | Enamine | Sulfide,Alcohol | Alkane | Alkene | Ether,Amide | Amine | Carboxylic acid | Enamine | Sulfide,Ether
+12213,4,2,6,Alcohol | Alkane | Alkene | Arene | Ether | Haloalkane | Sulfone,Alkane | Amide | Amine | Arene | Sulfone,Alcohol | Alkene | Ether | Haloalkane,Amide | Amine
+12654,3,3,6,Alkane | Amide | Arene | Haloalkane | Ketone,Alkane | Alkene | Amine | Arene | Sulfide,Amide | Haloalkane | Ketone,Alkene | Amine | Sulfide
+12695,5,1,6,Alcohol | Alkane | Amide | Amine | Arene | Ether | Haloalkane | Hydrazone,Alkane | Amine | Arene | Sulfide,Alcohol | Amide | Ether | Haloalkane | Hydrazone,Sulfide
+12719,2,4,6,Alkane | Ether | Ketone,Alcohol | Alkane | Carboxylic acid | Haloalkane | Sulfide,Ether | Ketone,Alcohol | Carboxylic acid | Haloalkane | Sulfide
+12986,3,3,6,Alcohol | Alkane | Alkene | Amide | Carboxylic acid | Sulfide,Alcohol | Alkane | Arene | Haloalkane | Phenol | Sulfide,Alkene | Amide | Carboxylic acid,Arene | Haloalkane | Phenol
+13022,4,2,6,Alcohol | Alkane | Amide | Arene | Ether | Phenol,Alkane | Amine | Ether | Haloalkane,Alcohol | Amide | Arene | Phenol,Amine | Haloalkane
+13169,4,2,6,Alcohol | Alkane | Alkene | Carboxylic acid | Ether,Alkane | Arene | Haloalkane,Alcohol | Alkene | Carboxylic acid | Ether,Arene | Haloalkane
+13307,3,3,6,Alkane | Ester | Ether | Sulfide,Alcohol | Alkane | Amine | Carboxylic acid,Ester | Ether | Sulfide,Alcohol | Amine | Carboxylic acid
+13434,5,1,6,Alkane | Alkene | Amine | Enamine | Ether | Ketone,Alkane | Haloalkane,Alkene | Amine | Enamine | Ether | Ketone,Haloalkane
+13457,3,3,6,Alcohol | Aldehyde | Alkene | Carboxylic acid,Alcohol | Arene | Haloalkane | Nitrile,Aldehyde | Alkene | Carboxylic acid,Arene | Haloalkane | Nitrile
+13720,3,3,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid,Alcohol | Alkyne | Arene | Haloalkane | Sulfone,Alkane | Amine | Carboxylic acid,Alkyne | Haloalkane | Sulfone
+13736,6,0,6,Alcohol | Alkane | Alkene | Amine | Arene | Enamine | Ether | Haloalkane | Ketone | Nitrile | Phenol,Alcohol | Alkane | Arene | Ether | Ketone,Alkene | Amine | Enamine | Haloalkane | Nitrile | Phenol,
+13797,4,2,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Sulfide,Alkane | Amine | Arene | Haloalkane,Alcohol | Carboxylic acid | Ether | Sulfide,Amine | Haloalkane
+13966,4,2,6,Alkane | Alkyne | Arene | Ether | Haloalkane,Alcohol | Alkane | Ketone,Alkyne | Arene | Ether | Haloalkane,Alcohol | Ketone
+13975,4,2,6,Alkane | Amine | Arene | Haloalkane | Sulfide | Sulfonamide | Sulfone,Alkane | Arene | Haloalkane | Imide | Ketone,Amine | Sulfide | Sulfonamide | Sulfone,Imide | Ketone
+13986,4,2,6,Alcohol | Alkane | Alkene | Amide | Amine | Arene | Imine,Alcohol | Alkane | Arene | Ether | Haloalkane,Alkene | Amide | Amine | Imine,Ether | Haloalkane
+14057,4,2,6,Alkane | Amide | Arene | Ether | Imide | Ketone | Sulfide,Alkane | Amine | Arene | Ether | Haloalkane,Amide | Imide | Ketone | Sulfide,Amine | Haloalkane
+14257,3,3,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane,Alcohol | Alkane | Arene | Ketone | Nitrile | Phenol,Carboxylic acid | Ether | Haloalkane,Ketone | Nitrile | Phenol
+14291,4,2,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Phenol,Alkane | Amide | Arene | Haloalkane,Alcohol | Carboxylic acid | Ether | Phenol,Amide | Haloalkane
+14360,4,2,6,Alcohol | Alkane | Amide | Arene | Sulfonamide,Amine | Arene | Haloalkane,Alcohol | Alkane | Amide | Sulfonamide,Amine | Haloalkane
+14548,6,0,6,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Haloalkane,Amine,Alcohol | Alkane | Amide | Arene | Carboxylic acid | Haloalkane,
+14649,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Sulfide,Alkane | Ether | Haloalkane,Alcohol | Amine | Arene | Carboxylic acid | Sulfide,Haloalkane
+14653,4,2,6,Alcohol | Alkane | Alkene | Arene | Ester | Ether | Phenol,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Alkene | Ester | Ether | Phenol,Carboxylic acid | Haloalkane
+14686,2,4,6,Alcohol | Alkane | Alkene | Amide | Amine | Arene,Alcohol | Alkane | Alkene | Arene | Carbamate | Ester | Ether | Haloalkane,Amide | Amine,Carbamate | Ester | Ether | Haloalkane
+14699,4,2,6,Alkane | Imine | Ketone | Sulfide,Haloalkane | Nitrile,Alkane | Imine | Ketone | Sulfide,Haloalkane | Nitrile
+15549,5,1,6,Alkane | Amide | Arene | Ester | Ether | Imide | Sulfide,Alkane | Arene | Haloalkane,Amide | Ester | Ether | Imide | Sulfide,Haloalkane
+15598,5,1,6,Alkane | Alkene | Amine | Arene | Enamine | Ester | Ether | Haloalkane,Alcohol | Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ester | Ether,Alcohol
+15814,3,3,6,Amide | Amine | Haloalkane | Hydrazine,Alcohol | Alkane | Carboxylic acid | Haloalkane,Amide | Amine | Hydrazine,Alcohol | Alkane | Carboxylic acid
+15843,5,1,6,Alkane | Alkene | Amide | Amine | Arene | Enamine | Thioamide,Alkane | Arene | Haloalkane,Alkene | Amide | Amine | Enamine | Thioamide,Haloalkane
+15876,1,5,6,Alkane | Amine | Nitrile,Alkane | Alkene | Amine | Enamine | Ester | Ether | Haloalkane,Nitrile,Alkene | Enamine | Ester | Ether | Haloalkane
+15920,5,1,6,Alcohol | Alkane | Amine | Arene | Carbamate | Ether | Haloalkane | Hydrazine,Alcohol | Alkane | Amide | Arene,Amine | Carbamate | Ether | Haloalkane | Hydrazine,Amide
+15948,5,1,6,Amide | Arene | Haloalkane | Imide | Sulfide | Sulfone,Alcohol | Arene,Amide | Haloalkane | Imide | Sulfide | Sulfone,Alcohol
+15958,4,2,6,Alcohol | Alkane | Arene | Nitrile | Phenol,Alkane | Haloalkane | Sulfide,Alcohol | Arene | Nitrile | Phenol,Haloalkane | Sulfide
+16019,5,1,6,Alcohol | Alkane | Amine | Arene | Haloalkane | Hydrazine | Phenol,Alkane | Haloalkane | Sulfide,Alcohol | Amine | Arene | Hydrazine | Phenol,Sulfide
+16193,5,1,6,Alcohol | Alkene | Amine | Arene | Carboxylic acid | Sulfoxide,Arene | Haloalkane,Alcohol | Alkene | Amine | Carboxylic acid | Sulfoxide,Haloalkane
+16356,4,2,6,Alcohol | Alkane | Amide | Arene | Ester | Ether | Phenol,Alkane | Arene | Ether | Haloalkane | Sulfide,Alcohol | Amide | Ester | Phenol,Haloalkane | Sulfide
+16389,4,2,6,Alcohol | Alkane | Alkene | Amine | Arene | Haloalkane | Nitrile,Alkane | Amide | Arene | Ether | Haloalkane,Alcohol | Alkene | Amine | Nitrile,Amide | Ether
+16472,4,2,6,Alkane | Amine | Arene | Ester | Ether | Sulfonamide | Thiol,Alcohol | Alkane | Amine | Arene | Carboxylic acid,Ester | Ether | Sulfonamide | Thiol,Alcohol | Carboxylic acid
+16559,5,1,6,Alkane | Alkene | Arene | Ether | Ketone | Nitrile | Sulfide,Alkane | Arene | Haloalkane,Alkene | Ether | Ketone | Nitrile | Sulfide,Haloalkane
+16588,5,1,6,Alkane | Alkene | Amine | Enamine | Ester | Ether | Sulfide,Alkane | Amine | Haloalkane,Alkene | Enamine | Ester | Ether | Sulfide,Haloalkane
+16643,5,1,6,Alkane | Amide | Arene | Ester | Ether | Sulfide | Thioamide,Alkane | Amine | Arene,Amide | Ester | Ether | Sulfide | Thioamide,Amine
+17080,4,2,6,Alcohol | Alkane | Amine | Arene | Haloalkane | Phenol,Alcohol | Aldehyde | Alkane | Carboxylic acid,Amine | Arene | Haloalkane | Phenol,Aldehyde | Carboxylic acid
+17133,6,0,6,Alcohol | Alkane | Alkene | Amine | Enamine | Enol | Ester | Ether | Ketone,Alcohol | Alkane | Amine,Alkene | Enamine | Enol | Ester | Ether | Ketone,
+17169,4,2,6,Aldehyde | Alkane | Amine | Ester | Ether | Sulfide,Alcohol | Alkane | Carboxylic acid | Ether,Aldehyde | Amine | Ester | Sulfide,Alcohol | Carboxylic acid
+17342,4,2,6,Alkane | Alkene | Ester | Ether | Ketone,Alcohol | Alkane | Amine,Alkene | Ester | Ether | Ketone,Alcohol | Amine
+17354,4,2,6,Alcohol | Alkane | Alkene | Arene | Ketone | Phenol,Alkane | Amide | Amine | Arene,Alcohol | Alkene | Ketone | Phenol,Amide | Amine
+17380,3,3,6,Alkane | Amine | Arene | Sulfide | Sulfonamide | Sulfone,Alkane | Arene | Ester | Ether | Haloalkane | Sulfone,Amine | Sulfide | Sulfonamide,Ester | Ether | Haloalkane
+17574,6,0,6,Alcohol | Alkane | Alkene | Enol | Ester | Ether | Haloalkane | Nitrile,Alkane | Haloalkane,Alcohol | Alkene | Enol | Ester | Ether | Nitrile,
+17627,6,0,6,Alcohol | Alkane | Alkene | Amide | Amine | Enamine | Enol | Sulfide | Sulfonamide,Alcohol | Alkane | Sulfide,Alkene | Amide | Amine | Enamine | Enol | Sulfonamide,
+17690,4,2,6,Amide | Amine | Arene | Haloalkane | Hydrazine,Alcohol | Alkane | Arene,Amide | Amine | Haloalkane | Hydrazine,Alcohol | Alkane
+17816,4,2,6,Alkane | Amine | Arene | Ester | Ether | Sulfide | Sulfonamide,Alkane | Arene | Ether | Haloalkane | Ketone,Amine | Ester | Sulfide | Sulfonamide,Haloalkane | Ketone
+17897,6,0,6,Alkane | Alkene | Amine | Arene | Enamine | Haloalkane | Imine | Ketone,Alkane | Arene,Alkene | Amine | Enamine | Haloalkane | Imine | Ketone,
+18000,4,2,6,Alkane | Alkene | Ester | Ether | Sulfide,Alkane | Arene | Haloalkane,Alkene | Ester | Ether | Sulfide,Arene | Haloalkane
+18025,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Haloalkane,Alkane | Ether | Sulfide,Alcohol | Amine | Arene | Carboxylic acid | Haloalkane,Sulfide
+18080,5,1,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane | Sulfide,Alkane | Amine | Arene,Alcohol | Carboxylic acid | Ether | Haloalkane | Sulfide,Amine
+18304,5,1,6,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Ester | Ether,Alkane | Amine | Arene | Haloalkane,Alcohol | Amide | Carboxylic acid | Ester | Ether,Haloalkane
+18367,4,2,6,Alkane | Amine | Ester | Ether | Haloalkane | Nitrile | Sulfide,Alcohol | Alkane | Ether | Haloalkane | Phenol,Amine | Ester | Nitrile | Sulfide,Alcohol | Phenol
+18523,4,2,6,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Sulfide | Sulfonamide,Alcohol | Alkane | Amine | Arene | Haloalkane | Phenol,Amide | Carboxylic acid | Sulfide | Sulfonamide,Haloalkane | Phenol
+18677,4,2,6,Alcohol | Alkane | Alkene | Ester | Ether | Phenol,Alkane | Ether | Haloalkane | Ketone,Alcohol | Alkene | Ester | Phenol,Haloalkane | Ketone
+18705,4,2,6,Alkane | Amine | Arene | Haloalkane | Ketone | Nitrile,Alcohol | Amine | Carboxylic acid | Haloalkane,Alkane | Arene | Ketone | Nitrile,Alcohol | Carboxylic acid
+18831,4,2,6,Alkane | Amine | Arene | Ester | Ether | Nitrile | Sulfide | Sulfonamide,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Sulfide,Ester | Ether | Nitrile | Sulfonamide,Alcohol | Carboxylic acid
+18875,4,2,6,Alkane | Amide | Amine | Arene | Sulfide | Sulfonamide,Alkane | Arene | Ether | Haloalkane,Amide | Amine | Sulfide | Sulfonamide,Ether | Haloalkane
+18921,6,0,6,Alcohol | Alkane | Amide | Amine | Arene | Carboxylic acid | Ester | Ether | Nitrile,Alkane | Arene | Ether,Alcohol | Amide | Amine | Carboxylic acid | Ester | Nitrile,
+18958,5,1,6,Alcohol | Alkane | Amine | Arene | Ketone | Phenol,Alkane | Haloalkane,Alcohol | Amine | Arene | Ketone | Phenol,Haloalkane
+19043,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Sulfide,Alkane | Haloalkane,Alcohol | Amine | Arene | Carboxylic acid | Sulfide,Haloalkane
+19101,3,3,6,Alkane | Amine | Arene | Nitrile,Amide | Arene | Ether | Haloalkane,Alkane | Amine | Nitrile,Amide | Ether | Haloalkane
+19342,5,1,6,Alkane | Alkene | Arene | Ester | Ether | Haloalkane | Ketone | Nitrile,Alcohol | Alkane | Arene | Haloalkane,Alkene | Ester | Ether | Ketone | Nitrile,Alcohol
+19482,5,1,6,Alkane | Amide | Arene | Ester | Ether | Haloalkane | Hydrazine | Sulfone,Alkane | Arene | Ester | Sulfide,Amide | Ether | Haloalkane | Hydrazine | Sulfone,Sulfide
+19585,4,2,6,Alkane | Amine | Arene | Ether | Sulfonamide,Arene | Haloalkane | Sulfide,Alkane | Amine | Ether | Sulfonamide,Haloalkane | Sulfide
+20225,5,1,6,Alkane | Alkene | Amide | Arene | Carbamate | Ether | Imide,Alkane | Arene | Haloalkane,Alkene | Amide | Carbamate | Ether | Imide,Haloalkane
+20301,2,4,6,Alcohol | Alkane | Amine | Carboxylic acid,Alkane | Amide | Amine | Arene | Haloalkane | Nitrile,Alcohol | Carboxylic acid,Amide | Arene | Haloalkane | Nitrile
+20582,5,1,6,Alkane | Alkene | Amide | Amine | Arene | Nitrile | Sulfide | Sulfonamide | Thiol,Alkane | Amine | Arene | Haloalkane | Sulfide,Alkene | Amide | Nitrile | Sulfonamide | Thiol,Haloalkane
+20654,4,2,6,Alkane | Alkene | Amine | Arene | Enamine | Ketone,Alcohol | Alkane | Arene | Haloalkane,Alkene | Amine | Enamine | Ketone,Alcohol | Haloalkane
+20734,3,3,6,Alkane | Amine | Arene | Ether | Sulfide | Sulfonamide,Alkane | Alkene | Amide | Arene | Ether | Haloalkane,Amine | Sulfide | Sulfonamide,Alkene | Amide | Haloalkane
+20951,5,1,6,Alcohol | Alkane | Amine | Carboxylic acid | Ketone | Sulfide,Alkane | Ether,Alcohol | Amine | Carboxylic acid | Ketone | Sulfide,Ether
+21047,5,1,6,Alkane | Arene | Ester | Ether | Haloalkane | Ketone | Sulfone,Alkane | Arene | Sulfide,Ester | Ether | Haloalkane | Ketone | Sulfone,Sulfide
+21049,5,1,6,Alkane | Alkene | Arene | Carbamate | Enamine | Ether | Haloalkane | Ketone,Alkane | Arene | Ester | Ether,Alkene | Carbamate | Enamine | Haloalkane | Ketone,Ester
+21243,4,2,6,Alkane | Amine | Arene | Carbamate | Ether | Haloalkane | Sulfide,Alcohol | Alkane | Arene | Ester | Ether,Amine | Carbamate | Haloalkane | Sulfide,Alcohol | Ester
+21338,5,1,6,Alcohol | Alkane | Arene | Carboxylic acid | Ether | Haloalkane | Nitrile,Alkane | Amide | Arene,Alcohol | Carboxylic acid | Ether | Haloalkane | Nitrile,Amide
+21515,3,3,6,Alkane | Amine | Ether | Haloalkane,Alcohol | Alkane | Carboxylic acid | Sulfide,Amine | Ether | Haloalkane,Alcohol | Carboxylic acid | Sulfide
+21671,3,3,6,Alkane | Amine | Arene | Nitrile | Sulfonamide,Alcohol | Alkane | Arene | Haloalkane | Sulfide,Amine | Nitrile | Sulfonamide,Alcohol | Haloalkane | Sulfide
+21737,3,3,6,Alkane | Amine | Arene | Ketone | Thioamide,Alcohol | Alkane | Arene | Carboxylic acid | Haloalkane,Amine | Ketone | Thioamide,Alcohol | Carboxylic acid | Haloalkane
+21792,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Sulfide,Alkane | Arene | Haloalkane,Alcohol | Amine | Carboxylic acid | Ether | Sulfide,Haloalkane
+21940,6,0,6,Alkane | Alkene | Amide | Amine | Arene | Enamine | Ester | Ether | Haloalkane | Nitrile,Alkane | Amine | Arene | Haloalkane,Alkene | Amide | Enamine | Ester | Ether | Nitrile,
+21953,4,2,6,Alkane | Amide | Amine | Carbamate | Ether | Imide | Sulfide | Sulfonamide,Alkane | Arene | Carbamate | Ether | Haloalkane | Imide,Amide | Amine | Sulfide | Sulfonamide,Arene | Haloalkane
+22016,5,1,6,Alcohol | Alkane | Amine | Arene | Ester | Ether | Ketone | Phenol,Alcohol | Alkane | Arene | Haloalkane,Amine | Ester | Ether | Ketone | Phenol,Haloalkane
+22017,4,2,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Ether | Haloalkane,Alkane | Amide | Arene | Haloalkane | Imide,Alcohol | Amine | Carboxylic acid | Ether,Amide | Imide
+22199,4,2,6,Alcohol | Alkane | Amine | Arene | Phenol | Sulfonamide,Alkane | Arene | Haloalkane | Sulfone,Alcohol | Amine | Phenol | Sulfonamide,Haloalkane | Sulfone
+22337,2,4,6,Alkane | Amide | Hydrazone,Alcohol | Alkane | Ether | Haloalkane | Phenol,Amide | Hydrazone,Alcohol | Ether | Haloalkane | Phenol
+22572,3,3,6,Alkane | Amide | Arene | Carbamate | Ether | Haloalkane,Alkane | Amine | Carbamate | Ester | Ether | Sulfide,Amide | Arene | Haloalkane,Amine | Ester | Sulfide
+22610,5,1,6,Alcohol | Alkane | Alkene | Amine | Carboxylic acid | Enamine | Sulfide,Aldehyde | Alkane | Alkene,Alcohol | Amine | Carboxylic acid | Enamine | Sulfide,Aldehyde
+22662,6,0,6,Alcohol | Alkane | Alkene | Amide | Carboxylic acid | Enamine | Ether | Sulfide,Alkane | Ether,Alcohol | Alkene | Amide | Carboxylic acid | Enamine | Sulfide,
+22923,5,1,6,Alcohol | Alkane | Amine | Arene | Carboxylic acid | Sulfide | Sulfonamide,Alkane | Arene | Haloalkane,Alcohol | Amine | Carboxylic acid | Sulfide | Sulfonamide,Haloalkane
+22952,4,2,6,Alkane | Amide | Amine | Ester | Ether | Hydrazine | Sulfonate,Alcohol | Alkane | Carbamate | Ether | Sulfonate,Amide | Amine | Ester | Hydrazine,Alcohol | Carbamate
+22968,4,2,6,Alcohol | Amide | Amine | Arene | Hydrazine | Imide | Phenol,Amide | Amine | Arene | Haloalkane | Sulfide,Alcohol | Hydrazine | Imide | Phenol,Haloalkane | Sulfide
+22981,5,1,6,Alcohol | Alkane | Alkene | Arene | Carboxylic acid | Enamine | Haloalkane | Ketone,Alkane | Arene | Ketone | Sulfide,Alcohol | Alkene | Carboxylic acid | Enamine | Haloalkane,Sulfide
