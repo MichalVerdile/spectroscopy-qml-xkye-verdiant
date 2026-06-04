@@ -83,15 +83,15 @@ class PathConfig:
     data_dir: str = "data/raw"
 
     # Output paths
-    model_dir: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/models_test"
-    results_dir: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_test"
+    model_dir: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/models_600"
+    results_dir: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_600"
 
     # Model checkpoint
-    best_model_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/models_test/mps_model_best.pt"
+    best_model_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/models_600/mps_model_best.pt"
 
     # Results
-    summary_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_test/summary.txt"
-    training_log_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_test/training_log.csv"
+    summary_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_600/summary.txt"
+    training_log_path: str = "src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/results_600/training_log.csv"
 
 
 @dataclass
