@@ -1,0 +1,19 @@
+TTN C-NMR Experiment10 Summary
+================================================================================
+Leaf encoder:              none (segments enter TTN directly)
+Feature channels:          raw + first_derivative + second_derivative
+Elapsed seconds:           2996.47
+Epochs completed:          50/200
+Data files used:           245/245
+Fixed split artifact:      src/spectroscopy_qml/msms_neg/tree_tensor_network/results_600/data_split_seed42_all.npz
+Best epoch:                30
+Best early-stop score:     0.396862
+Best score metric:         blended_f1
+Best val loss:             0.403707
+Threshold mean:            0.500000
+Threshold std:             0.000000
+Test loss:                 0.403332
+Test f1_micro:             0.642042
+Test f1_macro:             0.151888
+Test precision_micro:      0.719611
+Test recall_micro:         0.579569

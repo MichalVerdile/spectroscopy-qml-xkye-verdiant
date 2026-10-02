@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/models_600/mps_model_best.pt
+  Trained epochs: 8
+  Parameters: 193,473,529
+  Thresholds: mean=0.500, std=0.000
+
+Test Set Performance:
+  accuracy: 0.0000
+  f1_micro: 0.2850
+  f1_macro: 0.1712
+  f1_weighted: 0.5423
+  f1_samples: 0.2986
+  precision_micro: 0.1876
+  precision_macro: 0.1523
+  precision_weighted: 0.5755
+  recall_micro: 0.5923
+  recall_macro: 0.5678
+  recall_weighted: 0.5923
+  hamming_accuracy: 0.6156
+
+Validation Set Performance:
+  accuracy: 0.0000
+  f1_micro: 0.2854
+  f1_macro: 0.1722
+  f1_weighted: 0.5425
+  f1_samples: 0.2990
+  precision_micro: 0.1878
+  precision_macro: 0.1529
+  precision_weighted: 0.5757
+  recall_micro: 0.5937
+  recall_macro: 0.5557
+  recall_weighted: 0.5937
+  hamming_accuracy: 0.6158
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.7767 (support=76492)
+  Arene: F1=0.6963 (support=61588)
+  Ether: F1=0.6479 (support=44963)
+  Haloalkane: F1=0.6187 (support=36735)
+  Amine: F1=0.5787 (support=33395)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Sulfonic acid: F1=0.0000 (support=3)
+  Thial: F1=0.0001 (support=1)
+  Azo compound: F1=0.0014 (support=51)
+  Phosphine: F1=0.0022 (support=55)
+  Acid anhydride: F1=0.0035 (support=64)
+
+Top 5 Functional Groups by Total Errors:
+  Nitrile: errors=52712, TP=3995, FP=51445, FN=1267, TN=22734, specificity=0.3065, example_fp_indices=[0, 2, 4, 6, 7, 8, 9, 11, 12, 14], example_fn_indices=[139, 282, 479, 609, 617, 640, 667, 716, 861, 883]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_detailed.png
+  Imide: errors=45887, TP=1051, FP=45448, FN=439, TN=32503, specificity=0.4170, example_fp_indices=[0, 4, 5, 6, 8, 13, 14, 15, 16, 20], example_fn_indices=[275, 384, 443, 637, 671, 832, 1081, 1220, 1251, 1324]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_detailed.png
+  Sulfoxide: errors=44315, TP=283, FP=44195, FN=120, TN=34843, specificity=0.4408, example_fp_indices=[2, 4, 6, 8, 12, 13, 14, 15, 16, 20], example_fn_indices=[1, 1104, 1284, 1329, 1602, 2029, 2652, 3193, 4640, 5562]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_detailed.png
+  Alkyne: errors=43404, TP=965, FP=42850, FN=554, TN=35072, specificity=0.4501, example_fp_indices=[0, 4, 7, 8, 16, 17, 20, 21, 23, 25], example_fn_indices=[12, 42, 160, 193, 274, 976, 1222, 1599, 1636, 1769]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_detailed.png
+  Thioamide: errors=41729, TP=410, FP=41537, FN=192, TN=37302, specificity=0.4731, example_fp_indices=[4, 5, 6, 8, 9, 12, 13, 14, 15, 16], example_fn_indices=[87, 659, 810, 1374, 1458, 1651, 1961, 2356, 2630, 2906]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/results_600/validation_error_analysis_detailed.png

@@ -1,0 +1,98 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/models_600/mps_model_best.pt
+  Trained epochs: 3
+  Parameters: 193,473,529
+  Thresholds: mean=0.650, std=0.193
+
+Test Set Performance:
+  accuracy: 0.0025
+  f1_micro: 0.6040
+  f1_macro: 0.2563
+  f1_weighted: 0.6807
+  f1_samples: 0.6012
+  precision_micro: 0.4762
+  precision_macro: 0.2164
+  precision_weighted: 0.6078
+  recall_micro: 0.8257
+  recall_macro: 0.3968
+  recall_weighted: 0.8257
+  hamming_accuracy: 0.8600
+
+Validation Set Performance:
+  accuracy: 0.0026
+  f1_micro: 0.6037
+  f1_macro: 0.2576
+  f1_weighted: 0.6808
+  f1_samples: 0.6007
+  precision_micro: 0.4757
+  precision_macro: 0.2184
+  precision_weighted: 0.6081
+  recall_micro: 0.8261
+  recall_macro: 0.4053
+  recall_weighted: 0.8261
+  hamming_accuracy: 0.8599
+
+Top 5 Best Performing Functional Groups (by F1 score):
+  Alkane: F1=0.9943 (support=76492)
+  Arene: F1=0.9196 (support=61588)
+  Ether: F1=0.7811 (support=44963)
+  Haloalkane: F1=0.6492 (support=36735)
+  Amine: F1=0.6296 (support=33395)
+
+Bottom 5 Worst Performing Functional Groups (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Azo compound: F1=0.0094 (support=51)
+  Isocyanate: F1=0.0200 (support=96)
+  Phosphine: F1=0.0212 (support=55)
+
+Top 5 Functional Groups by Total Errors:
+  Alcohol: errors=51284, TP=19234, FP=49122, FN=2162, TN=8923, specificity=0.1537, example_fp_indices=[0, 1, 2, 3, 4, 5, 8, 13, 15, 17], example_fn_indices=[48, 53, 63, 75, 78, 111, 220, 252, 271, 284]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_detailed.png
+  Haloalkane: errors=37227, TP=34445, FP=34937, FN=2290, TN=7769, specificity=0.1819, example_fp_indices=[0, 9, 11, 12, 15, 19, 20, 21, 22, 23], example_fn_indices=[3, 44, 51, 178, 194, 224, 241, 289, 299, 340]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_detailed.png
+  Sulfide: errors=35878, TP=6409, FP=31417, FN=4461, TN=37154, specificity=0.5418, example_fp_indices=[1, 4, 7, 11, 13, 14, 16, 20, 27, 29], example_fn_indices=[5, 17, 18, 36, 99, 140, 178, 194, 201, 226]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_detailed.png
+  Amide: errors=34310, TP=15969, FP=29091, FN=5219, TN=29162, specificity=0.5006, example_fp_indices=[10, 11, 13, 15, 17, 19, 21, 22, 26, 27], example_fn_indices=[23, 39, 58, 68, 76, 79, 81, 106, 127, 154]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_detailed.png
+  Nitrile: errors=32555, TP=2968, FP=30261, FN=2294, TN=43918, specificity=0.5921, example_fp_indices=[0, 1, 4, 7, 11, 14, 16, 22, 23, 28], example_fn_indices=[21, 59, 126, 325, 438, 460, 481, 534, 551, 563]
+
+Generated Error Analysis Artifacts:
+  Test CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_metrics.json
+  Test plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/test_error_analysis_detailed.png
+  Validation CSV: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_metrics.json
+  Validation plot: src/spectroscopy_qml/hnmr/mps_classifier_hnmr/results_600/validation_error_analysis_detailed.png
