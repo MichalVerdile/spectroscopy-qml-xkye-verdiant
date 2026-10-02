@@ -1,5 +1,6 @@
 # Adapted from Guwon Jung: https://github.com/gj475/irchracterizationcnn
 
+import json
 import os
 import pickle
 import time
@@ -27,6 +28,8 @@ from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
+
+from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
@@ -227,6 +230,7 @@ def append_keras_history_logs(
     seed: int,
     n_folds: int | None,
     num_functional_groups: int,
+    input_length: int,
 ):
     """
     Converts Keras History.history into CSV-friendly epoch rows.
@@ -274,7 +278,7 @@ def append_keras_history_logs(
             "seed": seed,
             "n_folds": n_folds,
             "model_type": "cnn",
-            "input_length": 600,
+            "input_length": input_length,
             "num_functional_groups": num_functional_groups,
         }
 
@@ -306,10 +310,11 @@ def train_model(
     """Trains final model with the best hyper-parameters."""
 
     # Input
-    X_train = X_train.reshape(X_train.shape[0], 600, 1)
+    input_length = X_train.shape[1]
+    X_train = X_train.reshape(X_train.shape[0], input_length, 1)
 
     if X_val is not None:
-        X_val = X_val.reshape(X_val.shape[0], 600, 1)
+        X_val = X_val.reshape(X_val.shape[0], input_length, 1)
 
     # Shape of input data.
     input_shape = X_train.shape[1:]
@@ -390,7 +395,7 @@ def train_model(
 
     print("Start training")
 
-    X_test = X_test.reshape(X_test.shape[0], 600, 1)
+    X_test = X_test.reshape(X_test.shape[0], input_length, 1)
 
     monitor_metric = "val_loss" if X_val is not None and y_val is not None else "loss"
 
@@ -444,22 +449,22 @@ def train_model(
     return (prediction > 0.5).astype(int), model, history, fit_seconds, predict_seconds
 
 
-def interpolate_to_600(spec):
+def interpolate_spectrum(spec, target_length: int):
     if spec is None:
         return None
 
     spec = np.asarray(spec, dtype=np.float32).flatten()
 
     if len(spec) == 0:
-        return np.zeros(600, dtype=np.float32)
+        return np.zeros(target_length, dtype=np.float32)
 
     spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
 
     if len(spec) == 1:
-        return np.full(600, spec[0], dtype=np.float32)
+        return np.full(target_length, spec[0], dtype=np.float32)
 
     old_x = np.arange(len(spec))
-    new_x = np.linspace(min(old_x), max(old_x), 600)
+    new_x = np.linspace(min(old_x), max(old_x), target_length)
 
     interp = interp1d(old_x, spec)
     new_spec = interp(new_x)
@@ -490,11 +495,13 @@ def make_msms_spectrum(spectrum):
     return msms_spectrum
 
 
-def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame:
+def load_data_for_column(
+    analytical_data: Path, actual_col: str, target_length: int = 600
+) -> pd.DataFrame:
     columns_to_load = ["smiles", actual_col]
 
     training_data = None
-    parquet_files = list(analytical_data.glob("*.parquet"))
+    parquet_files = sorted(analytical_data.glob("*.parquet"))
 
     print(f"Found {len(parquet_files)} parquet files")
 
@@ -512,7 +519,7 @@ def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame
             data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
 
         data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
-        data[actual_col] = [interpolate_to_600(s) for s in data[actual_col]]
+        data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
 
         data = data.dropna(subset=[actual_col, "func_group"])
 
@@ -539,6 +546,8 @@ def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame
     help="Comma-separated list of columns to process",
 )
 @click.option("--seed", type=int, default=3245)
+@click.option("--input_dim", type=int, default=600, show_default=True)
+@click.option("--split_path", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
 @click.option(
     "--use_kfold/--no_kfold",
@@ -550,9 +559,13 @@ def main(
     base_out_path: Path,
     columns: str,
     seed: int,
+    input_dim: int,
+    split_path: Path | None,
     n_folds: int,
     use_kfold: bool,
 ):
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
     columns_to_process = (
         [col.strip() for col in columns.split(",") if col.strip()]
         if columns
@@ -584,7 +597,7 @@ def main(
         print(f"{'=' * 60}")
 
         load_start = time.perf_counter()
-        training_data = load_data_for_column(analytical_data, actual_col)
+        training_data = load_data_for_column(analytical_data, actual_col, input_dim)
         load_seconds = time.perf_counter() - load_start
 
         print(f"Total samples loaded: {len(training_data)}")
@@ -634,19 +647,23 @@ def main(
             seed=seed,
             n_folds=n_folds if use_kfold else None,
             model_type="cnn",
-            input_length=600,
+            input_length=input_dim,
             num_functional_groups=num_fgs,
         )
 
-        # Same first split as the XGBoost script:
-        # 90% train-full, 10% held-out test.
-        X_train_full, X_test, y_train_full, y_test = train_test_split(
-            X_data,
-            y_data,
-            test_size=0.1,
-            random_state=seed,
-            shuffle=True,
+        shared_split = (
+            load_split_artifact(split_path, y_data, expected_seed=seed)
+            if split_path is not None
+            else None
         )
+        if shared_split is not None:
+            trainval_indices = np.concatenate((shared_split["train"], shared_split["val"]))
+            X_train_full, y_train_full = X_data[trainval_indices], y_data[trainval_indices]
+            X_test, y_test = X_data[shared_split["test"]], y_data[shared_split["test"]]
+        else:
+            X_train_full, X_test, y_train_full, y_test = train_test_split(
+                X_data, y_data, test_size=0.1, random_state=seed, shuffle=True
+            )
 
         print(
             f"Initial split: Train-full={len(X_train_full)} 90%, "
@@ -724,6 +741,7 @@ def main(
                     seed=seed,
                     n_folds=n_folds,
                     num_functional_groups=num_fgs,
+                    input_length=input_dim,
                 )
 
                 append_training_log(
@@ -757,7 +775,7 @@ def main(
                     seed=seed,
                     n_folds=n_folds,
                     model_type="cnn",
-                    input_length=600,
+                    input_length=input_dim,
                     num_functional_groups=num_fgs,
                 )
 
@@ -788,7 +806,7 @@ def main(
 
             print(f"\nEvaluating on test set {len(X_test)} samples...")
 
-            X_test_reshaped = X_test.reshape(X_test.shape[0], 600, 1)
+            X_test_reshaped = X_test.reshape(X_test.shape[0], input_dim, 1)
 
             test_predict_start = time.perf_counter()
             test_predictions = best_model.predict(X_test_reshaped)
@@ -848,7 +866,7 @@ def main(
                 seed=seed,
                 n_folds=n_folds,
                 model_type="cnn",
-                input_length=600,
+                input_length=input_dim,
                 num_functional_groups=num_fgs,
             )
 
@@ -883,7 +901,7 @@ def main(
                 "model_type": "cnn",
                 "column": col_name,
                 "actual_column": actual_col,
-                "input_length": 600,
+                "input_length": input_dim,
                 "num_functional_groups": num_fgs,
             }
 
@@ -902,13 +920,17 @@ def main(
             # X_train_full is 90% of total.
             # Validation is 1/9 of train-full = 10% of total.
             # Final split = 80% train, 10% validation, 10% test.
-            X_train, X_val, y_train, y_val = train_test_split(
-                X_train_full,
-                y_train_full,
-                test_size=1 / 9,
-                random_state=seed,
-                shuffle=True,
-            )
+            if shared_split is not None:
+                X_train, y_train = X_data[shared_split["train"]], y_data[shared_split["train"]]
+                X_val, y_val = X_data[shared_split["val"]], y_data[shared_split["val"]]
+            else:
+                X_train, X_val, y_train, y_val = train_test_split(
+                    X_train_full,
+                    y_train_full,
+                    test_size=1 / 9,
+                    random_state=seed,
+                    shuffle=True,
+                )
 
             print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
 
@@ -925,7 +947,7 @@ def main(
             )
 
             val_predict_start = time.perf_counter()
-            X_val_reshaped = X_val.reshape(X_val.shape[0], 600, 1)
+            X_val_reshaped = X_val.reshape(X_val.shape[0], input_dim, 1)
             val_predictions = model.predict(X_val_reshaped)
             val_predict_seconds = time.perf_counter() - val_predict_start
             val_predictions_binary = (val_predictions > 0.5).astype(int)
@@ -970,6 +992,7 @@ def main(
                 seed=seed,
                 n_folds=None,
                 num_functional_groups=num_fgs,
+                input_length=input_dim,
             )
 
             append_training_log(
@@ -1004,7 +1027,7 @@ def main(
                 seed=seed,
                 n_folds=None,
                 model_type="cnn",
-                input_length=600,
+                input_length=input_dim,
                 num_functional_groups=num_fgs,
             )
 
@@ -1042,12 +1065,28 @@ def main(
                 "model_type": "cnn",
                 "column": col_name,
                 "actual_column": actual_col,
-                "input_length": 600,
+                "input_length": input_dim,
                 "num_functional_groups": num_fgs,
+                "split_path": str(split_path) if split_path is not None else None,
             }
 
             with open(out_path / "results.pickle", "wb") as file:
                 pickle.dump(results, file)
+
+            (out_path / "metrics.json").write_text(
+                json.dumps(
+                    {
+                        "model": "cnn",
+                        "modality": output_dir,
+                        "seed": seed,
+                        "test_f1_micro": float(test_f1_micro),
+                        "test_f1_macro": float(test_f1_macro),
+                        "split_path": str(split_path) if split_path is not None else None,
+                    },
+                    indent=2,
+                )
+                + "\n"
+            )
 
             print(f"\nResults saved to: {out_path / 'results.pickle'}")
 

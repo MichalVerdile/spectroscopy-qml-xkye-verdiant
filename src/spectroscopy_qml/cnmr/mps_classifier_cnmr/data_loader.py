@@ -211,7 +211,10 @@ def load_ir_data(
     print(f"Loading IR spectra from {data_dir}")
 
     data_dir = Path(data_dir)
-    parquet_files = sorted(data_dir.glob("*188.parquet"))
+    # Use the complete dataset. The previous development-only ``*188.parquet``
+    # filter silently restricted MPS/TTN to one chunk and made cross-model split
+    # comparisons invalid.
+    parquet_files = sorted(data_dir.glob("*.parquet"))
 
     if max_files:
         parquet_files = parquet_files[:max_files]

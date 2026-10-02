@@ -58,7 +58,7 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     cache_dir = Path("data/cache")
     file_suffix = "all" if args.max_files is None else f"files{int(args.max_files)}"
     snv_suffix = "snv" if args.apply_snv else "raw"
-    return cache_dir / f"cnmr_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
+    return cache_dir / f"msms_pos_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
 
 
 def write_summary(
@@ -201,4 +201,3 @@ def evaluate_with_probs_amp(model, dataloader, criterion, device, use_amp: bool 
     all_labels, all_probs = sanitize_binary_targets_and_probs(all_labels, all_probs)
     avg_loss = total_loss / len(dataloader.dataset)
     return avg_loss, all_labels, all_probs
-
