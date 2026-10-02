@@ -57,9 +57,10 @@ related groups.
 
 For $^{1}$H-NMR, all models show substantially higher label-wise error than on
 IR, with a visibly larger mass of labels in the high-error regime.
-The adapted CNN remains the most balanced model overall, while TTN and XGBoost
-show broader tails of severe per-label errors and MPS remains weaker on many
-minority labels.
+In aggregate terms, XGBoost performs best on $^{1}$H-NMR, followed by TTN and
+MPS, while the adapted CNN is clearly weakest.
+At the same time, all four plots remain strongly right-shifted, showing that
+the modality is difficult across all evaluated architectures.
 At the same time, the difficult functional groups are again highly consistent
 across models, especially sulfonic acid, thial, isothiocyanate, isocyanate, and
 thiol.
@@ -70,7 +71,7 @@ $^{1}$H-NMR representation.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.92\linewidth]{images/Error_Analysis/CNN_H-NMR_test_error_analysis_detailed.png}
-    \caption{Detailed $^{1}$H-NMR test-set error analysis for the adapted CNN. Among the evaluated models, the CNN retains the most balanced overall $^{1}$H-NMR error profile, although several rare and chemically specific labels still remain highly error-prone.}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for the adapted CNN. The plot shows a strongly right-shifted error distribution, which is consistent with the CNN's weak aggregate $^{1}$H-NMR performance. Several rare and chemically specific labels remain highly error-prone.}
     \label{fig:error_analysis_hnmr_cnn}
 \end{figure}
 

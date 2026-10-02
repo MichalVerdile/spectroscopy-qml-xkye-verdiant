@@ -41,13 +41,13 @@ same degree of independence.
 \subsubsection{IR}
 
 Among all modalities, IR spectra yielded the most balanced error profiles. The
-CNN achieved the strongest overall result with a macro-F1 score of 0.681 and a
+CNN achieved the strongest overall result with a macro-F1 score of 0.691 and a
 mean per-label error rate of 35.3\%, closely followed by the MPS with a
 macro-F1 of 0.671 and a mean error rate of 36.1\%. The TTN remained competitive
-in terms of average error distribution, but its macro-F1 decreased to 0.564,
+in terms of average error distribution, but its macro-F1 decreased to 0.607,
 indicating less reliable performance on the more difficult and less frequent
 labels. XGBoost showed the weakest IR performance, with both a lower macro-F1
-score (0.537) and a clearly larger fraction of severely affected groups.
+score (0.546) and a clearly larger fraction of severely affected groups.
 
 Despite the comparatively strong results for IR, several functional groups were
 consistently difficult across models. In particular, thial and azo compound
@@ -85,14 +85,12 @@ challenging groups.
 \subsubsection{$^1$H-NMR}
 
 The error analysis for $^1$H-NMR reveals a markedly more difficult prediction
-task than IR. The CNN again produced the strongest overall result, combining the
-highest macro-F1 score (0.493) with the lowest mean label-wise error rate
-(59.7\%). The remaining models performed substantially worse in terms of class
-balance. XGBoost reached a macro-F1 of 0.368, TTN 0.314, and MPS 0.256, while
-all three showed broad error concentration across many labels. Notably, the MPS
-displayed a mean error rate similar to the CNN, but its substantially lower
-macro-F1 indicates that its remaining predictions were less evenly distributed
-across functional groups.
+task than IR. In aggregate terms, XGBoost performed best with a macro-F1 score
+of 0.368, followed by TTN at 0.314 and MPS at 0.256, while the adapted CNN
+trailed clearly at 0.044. The error plots nevertheless show that all four
+models exhibited broad error concentration across many labels, indicating that
+even the strongest $^1$H-NMR models still struggle to maintain robust
+label-wise discrimination across the full functional-group space.
 
 Across all four models, sulfonic acid and thial were consistently among the
 most difficult labels, frequently reaching error rates close to 100\%. Further
@@ -130,10 +128,10 @@ multiple chemically similar functional groups with sufficient robustness.
 
 The $^{13}$C-NMR setting exhibits a mixed picture and highlights the importance
 of complementing global scores with label-wise error analysis. XGBoost achieved
-the best macro-F1 score in this modality (0.413), while MPS showed the lowest
+the best macro-F1 score in this modality (0.445), while MPS showed the lowest
 mean per-label error rate (58.1\%). TTN followed closely behind with a mean
 error of 63.3\%, whereas the CNN performed weakest overall, with a macro-F1 of
-only 0.150 and a mean error rate of 82.2\%. This divergence between macro-F1
+only 0.107 and a mean error rate of 82.2\%. This divergence between macro-F1
 and average per-label error shows that some models are better at maintaining
 balanced predictions across labels, while others produce lower average error
 rates but remain inconsistent for specific functional groups.
@@ -174,7 +172,7 @@ discriminative information for a large fraction of the target groups.
 
 For positive-ion MS/MS spectra, the error analysis reveals a clear separation
 between MPS and the remaining three models. MPS achieved the best macro-F1
-score (0.175) and by far the lowest mean per-label error rate (44.8\%), whereas
+score (0.1745) and by far the lowest mean per-label error rate (44.8\%), whereas
 CNN, TTN, and XGBoost all exhibited mean error rates above 85\% and extremely
 high medians close to 100\%. In practical terms, this means that for these
 three models the majority of functional groups were missed almost completely on
@@ -218,7 +216,7 @@ fragmentation patterns.
 
 The negative-ion MS/MS results closely mirror the behavior observed for MS/MS
 (+). MPS again achieved the most favorable error distribution, with the best
-macro-F1 score (0.171) and the lowest mean per-label error rate (43.2\%).
+macro-F1 score (0.1710) and the lowest mean per-label error rate (43.2\%).
 CNN, TTN, and XGBoost again showed a near-collapse of label-wise performance,
 with mean error rates between 86.1\% and 89.4\% and medians close to 100\%.
 This indicates that the weak aggregate performance of these models on MS/MS is

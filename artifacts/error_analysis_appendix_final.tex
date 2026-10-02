@@ -77,9 +77,11 @@ related groups.
 
 For $^{1}$H-NMR, all models show substantially higher label-wise error than on
 IR, and the histograms shift clearly toward the high-error regime.
-The adapted CNN still yields the most balanced overall profile, with mean and
-median error both close to 60\%, whereas TTN and XGBoost exhibit broader severe
-tails and MPS remains weak on many minority labels.
+In aggregate terms, XGBoost attains the strongest $^{1}$H-NMR macro-F1,
+followed by TTN and MPS, while the adapted CNN is clearly weakest.
+At the same time, all four histograms remain strongly right-shifted, so even
+the better-performing models still show broad label-wise failure on this
+modality.
 At the same time, the difficult functional groups are highly consistent across
 models, especially sulfonic acid, thial, isothiocyanate, isocyanate, and
 thiol.
@@ -94,7 +96,7 @@ representation rather than a purely model-specific optimization failure.
         height=0.84\textheight,
         keepaspectratio
     ]{images/Error_Analysis/CNN_H-NMR_test_error_analysis_detailed.png}
-    \caption{Detailed $^{1}$H-NMR test-set error analysis for the adapted CNN. The CNN shows mean error 59.7\% and median error 60.3\%, which is far worse than on IR but still more balanced than the corresponding TTN and XGBoost profiles. The severe tail is driven by a recurring set of rare and chemically specific groups, especially sulfonic acid, thial, isothiocyanate, and isocyanate.}
+    \caption{Detailed $^{1}$H-NMR test-set error analysis for the adapted CNN. The CNN shows mean error 59.7\% and median error 60.3\%, which is far worse than on IR and consistent with its very weak aggregate $^{1}$H-NMR scores. The severe tail is driven by a recurring set of rare and chemically specific groups, especially sulfonic acid, thial, isothiocyanate, and isocyanate.}
     \label{fig:error_analysis_hnmr_cnn}
 \end{figure*}
 
