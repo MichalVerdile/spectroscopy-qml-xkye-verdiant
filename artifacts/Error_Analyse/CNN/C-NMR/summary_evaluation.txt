@@ -1,0 +1,15 @@
+================================================================================
+CNN C-NMR - Evaluation Summary
+================================================================================
+
+Test Set Performance:
+  f1_micro: 0.6119
+  f1_macro: 0.1069
+  precision_micro: 0.5832
+  recall_micro: 0.5860
+
+Validation Set Performance:
+  f1_micro: 0.5850
+  f1_macro: 0.1070
+  precision_micro: 0.5833
+  recall_micro: 0.5867

@@ -28,6 +28,15 @@ from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.data_loader import ( 
     load_or_create_split_indices,
     prepare_dataloaders_from_split_indices,
 )
+from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
+    ensure_finite_tensor,
+    evaluate_with_probs_amp,
+    resolve_cache_path,
+    resolve_compile_enabled,
+    sanitize_binary_targets_and_probs,
+    train_epoch_amp,
+    write_summary,
+)
 from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.losses import build_loss  # noqa: E402
 from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.train_helpers import (  # noqa: E402
     EarlyStopping,
@@ -49,15 +58,6 @@ from src.spectroscopy_qml.cnmr.tree_tensor_network.model import (  # noqa: E402
     DEFAULT_SEGMENT_STRIDE,
     DEFAULT_SEGMENT_WINDOW_SIZE,
     TTNCnmrClassifier10_2,
-)
-from src.spectroscopy_qml.cnmr.tree_tensor_network.helpers.evaluation_helpers import (  # noqa: E402
-    ensure_finite_tensor,
-    evaluate_with_probs_amp,
-    resolve_cache_path,
-    resolve_compile_enabled,
-    sanitize_binary_targets_and_probs,
-    train_epoch_amp,
-    write_summary,
 )
 
 
@@ -201,7 +201,7 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print("Leaf encoder:             none (segments enter TTN directly)")
     print("Readout:                  linear (chi -> num_labels, no hidden expansion)")
     print(f"Segment state normalize:  {args.segment_state_normalize}")
-    print(f"Feature channels:         raw + lorentz_d1 + lorentz_d2")
+    print("Feature channels:         raw + lorentz_d1 + lorentz_d2")
     print(f"Lorentz gamma:            {args.lorentz_gamma}")
     print(f"Lorentz kernel half-width:{args.lorentz_kernel_half_width}")
     print(f"Window size:              {args.segment_window_size}")
@@ -528,6 +528,20 @@ def main() -> None:
         test_loss=test_loss,
         test_metrics=test_metrics,
         final_thresholds=best_thresholds,
+    )
+    (args.output_dir / "metrics.json").write_text(
+        json.dumps(
+            {
+                "model": "ttn",
+                "modality": "cnmr",
+                "seed": args.seed,
+                "test_f1_micro": float(test_metrics["f1_micro"]),
+                "test_f1_macro": float(test_metrics["f1_macro"]),
+                "split_path": str(split_path),
+            },
+            indent=2,
+        )
+        + "\n"
     )
     print(f"Summary:         {summary_path}")
 

@@ -1,3 +1,4 @@
+import json
 import pickle
 import time
 from pathlib import Path
@@ -12,6 +13,7 @@ from sklearn.model_selection import KFold, train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 from xgboost import XGBClassifier
 
+from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
 XGB_N_ESTIMATORS = 300
 
@@ -111,7 +113,7 @@ def make_msms_spectrum(spectrum):
     return msms_spectrum
 
 
-def interpolate_to_600(spec):
+def interpolate_spectrum(spec, target_length: int):
     """
     Interpolates any 1D spectrum/vector to exactly 600 values.
     This mirrors the CNN input length.
@@ -122,15 +124,15 @@ def interpolate_to_600(spec):
     spec = np.asarray(spec, dtype=np.float32).flatten()
 
     if len(spec) == 0:
-        return np.zeros(600, dtype=np.float32)
+        return np.zeros(target_length, dtype=np.float32)
 
     spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
 
     if len(spec) == 1:
-        return np.full(600, spec[0], dtype=np.float32)
+        return np.full(target_length, spec[0], dtype=np.float32)
 
     old_x = np.arange(len(spec))
-    new_x = np.linspace(old_x.min(), old_x.max(), 600)
+    new_x = np.linspace(old_x.min(), old_x.max(), target_length)
 
     interp = interp1d(old_x, spec, kind="linear")
     new_spec = interp(new_x)
@@ -255,6 +257,7 @@ def append_learning_curve_logs(
     n_jobs: int,
     num_functional_groups: int,
     learning_curve_every: int = 1,
+    input_length: int = 600,
 ):
     """
     Stores one CSV row per XGBoost boosting step.
@@ -315,16 +318,18 @@ def append_learning_curve_logs(
             device=device,
             n_jobs=n_jobs,
             model_type="xgboost_multioutput",
-            input_length=600,
+            input_length=input_length,
             num_functional_groups=num_functional_groups,
         )
 
 
-def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame:
+def load_data_for_column(
+    analytical_data: Path, actual_col: str, target_length: int = 600
+) -> pd.DataFrame:
     columns_to_load = ["smiles", actual_col]
 
     training_data = None
-    parquet_files = list(analytical_data.glob("*.parquet"))
+    parquet_files = sorted(analytical_data.glob("*.parquet"))
 
     print(f"Found {len(parquet_files)} parquet files")
 
@@ -342,7 +347,7 @@ def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame
             data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
 
         data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
-        data[actual_col] = [interpolate_to_600(s) for s in data[actual_col]]
+        data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
 
         data = data.dropna(subset=[actual_col, "func_group"])
 
@@ -369,6 +374,8 @@ def load_data_for_column(analytical_data: Path, actual_col: str) -> pd.DataFrame
     help="Comma-separated list of columns to process",
 )
 @click.option("--seed", type=int, default=42)
+@click.option("--input_dim", type=int, default=600, show_default=True)
+@click.option("--split_path", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
 @click.option(
     "--use_kfold/--no_kfold",
@@ -403,6 +410,8 @@ def main(
     base_out_path: Path,
     columns: str,
     seed: int,
+    input_dim: int,
+    split_path: Path | None,
     n_folds: int,
     use_kfold: bool,
     device: str,
@@ -444,7 +453,7 @@ def main(
         print(f"{'=' * 60}")
 
         load_start = time.perf_counter()
-        training_data = load_data_for_column(analytical_data, actual_col)
+        training_data = load_data_for_column(analytical_data, actual_col, input_dim)
         load_seconds = time.perf_counter() - load_start
 
         print(f"Total samples loaded: {len(training_data)}")
@@ -497,19 +506,23 @@ def main(
             device=device,
             n_jobs=n_jobs,
             model_type="xgboost_multioutput",
-            input_length=600,
+            input_length=input_dim,
             num_functional_groups=num_fgs,
         )
 
-        # Same first split as CNN script:
-        # 90% train-full, 10% held-out test.
-        X_train_full, X_test, y_train_full, y_test = train_test_split(
-            X_data,
-            y_data,
-            test_size=0.1,
-            random_state=seed,
-            shuffle=True,
+        shared_split = (
+            load_split_artifact(split_path, y_data, expected_seed=seed)
+            if split_path is not None
+            else None
         )
+        if shared_split is not None:
+            trainval_indices = np.concatenate((shared_split["train"], shared_split["val"]))
+            X_train_full, y_train_full = X_data[trainval_indices], y_data[trainval_indices]
+            X_test, y_test = X_data[shared_split["test"]], y_data[shared_split["test"]]
+        else:
+            X_train_full, X_test, y_train_full, y_test = train_test_split(
+                X_data, y_data, test_size=0.1, random_state=seed, shuffle=True
+            )
 
         print(
             f"Initial split: Train-full={len(X_train_full)} 90%, "
@@ -582,6 +595,7 @@ def main(
                         n_jobs=n_jobs,
                         num_functional_groups=num_fgs,
                         learning_curve_every=learning_curve_every,
+                        input_length=input_dim,
                     )
 
                 train_prediction = model.predict(X_train).astype(int)
@@ -647,7 +661,7 @@ def main(
                     device=device,
                     n_jobs=n_jobs,
                     model_type="xgboost_multioutput",
-                    input_length=600,
+                    input_length=input_dim,
                     num_functional_groups=num_fgs,
                 )
 
@@ -739,7 +753,7 @@ def main(
                 device=device,
                 n_jobs=n_jobs,
                 model_type="xgboost_multioutput",
-                input_length=600,
+                input_length=input_dim,
                 num_functional_groups=num_fgs,
             )
 
@@ -770,7 +784,7 @@ def main(
                 "model_type": "xgboost_multioutput",
                 "column": col_name,
                 "actual_column": actual_col,
-                "input_length": 600,
+                "input_length": input_dim,
                 "num_functional_groups": num_fgs,
                 "n_estimators": XGB_N_ESTIMATORS,
                 "learning_curve_logged": log_learning_curve,
@@ -797,13 +811,17 @@ def main(
             # X_train_full is 90% of total.
             # Validation is 1/9 of train-full = 10% of total.
             # Final split = 80% train, 10% validation, 10% test.
-            X_train, X_val, y_train, y_val = train_test_split(
-                X_train_full,
-                y_train_full,
-                test_size=1 / 9,
-                random_state=seed,
-                shuffle=True,
-            )
+            if shared_split is not None:
+                X_train, y_train = X_data[shared_split["train"]], y_data[shared_split["train"]]
+                X_val, y_val = X_data[shared_split["val"]], y_data[shared_split["val"]]
+            else:
+                X_train, X_val, y_train, y_val = train_test_split(
+                    X_train_full,
+                    y_train_full,
+                    test_size=1 / 9,
+                    random_state=seed,
+                    shuffle=True,
+                )
 
             print(f"Train size: {len(X_train)}, Validation size: {len(X_val)}")
 
@@ -847,6 +865,7 @@ def main(
                     n_jobs=n_jobs,
                     num_functional_groups=num_fgs,
                     learning_curve_every=learning_curve_every,
+                    input_length=input_dim,
                 )
 
             train_predictions = model.predict(X_train).astype(int)
@@ -910,7 +929,7 @@ def main(
                 device=device,
                 n_jobs=n_jobs,
                 model_type="xgboost_multioutput",
-                input_length=600,
+                input_length=input_dim,
                 num_functional_groups=num_fgs,
             )
 
@@ -952,15 +971,31 @@ def main(
                 "model_type": "xgboost_multioutput",
                 "column": col_name,
                 "actual_column": actual_col,
-                "input_length": 600,
+                "input_length": input_dim,
                 "num_functional_groups": num_fgs,
                 "n_estimators": XGB_N_ESTIMATORS,
                 "learning_curve_logged": log_learning_curve,
                 "learning_curve_every": learning_curve_every,
+                "split_path": str(split_path) if split_path is not None else None,
             }
 
             with open(out_path / "results.pickle", "wb") as file:
                 pickle.dump(results, file)
+
+            (out_path / "metrics.json").write_text(
+                json.dumps(
+                    {
+                        "model": "xgboost",
+                        "modality": output_dir,
+                        "seed": seed,
+                        "test_f1_micro": float(test_metrics["test_f1_micro"]),
+                        "test_f1_macro": float(test_metrics["test_f1_macro"]),
+                        "split_path": str(split_path) if split_path is not None else None,
+                    },
+                    indent=2,
+                )
+                + "\n"
+            )
 
             with open(out_path / f"{output_dir}_xgboost_model.pickle", "wb") as file:
                 pickle.dump(model, file)

@@ -1,0 +1,87 @@
+================================================================================
+MPS Functional Group Classifier - Evaluation Summary
+================================================================================
+
+Model Information:
+  Model path: src/spectroscopy_qml/ir/mps_classifier/models_test/mps_model_best.pt
+  Trained epochs: 150
+  Parameters: 193,473,529
+  Thresholds: mean=0.500, std=0.000
+
+Test Set Performance:
+  accuracy: 0.2619
+  f1_micro: 0.8441
+  f1_macro: 0.6712
+  f1_weighted: 0.8432
+  f1_samples: 0.8365
+  precision_micro: 0.8708
+  precision_macro: 0.7235
+  precision_weighted: 0.8708
+  recall_micro: 0.8190
+  recall_macro: 0.6387
+  recall_weighted: 0.8190
+  hamming_accuracy: 0.9609
+
+Test Set Bootstrap Confidence Intervals:
+  Method: percentile bootstrap over test samples, n_bootstrap=2000, ci_level=0.950
+  accuracy: point=0.2619, CI=[0.2588, 0.2648], bootstrap_std=0.0015
+  f1_micro: point=0.8441, CI=[0.8431, 0.8450], bootstrap_std=0.0005
+  f1_macro: point=0.6712, CI=[0.6636, 0.6783], bootstrap_std=0.0038
+  f1_weighted: point=0.8432, CI=[0.8422, 0.8442], bootstrap_std=0.0005
+  f1_samples: point=0.8365, CI=[0.8355, 0.8375], bootstrap_std=0.0005
+  precision_micro: point=0.8708, CI=[0.8696, 0.8719], bootstrap_std=0.0006
+  precision_macro: point=0.7235, CI=[0.7125, 0.7333], bootstrap_std=0.0054
+  precision_weighted: point=0.8708, CI=[0.8697, 0.8718], bootstrap_std=0.0005
+  recall_micro: point=0.8190, CI=[0.8177, 0.8202], bootstrap_std=0.0006
+  recall_macro: point=0.6387, CI=[0.6319, 0.6460], bootstrap_std=0.0036
+  recall_weighted: point=0.8190, CI=[0.8177, 0.8202], bootstrap_std=0.0006
+  hamming_accuracy: point=0.9609, CI=[0.9606, 0.9611], bootstrap_std=0.0001
+
+Validation Set Performance:
+  accuracy: 0.2589
+  f1_micro: 0.8429
+  f1_macro: 0.6621
+  f1_weighted: 0.8420
+  f1_samples: 0.8350
+  precision_micro: 0.8685
+  precision_macro: 0.7085
+  precision_weighted: 0.8687
+  recall_micro: 0.8188
+  recall_macro: 0.6308
+  recall_weighted: 0.8188
+  hamming_accuracy: 0.9606
+
+Top 5 Best Performing Functional Groups on Test Set (by F1 score):
+  Carboxylic acid: F1=0.9829 (support=7880)
+  Alcohol: F1=0.9817 (support=21396)
+  Arene: F1=0.9595 (support=61588)
+  Alkane: F1=0.9384 (support=76492)
+  Isocyanate: F1=0.9179 (support=96)
+
+Bottom 5 Worst Performing Functional Groups on Test Set (by F1 score):
+  Thial: F1=0.0000 (support=1)
+  Sulfonic acid: F1=0.0000 (support=3)
+  Azo compound: F1=0.2388 (support=51)
+  Phosphine: F1=0.3409 (support=55)
+  Sulfoxide: F1=0.4260 (support=403)
+
+Top 5 Functional Groups by Total Errors on Test Set:
+  Ether: errors=20138, TP=31732, FP=6907, FN=13231, TN=27571, specificity=0.7997, example_fp_indices=[0, 4, 34, 35, 64, 75, 86, 90, 101, 161], example_fn_indices=[12, 20, 21, 22, 45, 55, 67, 72, 73, 76]
+  Haloalkane: errors=20116, TP=26210, FP=9591, FN=10525, TN=33115, specificity=0.7754, example_fp_indices=[12, 20, 21, 24, 41, 45, 57, 82, 84, 104], example_fn_indices=[1, 3, 10, 14, 17, 26, 35, 52, 72, 74]
+  Sulfide: errors=10716, TP=5104, FP=4950, FN=5766, TN=63621, specificity=0.9278, example_fp_indices=[1, 8, 27, 57, 73, 84, 88, 94, 98, 105], example_fn_indices=[12, 18, 53, 54, 83, 128, 140, 201, 226, 243]
+  Alkane: errors=8913, TP=67895, FP=316, FN=8597, TN=2633, specificity=0.8928, example_fp_indices=[144, 371, 502, 525, 1176, 1531, 1806, 2074, 2083, 2542], example_fn_indices=[7, 16, 40, 54, 60, 67, 75, 79, 82, 84]
+  Ester: errors=8022, TP=10945, FP=4022, FN=4000, TN=60474, specificity=0.9376, example_fp_indices=[1, 5, 29, 71, 74, 161, 172, 173, 188, 198], example_fn_indices=[30, 48, 62, 103, 105, 152, 159, 160, 170, 196]
+
+Generated Error Analysis Artifacts:
+  Test results TXT: src/spectroscopy_qml/ir/mps_classifier/results_test/evaluation_results.txt
+  Test CSV: src/spectroscopy_qml/ir/mps_classifier/results_test/test_error_analysis.csv
+  Test metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_test/test_error_analysis_metrics.json
+  Test detailed plot: src/spectroscopy_qml/ir/mps_classifier/results_test/test_error_analysis_detailed.png
+  Test top-problem-groups plot: src/spectroscopy_qml/ir/mps_classifier/results_test/test_top_problem_groups.png
+  Test bootstrap CI CSV: src/spectroscopy_qml/ir/mps_classifier/results_test/test_bootstrap_confidence_intervals.csv
+  Test bootstrap CI JSON: src/spectroscopy_qml/ir/mps_classifier/results_test/test_bootstrap_confidence_intervals.json
+  Validation results TXT: src/spectroscopy_qml/ir/mps_classifier/results_test/validation_results.txt
+  Validation CSV: src/spectroscopy_qml/ir/mps_classifier/results_test/validation_error_analysis.csv
+  Validation metrics JSON: src/spectroscopy_qml/ir/mps_classifier/results_test/validation_error_analysis_metrics.json
+  Validation detailed plot: src/spectroscopy_qml/ir/mps_classifier/results_test/validation_error_analysis_detailed.png
+  Validation top-problem-groups plot: src/spectroscopy_qml/ir/mps_classifier/results_test/validation_top_problem_groups.png

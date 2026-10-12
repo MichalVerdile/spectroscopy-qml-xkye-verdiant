@@ -4,6 +4,7 @@ Training script for MPS Functional Group Classifier.
 
 import csv
 import gc
+import json
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, is_dataclass
@@ -18,6 +19,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
+from spectroscopy_qml.benchmarking.splits import load_split_artifact
 from spectroscopy_qml.ir.mps_classifier.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
@@ -705,7 +707,11 @@ def _train_single_fold(
         gc.collect()
 
 
-def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
+def train_model(
+    X: np.ndarray | None = None,
+    y: np.ndarray | None = None,
+    split_path: Path | None = None,
+):
     """Main training function."""
     print("=" * 80)
     print("MPS Functional Group Classifier Training")
@@ -749,13 +755,32 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     else:
         print("Using preloaded dataset passed to train_model()")
 
-    # Split off test set first, then use 5-Fold CV on the remaining data
-    X_trainval, X_test, y_trainval, y_test = train_test_split(
-        X, y, test_size=TRAINING_CONFIG.test_ratio,
-        random_state=TRAINING_CONFIG.random_seed, shuffle=True,
-    )
-
-    fold_splits, validation_mode = _build_fold_splits(X_trainval, y_trainval)
+    if split_path is not None:
+        shared_split = load_split_artifact(
+            split_path, y, expected_seed=TRAINING_CONFIG.random_seed
+        )
+        train_indices = shared_split["train"]
+        val_indices = shared_split["val"]
+        test_indices = shared_split["test"]
+        trainval_indices = np.concatenate((train_indices, val_indices))
+        X_trainval, y_trainval = X[trainval_indices], y[trainval_indices]
+        X_test, y_test = X[test_indices], y[test_indices]
+        fold_splits = [
+            (
+                np.arange(len(train_indices), dtype=np.int64),
+                np.arange(len(train_indices), len(trainval_indices), dtype=np.int64),
+            )
+        ]
+        validation_mode = "shared multilabel-stratified holdout split"
+    else:
+        X_trainval, X_test, y_trainval, y_test = train_test_split(
+            X,
+            y,
+            test_size=TRAINING_CONFIG.test_ratio,
+            random_state=TRAINING_CONFIG.random_seed,
+            shuffle=True,
+        )
+        fold_splits, validation_mode = _build_fold_splits(X_trainval, y_trainval)
     n_folds = len(fold_splits)
 
     # Create fixed test dataloader
@@ -766,7 +791,7 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
         persistent_workers=True if TRAINING_CONFIG.num_workers > 0 else False,
     )
 
-    print(f"\nData split:")
+    print("\nData split:")
     print(f"  Train+Val (K-Fold): {len(X_trainval)} samples")
     print(f"  Test:               {len(X_test)} samples ({TRAINING_CONFIG.test_ratio:.0%})")
     print(f"  Validation mode:    {validation_mode}")
@@ -1037,6 +1062,22 @@ def train_model(X: np.ndarray | None = None, y: np.ndarray | None = None):
     print("Note: Model saved as .pt (PyTorch format)")
     print("For TensorFlow/Keras compatibility, consider using ONNX export")
     print("=" * 80)
+
+    metrics_path = results_dir / "metrics.json"
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "model": "mps",
+                "modality": "ir",
+                "seed": TRAINING_CONFIG.random_seed,
+                "test_f1_micro": float(test_metrics["f1_micro"]),
+                "test_f1_macro": float(test_metrics["f1_macro"]),
+                "split_path": str(split_path) if split_path is not None else None,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
 
     # ------------------------------------------------------------------ #
     # Explicit memory cleanup so grid search runs don't accumulate RAM /  #
