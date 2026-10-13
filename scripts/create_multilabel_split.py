@@ -29,25 +29,25 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     if args.modality == "ir":
-        from spectroscopy_qml.ir.mps_classifier.data_loader import get_functional_groups
+        from spectroscopy_qml.mps_classifier.ir.data_loader import get_functional_groups
 
         spectrum_column = "ir_spectra"
     elif args.modality == "cnmr":
-        from spectroscopy_qml.cnmr.mps_classifier_cnmr.data_loader import get_functional_groups
+        from spectroscopy_qml.mps_classifier.cnmr.data_loader import get_functional_groups
 
         spectrum_column = "c_nmr_spectra"
     elif args.modality == "hnmr":
-        from spectroscopy_qml.hnmr.mps_classifier_hnmr.data_loader import get_functional_groups
+        from spectroscopy_qml.mps_classifier.hnmr.data_loader import get_functional_groups
 
         spectrum_column = "h_nmr_spectra"
     elif args.modality == "msms_pos":
-        from spectroscopy_qml.msms_pos.mps_classifier_msms_pos.data_loader import (
+        from spectroscopy_qml.mps_classifier.msms_pos.data_loader import (
             get_functional_groups,
         )
 
         spectrum_column = "msms_positive_40ev"
     else:
-        from spectroscopy_qml.msms_neg.mps_classifier_msms_neg.data_loader import (
+        from spectroscopy_qml.mps_classifier.msms_neg.data_loader import (
             get_functional_groups,
         )
 
