@@ -6,7 +6,7 @@ import pandas as pd
 
 DATA_DIR = Path("data/raw")
 ERROR_FILE = Path(
-    "src/spectroscopy_qml/ir/mps_classifier/results_per_label/error_analysis/sample_errors.csv"
+    "src/spectroscopy_qml/mps_classifier/ir/results_per_label/error_analysis/sample_errors.csv"
 )  # or CNN / TTN
 
 errors = pd.read_csv(ERROR_FILE)
