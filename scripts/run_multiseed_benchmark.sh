@@ -43,33 +43,38 @@ for modality in "${MODALITY_VALUES[@]}"; do
         cnmr)
             column="c_nmr_spectra"
             baseline_output_dir="cnmr"
-            ttn_script="src/spectroscopy_qml/cnmr/tree_tensor_network/train.py"
+            ttn_script="src/spectroscopy_qml/tree_tensor_network/cnmr/train.py"
             ;;
         hnmr)
             column="h_nmr_spectra"
             baseline_output_dir="hnmr"
-            ttn_script="src/spectroscopy_qml/hnmr/tree_tensor_network/train.py"
+            ttn_script="src/spectroscopy_qml/tree_tensor_network/hnmr/train.py"
             ;;
         ir)
             column="ir_spectra"
             baseline_output_dir="ir"
-            ttn_script="src/spectroscopy_qml/ir/tree_tensor_network/train.py"
+            ttn_script="src/spectroscopy_qml/tree_tensor_network/ir/train.py"
             ;;
         msms_pos)
             column="pos_msms"
             baseline_output_dir="pos_msms"
-            ttn_script="src/spectroscopy_qml/msms_pos/tree_tensor_network/train.py"
+            ttn_script="src/spectroscopy_qml/tree_tensor_network/msms_pos/train.py"
             ;;
         msms_neg)
             column="neg_msms"
             baseline_output_dir="neg_msms"
-            ttn_script="src/spectroscopy_qml/msms_neg/tree_tensor_network/train.py"
+            ttn_script="src/spectroscopy_qml/tree_tensor_network/msms_neg/train.py"
             ;;
         *)
             echo "Unsupported modality '$modality'." >&2
             exit 2
             ;;
     esac
+
+    if [[ ! -f "$ttn_script" ]]; then
+        echo "TTN training script not found for '$modality': $ttn_script" >&2
+        exit 2
+    fi
 
     for seed in "${SEED_VALUES[@]}"; do
         run_dir="$EXPERIMENT_DIR/$modality/seed_$seed"
