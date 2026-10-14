@@ -79,16 +79,16 @@ The codebase contains dedicated entry scripts for the MPS and TTN experiments fo
    - MPS (run / train):
 
    ```powershell
-   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --train
-   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --evaluate
-   python src/spectroscopy_qml/cnmr/mps_classifier_cnmr/run.py --check
+   python src/spectroscopy_qml/mps_classifier/cnmr/run.py --train
+   python src/spectroscopy_qml/mps_classifier/cnmr/run.py --evaluate
+   python src/spectroscopy_qml/mps_classifier/cnmr/run.py --check
    ```
 
    - TTN (experiment 10.2):
 
    ```powershell
-   python src/spectroscopy_qml/cnmr/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/cnmr_ttn_results --device auto --epochs 100
-   python src/spectroscopy_qml/cnmr/tree_tensor_network/train.py --help
+   python src/spectroscopy_qml/tree_tensor_network/cnmr/train.py --data-dir data/raw --output-dir benchmark/cnmr_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/tree_tensor_network/cnmr/train.py --help
    ```
 
 - H‑NMR
@@ -96,32 +96,32 @@ The codebase contains dedicated entry scripts for the MPS and TTN experiments fo
    - MPS:
 
    ```powershell
-   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --train
-   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --evaluate
-   python src/spectroscopy_qml/hnmr/mps_classifier_hnmr/run.py --check
+   python src/spectroscopy_qml/mps_classifier/hnmr/run.py --train
+   python src/spectroscopy_qml/mps_classifier/hnmr/run.py --evaluate
+   python src/spectroscopy_qml/mps_classifier/hnmr/run.py --check
    ```
 
    - TTN:
 
    ```powershell
-   python src/spectroscopy_qml/hnmr/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/hnmr_ttn_results --device auto --epochs 100
-   python src/spectroscopy_qml/hnmr/tree_tensor_network/train.py --help
+   python src/spectroscopy_qml/tree_tensor_network/hnmr/train.py --data-dir data/raw --output-dir benchmark/hnmr_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/tree_tensor_network/hnmr/train.py --help
    ```
 
 - IR
 
-   - MPS (two variants exist: `mps_classifier` and `mps_classifier_over` — use the one matching your config):
+   - MPS (the older `mps_classifier_over` variant now lives under `src/spectroscopy_qml/_old/ir/`):
 
    ```powershell
-   python src/spectroscopy_qml/ir/mps_classifier/run.py --train
-   python src/spectroscopy_qml/ir/mps_classifier/run.py --evaluate
+   python src/spectroscopy_qml/mps_classifier/ir/run.py --train
+   python src/spectroscopy_qml/mps_classifier/ir/run.py --evaluate
    ```
 
    - TTN:
 
    ```powershell
-   python src/spectroscopy_qml/ir/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/ir_ttn_results --device auto --epochs 100
-   python src/spectroscopy_qml/ir/tree_tensor_network/train.py --help
+   python src/spectroscopy_qml/tree_tensor_network/ir/train.py --data-dir data/raw --output-dir benchmark/ir_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/tree_tensor_network/ir/train.py --help
    ```
 
 - MS/MS (positive)
@@ -129,15 +129,15 @@ The codebase contains dedicated entry scripts for the MPS and TTN experiments fo
    - MPS:
 
    ```powershell
-   python src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/run.py --train
-   python src/spectroscopy_qml/msms_pos/mps_classifier_msms_pos/run.py --evaluate
+   python src/spectroscopy_qml/mps_classifier/msms_pos/run.py --train
+   python src/spectroscopy_qml/mps_classifier/msms_pos/run.py --evaluate
    ```
 
    - TTN:
 
    ```powershell
-   python src/spectroscopy_qml/msms_pos/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/msms_pos_ttn_results --device auto --epochs 100
-   python src/spectroscopy_qml/msms_pos/tree_tensor_network/train.py --help
+   python src/spectroscopy_qml/tree_tensor_network/msms_pos/train.py --data-dir data/raw --output-dir benchmark/msms_pos_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/tree_tensor_network/msms_pos/train.py --help
    ```
 
 - MS/MS (negative)
@@ -145,15 +145,15 @@ The codebase contains dedicated entry scripts for the MPS and TTN experiments fo
    - MPS:
 
    ```powershell
-   python src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/run.py --train
-   python src/spectroscopy_qml/msms_neg/mps_classifier_msms_neg/run.py --evaluate
+   python src/spectroscopy_qml/mps_classifier/msms_neg/run.py --train
+   python src/spectroscopy_qml/mps_classifier/msms_neg/run.py --evaluate
    ```
 
    - TTN:
 
    ```powershell
-   python src/spectroscopy_qml/msms_neg/tree_tensor_network/train.py --data-dir data/raw --output-dir benchmark/msms_neg_ttn_results --device auto --epochs 100
-   python src/spectroscopy_qml/msms_neg/tree_tensor_network/train.py --help
+   python src/spectroscopy_qml/tree_tensor_network/msms_neg/train.py --data-dir data/raw --output-dir benchmark/msms_neg_ttn_results --device auto --epochs 100
+   python src/spectroscopy_qml/tree_tensor_network/msms_neg/train.py --help
    ```
 
 Tips:

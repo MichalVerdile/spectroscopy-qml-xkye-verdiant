@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
+from spectroscopy_qml.benchmarking.splits import label_digest
 from spectroscopy_qml.mps_classifier.ir.data_loader import (
     FUNCTIONAL_GROUPS,
     IRSpectraDataset,
@@ -270,6 +271,13 @@ def load_or_create_split_indices(
             [train_ratio, val_ratio, test_ratio],
         ).all():
             raise ValueError("Stored split ratios do not match the requested ratios.")
+        if "label_digest" in payload.files and str(payload["label_digest"]) != label_digest(
+            labels
+        ):
+            raise ValueError(
+                "Stored split label digest does not match. The TTN loaded a different "
+                "sample set or sample order, so a fair comparison would be invalid."
+            )
 
         _validate_split_indices(train_indices, val_indices, test_indices, num_samples)
         return {
@@ -308,6 +316,7 @@ def load_or_create_split_indices(
         train_ratio=np.asarray(train_ratio, dtype=np.float32),
         val_ratio=np.asarray(val_ratio, dtype=np.float32),
         test_ratio=np.asarray(test_ratio, dtype=np.float32),
+        label_digest=np.asarray(label_digest(labels)),
     )
     return {
         "train": train_indices.astype(np.int64, copy=False),
