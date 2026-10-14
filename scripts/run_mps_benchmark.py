@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI adapter for the existing IR and C-NMR MPS training modules."""
+"""CLI adapter for the MPS training modules."""
 
 from __future__ import annotations
 
@@ -8,6 +8,14 @@ import importlib
 from pathlib import Path
 
 import torch
+
+MPS_TRAINING_MODULES = {
+    "ir": "spectroscopy_qml.mps_classifier.ir.train",
+    "cnmr": "spectroscopy_qml.mps_classifier.cnmr.train",
+    "hnmr": "spectroscopy_qml.mps_classifier.hnmr.train",
+    "msms_pos": "spectroscopy_qml.mps_classifier.msms_pos.train",
+    "msms_neg": "spectroscopy_qml.mps_classifier.msms_neg.train",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,14 +37,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    module_names = {
-        "ir": "spectroscopy_qml.ir.mps_classifier.train",
-        "cnmr": "spectroscopy_qml.cnmr.mps_classifier_cnmr.train",
-        "hnmr": "spectroscopy_qml.hnmr.mps_classifier_hnmr.train",
-        "msms_pos": "spectroscopy_qml.msms_pos.mps_classifier_msms_pos.train",
-        "msms_neg": "spectroscopy_qml.msms_neg.mps_classifier_msms_neg.train",
-    }
-    module_name = module_names[args.modality]
+    module_name = MPS_TRAINING_MODULES[args.modality]
     module = importlib.import_module(module_name)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
