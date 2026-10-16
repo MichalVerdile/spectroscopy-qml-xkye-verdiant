@@ -22,7 +22,10 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from spectroscopy_qml.benchmarking.preprocessing import parse_preprocessing  # noqa: E402
+from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
+    dataset_fingerprint,
+    parse_preprocessing,
+)
 from spectroscopy_qml.tree_tensor_network.cnmr.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     load_cnmr_data,
@@ -62,7 +65,8 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     shared_config = parse_preprocessing(getattr(args, "preprocessing", None))
     if shared_config is not None:
         snv_suffix = f"pp{shared_config.short_hash}"
-    return cache_dir / f"cnmr_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}.npz"
+    data_suffix = dataset_fingerprint(args.data_dir)[:12]
+    return cache_dir / f"cnmr_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}_{data_suffix}.npz"
 
 
 def write_summary(

@@ -236,6 +236,13 @@ The ablation runs one-factor-at-a-time configs around the MSSD protocol
 splits, then writes separate architecture, preprocessing, representation and
 effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
 
+For every non-legacy run, all four models record a SHA-256 digest of their
+actual preprocessed `float32` input array. Aggregation fails if these digests
+differ, so architecture comparisons cannot silently use different inputs.
+Existing result files are reused only when model, seed, split, input dimension,
+and preprocessing spec match the requested run and a valid input digest is
+present. TTN cache files also include a fingerprint of the source parquet dataset.
+
 ```bash
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
 DEVICE=mps scripts/run_preprocessing_ablation.sh 600 1800

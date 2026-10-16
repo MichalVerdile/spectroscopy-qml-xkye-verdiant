@@ -29,6 +29,7 @@ import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
+from pathlib import Path
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d, uniform_filter1d
@@ -56,8 +57,16 @@ def _parse_smooth(smooth: str) -> tuple[str, tuple[float, ...]]:
     expected = {"none": 0, "savgol": 2, "gaussian": 1, "moving_average": 1}[name]
     if len(params) != expected:
         raise ValueError(f"Smoothing {name!r} takes {expected} parameter(s), got {smooth!r}")
-    if name == "savgol" and (params[0] < 3 or params[1] >= params[0]):
-        raise ValueError(f"savgol needs window >= 3 and polyorder < window, got {smooth!r}")
+    if name == "savgol":
+        window, polyorder = params
+        if not window.is_integer() or not polyorder.is_integer():
+            raise ValueError(f"savgol window and polyorder must be integers, got {smooth!r}")
+        if window < 3 or int(window) % 2 == 0 or polyorder < 0 or polyorder >= window:
+            raise ValueError(
+                f"savgol needs an odd window >= 3 and 0 <= polyorder < window, got {smooth!r}"
+            )
+    if name == "moving_average" and not params[0].is_integer():
+        raise ValueError(f"moving_average window must be an integer, got {smooth!r}")
     if name in ("gaussian", "moving_average") and params[0] <= 0:
         raise ValueError(f"Smoothing parameter must be positive, got {smooth!r}")
     return name, params
@@ -161,6 +170,49 @@ def metrics_fields(spec: str | None, model: str) -> dict[str, str]:
         "preprocessing": canonical_spec(spec),
         "preprocessing_effective": effective_spec(spec, model),
     }
+
+
+def array_digest(array: np.ndarray) -> str:
+    """Stable digest used to prove that every model received identical inputs."""
+    contiguous = np.ascontiguousarray(np.asarray(array, dtype=np.float32))
+    digest = hashlib.sha256()
+    digest.update(str(contiguous.shape).encode("ascii"))
+    digest.update(contiguous.dtype.str.encode("ascii"))
+    digest.update(memoryview(contiguous).cast("B"))
+    return digest.hexdigest()
+
+
+def dataset_fingerprint(data_dir: Path) -> str:
+    """Fingerprint a parquet dataset without hashing many gigabytes of file contents.
+
+    The resolved directory plus each parquet file's relative name, size and nanosecond
+    modification time are sufficient to invalidate caches after normal dataset updates.
+    """
+    data_dir = Path(data_dir).resolve()
+    digest = hashlib.sha256(str(data_dir).encode("utf-8"))
+    parquet_files = sorted(data_dir.glob("*.parquet"))
+    if not parquet_files:
+        raise FileNotFoundError(f"No parquet files found in {data_dir}")
+    for path in parquet_files:
+        stat = path.stat()
+        digest.update(path.name.encode("utf-8"))
+        digest.update(str(stat.st_size).encode("ascii"))
+        digest.update(str(stat.st_mtime_ns).encode("ascii"))
+    return digest.hexdigest()
+
+
+def make_msms_spectrum(spectrum: object, length: int = 10_000) -> np.ndarray | None:
+    """Convert an MS/MS peak list into the shared dense representation."""
+    if spectrum is None:
+        return None
+    dense = np.zeros(length, dtype=np.float32)
+    for peak in spectrum:
+        if peak is None or len(peak) < 2:
+            continue
+        position = int(float(peak[0]) * 10)
+        position = min(max(position, 0), length - 1)
+        dense[position] = float(peak[1])
+    return dense
 
 
 def _bin_edges(source_length: int, target_length: int) -> np.ndarray:

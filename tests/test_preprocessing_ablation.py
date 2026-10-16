@@ -57,6 +57,8 @@ def _write_ablation(root: Path) -> None:
                         "test_f1_micro": score,
                         "test_f1_macro": score - 0.2,
                         "split_path": split_path,
+                        "input_dim": dim,
+                        "input_digest": "0" * 64,
                         **metrics_fields(config, model),
                     }
                     path.write_text(json.dumps(payload))
@@ -111,7 +113,7 @@ def test_aggregation_separates_architecture_preprocessing_and_representation(tmp
 
 def test_multiseed_runner_passes_preprocessing_to_all_four_models():
     runner = (PROJECT_ROOT / "scripts" / "run_multiseed_benchmark.sh").read_text()
-    assert runner.count('--preprocessing "$PREPROCESSING"') == 4
+    assert runner.count('\n            --preprocessing "$PREPROCESSING"') == 4
     assert 'PREPROCESSING="${PREPROCESSING:-legacy}"' in runner
 
 
@@ -122,6 +124,71 @@ def test_ablation_configs_are_one_factor_at_a_time():
             continue
         changed = [a for a, b in zip(canonical_spec(spec).split(","), reference) if a != b]
         assert len(changed) == 1, (name, changed)
+
+
+def test_aggregation_rejects_nonidentical_shared_inputs(tmp_path):
+    _write_ablation(tmp_path)
+    metrics = (
+        tmp_path
+        / "dim_600"
+        / "shared_mssd"
+        / "ir"
+        / "seed_41"
+        / "mps"
+        / "results"
+        / "metrics.json"
+    )
+    payload = json.loads(metrics.read_text())
+    payload["input_digest"] = "f" * 64
+    metrics.write_text(json.dumps(payload))
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/aggregate_preprocessing_ablation.py",
+            "--ablation-dir",
+            str(tmp_path),
+        ],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "byte-identical preprocessed inputs" in result.stderr
+
+
+def test_completed_result_validation_rejects_stale_preprocessing(tmp_path):
+    split_path = tmp_path / "split.npz"
+    split_path.touch()
+    metrics_path = tmp_path / "metrics.json"
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "model": "mps",
+                "seed": 41,
+                "input_dim": 600,
+                "input_digest": "0" * 64,
+                "preprocessing": canonical_spec("norm_snv"),
+                "split_path": str(split_path),
+            }
+        )
+    )
+    command = [
+        sys.executable,
+        "scripts/validate_benchmark_result.py",
+        "--metrics",
+        str(metrics_path),
+        "--model",
+        "mps",
+        "--input-dim",
+        "600",
+        "--seed",
+        "41",
+        "--split-path",
+        str(split_path),
+        "--preprocessing",
+    ]
+    assert subprocess.run([*command, "norm_snv"], cwd=PROJECT_ROOT).returncode == 0
+    assert subprocess.run([*command, "shared_mssd"], cwd=PROJECT_ROOT).returncode != 0
 
 
 def pytest_approx(value):

@@ -30,7 +30,9 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
 
 from spectroscopy_qml.benchmarking.preprocessing import (
+    array_digest,
     canonical_spec,
+    make_msms_spectrum,
     metrics_fields,
     parse_preprocessing,
     preprocess_spectra,
@@ -476,29 +478,6 @@ def interpolate_spectrum(spec, target_length: int):
     new_spec = interp(new_x)
 
     return new_spec.astype(np.float32)
-
-
-def make_msms_spectrum(spectrum):
-    if spectrum is None:
-        return None
-
-    msms_spectrum = np.zeros(10000, dtype=np.float32)
-
-    for peak in spectrum:
-        if peak is None or len(peak) < 2:
-            continue
-
-        peak_pos = int(peak[0] * 10)
-
-        if peak_pos >= 10000:
-            peak_pos = 9999
-
-        if peak_pos < 0:
-            peak_pos = 0
-
-        msms_spectrum[peak_pos] = peak[1]
-
-    return msms_spectrum
 
 
 def load_data_for_column(
@@ -1109,6 +1088,8 @@ def main(
                         "test_f1_micro": float(test_f1_micro),
                         "test_f1_macro": float(test_f1_macro),
                         "split_path": str(split_path) if split_path is not None else None,
+                        "input_dim": input_dim,
+                        "input_digest": array_digest(X_data),
                         **metrics_fields(preprocessing, "cnn"),
                     },
                     indent=2,

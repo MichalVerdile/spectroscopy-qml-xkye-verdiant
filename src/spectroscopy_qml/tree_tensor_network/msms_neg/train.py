@@ -23,6 +23,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
+    array_digest,
     canonical_spec,
     metrics_fields,
 )
@@ -562,6 +563,8 @@ def main() -> None:
                 "test_f1_micro": float(test_metrics["f1_micro"]),
                 "test_f1_macro": float(test_metrics["f1_macro"]),
                 "split_path": str(split_path),
+                "input_dim": args.input_dim,
+                "input_digest": array_digest(X),
                 **metrics_fields(args.preprocessing, "ttn"),
             },
             indent=2,

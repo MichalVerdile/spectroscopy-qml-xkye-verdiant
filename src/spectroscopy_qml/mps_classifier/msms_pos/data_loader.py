@@ -14,7 +14,11 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 from torch.utils.data import DataLoader, Dataset
 
-from spectroscopy_qml.benchmarking.preprocessing import parse_preprocessing, preprocess_spectra
+from spectroscopy_qml.benchmarking.preprocessing import (
+    make_msms_spectrum,
+    parse_preprocessing,
+    preprocess_spectra,
+)
 
 # Functional groups definitions (same as Jung et al.)
 FUNCTIONAL_GROUPS = {
@@ -184,18 +188,6 @@ def multilabel_train_test_split(
     )
     train_indices, test_indices = next(splitter.split(X, y))
     return X[train_indices], X[test_indices], y[train_indices], y[test_indices]
-
-
-def make_msms_spectrum(spectrum):
-    msms_spectrum = np.zeros(10000)
-    for peak in spectrum:
-        peak_pos = int(peak[0] * 10)
-        if peak_pos >= 10000:
-            peak_pos = 9999
-
-        msms_spectrum[peak_pos] = peak[1]
-
-    return msms_spectrum
 
 
 def load_ir_data(

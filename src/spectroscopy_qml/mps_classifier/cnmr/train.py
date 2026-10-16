@@ -19,7 +19,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.benchmarking.preprocessing import metrics_fields
+from spectroscopy_qml.benchmarking.preprocessing import array_digest, metrics_fields
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 from spectroscopy_qml.mps_classifier.cnmr.config import (
     DATA_CONFIG,
@@ -1089,6 +1089,8 @@ def train_model(
                 "test_f1_micro": float(test_metrics["f1_micro"]),
                 "test_f1_macro": float(test_metrics["f1_macro"]),
                 "split_path": str(split_path) if split_path is not None else None,
+                "input_dim": DATA_CONFIG.target_length,
+                "input_digest": array_digest(X),
                 **metrics_fields(DATA_CONFIG.preprocessing, "mps"),
             },
             indent=2,

@@ -12,8 +12,11 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     LEGACY,
     LEGACY_EFFECTIVE_SPECS,
     PreprocessingConfig,
+    array_digest,
     canonical_spec,
+    dataset_fingerprint,
     effective_spec,
+    make_msms_spectrum,
     metrics_fields,
     parse_preprocessing,
     preprocess_spectra,
@@ -53,6 +56,15 @@ def test_config_names_resolve_to_specs():
     ["resample=cubic", "smooth=savgol:4", "smooth=savgol:5:5", "norm=zscore", "foo=bar", "norm"],
 )
 def test_invalid_specs_fail_fast(spec):
+    with pytest.raises(ValueError):
+        parse_preprocessing(spec)
+
+
+@pytest.mark.parametrize(
+    "spec",
+    ["smooth=savgol:24:4", "smooth=savgol:25.5:4", "smooth=savgol:25:-1", "smooth=moving_average:0.5"],
+)
+def test_integer_filter_parameters_are_validated(spec):
     with pytest.raises(ValueError):
         parse_preprocessing(spec)
 
@@ -149,3 +161,27 @@ def test_mixed_lengths_are_processed_per_length():
         [RNG.random(1800), RNG.random(10000), RNG.random(1800)], PreprocessingConfig(), 600
     )
     assert out.shape == (3, 600)
+
+
+def test_array_digest_normalizes_dtype_but_detects_content_changes():
+    values = np.arange(12).reshape(3, 4)
+    assert array_digest(values) == array_digest(values.astype(np.float64))
+    changed = values.copy()
+    changed[0, 0] = 99
+    assert array_digest(values) != array_digest(changed)
+
+
+def test_shared_msms_conversion_handles_invalid_and_out_of_range_peaks():
+    dense = make_msms_spectrum([None, [1.2], [-1.0, 2.0], [2000.0, 3.0]])
+    assert dense.dtype == np.float32
+    assert dense[0] == 2.0
+    assert dense[-1] == 3.0
+    assert make_msms_spectrum(None) is None
+
+
+def test_dataset_fingerprint_changes_with_parquet_metadata(tmp_path):
+    parquet = tmp_path / "chunk.parquet"
+    parquet.write_bytes(b"first")
+    first = dataset_fingerprint(tmp_path)
+    parquet.write_bytes(b"longer second value")
+    assert dataset_fingerprint(tmp_path) != first

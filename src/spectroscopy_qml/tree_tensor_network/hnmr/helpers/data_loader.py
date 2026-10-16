@@ -9,7 +9,11 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.benchmarking.preprocessing import LEGACY, canonical_spec
+from spectroscopy_qml.benchmarking.preprocessing import (
+    LEGACY,
+    canonical_spec,
+    dataset_fingerprint,
+)
 from spectroscopy_qml.benchmarking.splits import label_digest
 from spectroscopy_qml.mps_classifier.hnmr.data_loader import (
     FUNCTIONAL_GROUPS,
@@ -31,6 +35,7 @@ def _validate_cache_payload(
     savgol_polyorder: int,
     max_files: int | None,
     preprocessing: str,
+    data_fingerprint: str,
 ) -> tuple[np.ndarray, np.ndarray] | None:
     """Return cached arrays when the payload matches the requested preprocessing."""
     try:
@@ -46,6 +51,7 @@ def _validate_cache_payload(
         stored_preprocessing = (
             str(payload["preprocessing"]) if "preprocessing" in payload else LEGACY
         )
+        stored_data_fingerprint = str(payload["data_fingerprint"])
         stored_max_files = None if np.isnan(stored_max_files) else int(stored_max_files)
     except KeyError:
         return None
@@ -63,6 +69,8 @@ def _validate_cache_payload(
     if stored_max_files != max_files:
         return None
     if stored_preprocessing != preprocessing:
+        return None
+    if stored_data_fingerprint != data_fingerprint:
         return None
 
     return np.asarray(X), np.asarray(y)
@@ -82,6 +90,7 @@ def load_cnmr_data(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Load C-NMR spectra via the MPS encoder loader with optional cached arrays."""
     cache_file = Path(cache_path) if cache_path is not None else None
+    source_fingerprint = dataset_fingerprint(data_dir)
     if cache_file is not None and cache_file.exists() and not overwrite_cache:
         payload = np.load(cache_file, allow_pickle=False)
         cached = _validate_cache_payload(
@@ -93,6 +102,7 @@ def load_cnmr_data(
             savgol_polyorder=savgol_polyorder,
             max_files=max_files,
             preprocessing=canonical_spec(preprocessing),
+            data_fingerprint=source_fingerprint,
         )
         if cached is not None:
             X, y = cached
@@ -126,6 +136,7 @@ def load_cnmr_data(
             savgol_polyorder=np.asarray(savgol_polyorder, dtype=np.int64),
             max_files=np.asarray(np.nan if max_files is None else max_files, dtype=np.float64),
             preprocessing=np.asarray(canonical_spec(preprocessing)),
+            data_fingerprint=np.asarray(source_fingerprint),
         )
         print(f"Saved C-NMR dataset cache to {cache_file}")
 
