@@ -215,6 +215,33 @@ model:
    batch_size: 64
 ```
 
+**Preprocessing and representation ablation**
+
+The models historically used different preprocessing (CNN/XGBoost: linear
+interpolation only; MPS: + Savitzky-Golay 25/4 + SNV; TTN: + SNV). Every
+training entrypoint and `scripts/run_multiseed_benchmark.sh` now take a
+`--preprocessing` spec (`PREPROCESSING=` for the runner). `legacy` (the default)
+keeps the historical per-model behaviour; any other spec is applied identically
+to all four models via `src/spectroscopy_qml/benchmarking/preprocessing.py`:
+
+```
+resample=linear|bin_mean|bin_max|fir
+smooth=none|savgol:<window>:<order>|gaussian:<sigma>|moving_average:<window>
+repr=intensity|sqrt|log1p|derivative
+norm=none|snv|minmax|max|area|l2
+```
+
+The ablation runs one-factor-at-a-time configs around the MSSD protocol
+(`shared_mssd` = linear, no smoothing, intensity, no normalization) on shared
+splits, then writes separate architecture, preprocessing, representation and
+effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
+
+```bash
+PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
+DEVICE=mps scripts/run_preprocessing_ablation.sh 600 1800
+# subset: CONFIGS="shared_mssd resample_bin_max norm_snv" MODALITIES="cnmr" scripts/run_preprocessing_ablation.sh 600
+```
+
 **Testing & quality checks**
 
 ```bash

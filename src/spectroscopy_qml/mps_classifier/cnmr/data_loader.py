@@ -14,6 +14,8 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 from torch.utils.data import DataLoader, Dataset
 
+from spectroscopy_qml.benchmarking.preprocessing import parse_preprocessing, preprocess_spectra
+
 # Functional groups definitions (same as Jung et al.)
 FUNCTIONAL_GROUPS = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
@@ -192,6 +194,7 @@ def load_ir_data(
     apply_savgol: bool = False,
     savgol_window_length: int = 11,
     savgol_polyorder: int = 3,
+    preprocessing: str | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Load IR spectra data from parquet files.
@@ -204,6 +207,9 @@ def load_ir_data(
         apply_savgol: Whether to apply Savitzky-Golay smoothing (default: False)
         savgol_window_length: Window length for Savitzky-Golay filter
         savgol_polyorder: Polynomial order for Savitzky-Golay filter
+        preprocessing: Shared preprocessing spec (see
+            spectroscopy_qml.benchmarking.preprocessing). None or "legacy" keeps
+            the interpolation/apply_savgol/apply_snv path above.
 
     Returns:
         Tuple of (spectra, labels) as numpy arrays
@@ -219,6 +225,11 @@ def load_ir_data(
     if max_files:
         parquet_files = parquet_files[:max_files]
 
+    shared_config = parse_preprocessing(preprocessing)
+    if shared_config is not None:
+        print(f"Shared preprocessing: {shared_config.spec} (apply_savgol/apply_snv ignored)")
+        apply_savgol = apply_snv = False
+
     all_spectra = []
     all_labels = []
 
@@ -233,23 +244,26 @@ def load_ir_data(
         df = df[df["func_groups"].notna()]
         df = df[df["c_nmr_spectra"].notna()]
 
-        # Interpolate spectra
-        spectra = np.stack(
-            [interpolate_spectrum(spec, target_length) for spec in df["c_nmr_spectra"].values]
-        )
-
-        # Apply Savitzky-Golay smoothing before derivatives (cleans noise)
-        if apply_savgol:
+        if shared_config is not None:
+            spectra = preprocess_spectra(df["c_nmr_spectra"].values, shared_config, target_length)
+        else:
+            # Interpolate spectra
             spectra = np.stack(
-                [
-                    apply_savgol_smoothing(spec, savgol_window_length, savgol_polyorder)
-                    for spec in spectra
-                ]
+                [interpolate_spectrum(spec, target_length) for spec in df["c_nmr_spectra"].values]
             )
 
-        # Apply SNV normalization if requested
-        if apply_snv:
-            spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
+            # Apply Savitzky-Golay smoothing before derivatives (cleans noise)
+            if apply_savgol:
+                spectra = np.stack(
+                    [
+                        apply_savgol_smoothing(spec, savgol_window_length, savgol_polyorder)
+                        for spec in spectra
+                    ]
+                )
+
+            # Apply SNV normalization if requested
+            if apply_snv:
+                spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
 
         labels = np.stack(df["func_groups"].values)
 

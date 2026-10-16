@@ -29,6 +29,12 @@ from scipy.interpolate import interp1d
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
 
+from spectroscopy_qml.benchmarking.preprocessing import (
+    canonical_spec,
+    metrics_fields,
+    parse_preprocessing,
+    preprocess_spectra,
+)
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_auto_jit=0"
@@ -496,8 +502,14 @@ def make_msms_spectrum(spectrum):
 
 
 def load_data_for_column(
-    analytical_data: Path, actual_col: str, target_length: int = 600
+    analytical_data: Path,
+    actual_col: str,
+    target_length: int = 600,
+    preprocessing: str | None = None,
 ) -> pd.DataFrame:
+    shared_config = parse_preprocessing(preprocessing)
+    if shared_config is not None:
+        print(f"Shared preprocessing: {shared_config.spec}")
     columns_to_load = ["smiles", actual_col]
 
     training_data = None
@@ -519,9 +531,13 @@ def load_data_for_column(
             data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
 
         data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
-        data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
-
-        data = data.dropna(subset=[actual_col, "func_group"])
+        if shared_config is None:
+            data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
+            data = data.dropna(subset=[actual_col, "func_group"])
+        else:
+            data = data.dropna(subset=[actual_col, "func_group"]).copy()
+            processed = preprocess_spectra(list(data[actual_col]), shared_config, target_length)
+            data[actual_col] = list(processed)
 
         if training_data is None:
             training_data = data
@@ -548,6 +564,13 @@ def load_data_for_column(
 @click.option("--seed", type=int, default=3245)
 @click.option("--input_dim", type=int, default=600, show_default=True)
 @click.option("--split_path", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option(
+    "--preprocessing",
+    type=str,
+    default="legacy",
+    show_default=True,
+    help="Shared preprocessing spec or ablation config name (legacy = linear interpolation only)",
+)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
 @click.option(
     "--use_kfold/--no_kfold",
@@ -561,9 +584,11 @@ def main(
     seed: int,
     input_dim: int,
     split_path: Path | None,
+    preprocessing: str,
     n_folds: int,
     use_kfold: bool,
 ):
+    preprocessing = canonical_spec(preprocessing)
     np.random.seed(seed)
     tf.random.set_seed(seed)
     columns_to_process = (
@@ -597,7 +622,9 @@ def main(
         print(f"{'=' * 60}")
 
         load_start = time.perf_counter()
-        training_data = load_data_for_column(analytical_data, actual_col, input_dim)
+        training_data = load_data_for_column(
+            analytical_data, actual_col, input_dim, preprocessing
+        )
         load_seconds = time.perf_counter() - load_start
 
         print(f"Total samples loaded: {len(training_data)}")
@@ -1082,6 +1109,7 @@ def main(
                         "test_f1_micro": float(test_f1_micro),
                         "test_f1_macro": float(test_f1_macro),
                         "split_path": str(split_path) if split_path is not None else None,
+                        **metrics_fields(preprocessing, "cnn"),
                     },
                     indent=2,
                 )

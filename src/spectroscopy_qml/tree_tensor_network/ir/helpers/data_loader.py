@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
+from spectroscopy_qml.benchmarking.preprocessing import LEGACY, canonical_spec
 from spectroscopy_qml.benchmarking.splits import label_digest
 from spectroscopy_qml.mps_classifier.ir.data_loader import (
     FUNCTIONAL_GROUPS,
@@ -29,6 +30,7 @@ def _validate_cache_payload(
     savgol_window_length: int,
     savgol_polyorder: int,
     max_files: int | None,
+    preprocessing: str,
 ) -> tuple[np.ndarray, np.ndarray] | None:
     """Return cached arrays when the payload matches the requested preprocessing."""
     try:
@@ -40,6 +42,10 @@ def _validate_cache_payload(
         stored_savgol_window_length = int(payload["savgol_window_length"])
         stored_savgol_polyorder = int(payload["savgol_polyorder"])
         stored_max_files = payload["max_files"]
+        # Caches written before shared preprocessing existed are legacy caches.
+        stored_preprocessing = (
+            str(payload["preprocessing"]) if "preprocessing" in payload else LEGACY
+        )
         stored_max_files = None if np.isnan(stored_max_files) else int(stored_max_files)
     except KeyError:
         return None
@@ -56,6 +62,8 @@ def _validate_cache_payload(
         return None
     if stored_max_files != max_files:
         return None
+    if stored_preprocessing != preprocessing:
+        return None
 
     return np.asarray(X), np.asarray(y)
 
@@ -68,6 +76,7 @@ def load_ir_data(
     apply_savgol: bool = False,
     savgol_window_length: int = 11,
     savgol_polyorder: int = 3,
+    preprocessing: str | None = None,
     cache_path: Path | None = None,
     overwrite_cache: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -83,6 +92,7 @@ def load_ir_data(
             savgol_window_length=savgol_window_length,
             savgol_polyorder=savgol_polyorder,
             max_files=max_files,
+            preprocessing=canonical_spec(preprocessing),
         )
         if cached is not None:
             X, y = cached
@@ -100,6 +110,7 @@ def load_ir_data(
         apply_savgol=apply_savgol,
         savgol_window_length=savgol_window_length,
         savgol_polyorder=savgol_polyorder,
+        preprocessing=preprocessing,
     )
 
     if cache_file is not None:
@@ -114,6 +125,7 @@ def load_ir_data(
             savgol_window_length=np.asarray(savgol_window_length, dtype=np.int64),
             savgol_polyorder=np.asarray(savgol_polyorder, dtype=np.int64),
             max_files=np.asarray(np.nan if max_files is None else max_files, dtype=np.float64),
+            preprocessing=np.asarray(canonical_spec(preprocessing)),
         )
         print(f"Saved IR dataset cache to {cache_file}")
 

@@ -17,6 +17,13 @@ DATA_DIR="${DATA_DIR:-data/raw}"
 EXPERIMENT_DIR="${EXPERIMENT_DIR:-benchmark/multiseed_${INPUT_DIM}}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
 MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
+# "legacy" keeps every model's historical preprocessing. Any other spec or
+# ablation config name (see spectroscopy_qml.benchmarking.preprocessing) is
+# applied identically to all four models.
+PREPROCESSING="${PREPROCESSING:-legacy}"
+# Splits depend only on labels and seed, so ablations can share one split dir.
+SPLIT_DIR="${SPLIT_DIR:-$EXPERIMENT_DIR/splits}"
+SKIP_AGGREGATE="${SKIP_AGGREGATE:-0}"
 
 read -r -a SEED_VALUES <<< "$SEEDS_STRING"
 read -r -a MODALITY_VALUES <<< "$MODALITIES_STRING"
@@ -27,6 +34,9 @@ if (( ${#SEED_VALUES[@]} < 5 )); then
 fi
 
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+
+# Fail fast on a typo before hours of training.
+"$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing "$PREPROCESSING" > /dev/null
 
 run_if_missing() {
     local metrics_path="$1"
@@ -78,7 +88,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
 
     for seed in "${SEED_VALUES[@]}"; do
         run_dir="$EXPERIMENT_DIR/$modality/seed_$seed"
-        split_path="$EXPERIMENT_DIR/splits/${modality}_seed_${seed}.npz"
+        split_path="$SPLIT_DIR/${modality}_seed_${seed}.npz"
         mkdir -p "$run_dir/cnn" "$run_dir/xgboost" "$run_dir/mps" "$run_dir/ttn"
 
         if [[ ! -f "$split_path" ]]; then
@@ -98,6 +108,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --input_dim "$INPUT_DIM" \
             --split_path "$split_path" \
+            --preprocessing "$PREPROCESSING" \
             --no_kfold
 
         xgb_device="$DEVICE"
@@ -113,6 +124,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --input_dim "$INPUT_DIM" \
             --split_path "$split_path" \
             --device "$xgb_device" \
+            --preprocessing "$PREPROCESSING" \
             --no_log_learning_curve \
             --no_kfold
 
@@ -130,7 +142,8 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --split-path "$split_path" \
             --seed "$seed" \
             --epochs "$EPOCHS" \
-            --device "$mps_device"
+            --device "$mps_device" \
+            --preprocessing "$PREPROCESSING"
 
         run_if_missing "$run_dir/ttn/metrics.json" \
             "$PYTHON" "$ttn_script" \
@@ -140,9 +153,12 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --input-dim "$INPUT_DIM" \
             --seed "$seed" \
             --device "$DEVICE" \
-            --epochs "$EPOCHS"
+            --epochs "$EPOCHS" \
+            --preprocessing "$PREPROCESSING"
     done
 done
 
-"$PYTHON" scripts/aggregate_multiseed_results.py \
-    --experiment-dir "$EXPERIMENT_DIR"
+if [[ "$SKIP_AGGREGATE" != "1" ]]; then
+    "$PYTHON" scripts/aggregate_multiseed_results.py \
+        --experiment-dir "$EXPERIMENT_DIR"
+fi

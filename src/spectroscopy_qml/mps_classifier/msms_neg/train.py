@@ -19,6 +19,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
+from spectroscopy_qml.benchmarking.preprocessing import metrics_fields
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 from spectroscopy_qml.mps_classifier.msms_neg.config import (
     DATA_CONFIG,
@@ -761,6 +762,7 @@ def train_model(
             savgol_window_length=DATA_CONFIG.savgol_window_length,
             savgol_polyorder=DATA_CONFIG.savgol_polyorder,
             apply_snv=DATA_CONFIG.apply_snv,
+            preprocessing=DATA_CONFIG.preprocessing,
         )
     else:
         print("Using preloaded dataset passed to train_model()")
@@ -1090,6 +1092,7 @@ def train_model(
                 "test_f1_micro": float(test_metrics["f1_micro"]),
                 "test_f1_macro": float(test_metrics["f1_macro"]),
                 "split_path": str(split_path) if split_path is not None else None,
+                **metrics_fields(DATA_CONFIG.preprocessing, "mps"),
             },
             indent=2,
         )

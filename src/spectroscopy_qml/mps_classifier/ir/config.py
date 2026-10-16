@@ -30,6 +30,8 @@ class DataConfig:
     savgol_window_length: int = 25
     savgol_polyorder: int = 4
     target_length: int = 600
+    # "legacy" keeps apply_snv/apply_savgol; any other spec is shared by all models.
+    preprocessing: str = "legacy"
     max_files: int | None = None
 
 

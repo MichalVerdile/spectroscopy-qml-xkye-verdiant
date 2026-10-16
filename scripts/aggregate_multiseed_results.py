@@ -58,6 +58,13 @@ def validate_complete(df: pd.DataFrame) -> None:
                 f"Models for {modality}, seed {seed} did not report one identical shared split: "
                 f"{sorted(split_paths)}"
             )
+    if "preprocessing" in df.columns:
+        specs = {str(value) for value in df["preprocessing"].fillna("legacy")}
+        if len(specs) != 1:
+            raise ValueError(
+                f"One experiment directory mixes preprocessing specs {sorted(specs)}; "
+                "run each spec into its own EXPERIMENT_DIR"
+            )
     modality_seed_sets = {
         modality: set(group["seed"].tolist()) for modality, group in df.groupby("modality")
     }
