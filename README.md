@@ -249,6 +249,22 @@ DEVICE=mps scripts/run_preprocessing_ablation.sh 600 1800
 # subset: CONFIGS="shared_mssd resample_bin_max norm_snv" MODALITIES="cnmr" scripts/run_preprocessing_ablation.sh 600
 ```
 
+Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,
+IR, positive MS/MS and negative MS/MS without starting the other architectures:
+
+```bash
+scripts/run_cnn_all_modalities_1800.sh
+DEVICE=cpu scripts/run_mps_all_modalities_1800.sh
+DEVICE=mps scripts/run_ttn_all_modalities_1800.sh
+```
+
+They default to `PREPROCESSING=shared_mssd` and share split artifacts under
+`benchmark/shared_splits_1800`. Their results share the experiment root
+`benchmark/multiseed_1800/<preprocessing>` so the architectures remain directly
+comparable. `PREPROCESSING`, `SEEDS`, `MODALITIES`,
+`EPOCHS`, `DEVICE`, `DATA_DIR`, `SPLIT_DIR`, and `EXPERIMENT_DIR` can be
+overridden through environment variables where applicable.
+
 **Testing & quality checks**
 
 ```bash
