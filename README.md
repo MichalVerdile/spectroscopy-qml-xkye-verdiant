@@ -226,10 +226,17 @@ to all four models via `src/spectroscopy_qml/benchmarking/preprocessing.py`:
 
 ```
 resample=linear|bin_mean|bin_max|fir
-smooth=none|savgol:<window>:<order>|gaussian:<sigma>|moving_average:<window>
+smooth=none|savgol:<window>:<order>|gaussian:<sigma>|moving_average:<window>|lorentz:<gamma>[:<half_width>]
 repr=intensity|sqrt|log1p|derivative
-norm=none|snv|minmax|max|area|l2
+norm=none|snv|minmax|max|area|l2|quantile|pqn
 ```
+
+`lorentz` convolves with a normalised Lorentzian kernel (HWHM `gamma` in data
+points, truncated at `±half_width`, default 15, mirror padding), identical to the
+TTN `LorentzianFeatureMap` smoothing channel. `quantile` and `pqn` (probabilistic
+quotient normalization) are cross-sample methods taken from the original
+quantile/PQN CNN scripts: they use statistics of all spectra passed to
+`preprocess_spectra` (the whole dataset), without the optional cluster grouping.
 
 The ablation runs one-factor-at-a-time configs around the MSSD protocol
 (`shared_mssd` = linear, no smoothing, intensity, no normalization) on shared

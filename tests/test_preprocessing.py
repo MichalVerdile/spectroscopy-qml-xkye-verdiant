@@ -62,7 +62,12 @@ def test_invalid_specs_fail_fast(spec):
 
 @pytest.mark.parametrize(
     "spec",
-    ["smooth=savgol:24:4", "smooth=savgol:25.5:4", "smooth=savgol:25:-1", "smooth=moving_average:0.5"],
+    [
+        "smooth=savgol:24:4",
+        "smooth=savgol:25.5:4",
+        "smooth=savgol:25:-1",
+        "smooth=moving_average:0.5",
+    ],
 )
 def test_integer_filter_parameters_are_validated(spec):
     with pytest.raises(ValueError):
@@ -141,12 +146,74 @@ def test_normalization_results():
     assert np.abs(area).sum() == pytest.approx(1.0, rel=1e-4)
 
 
-@pytest.mark.parametrize("smooth", ["savgol:25:4", "gaussian:2", "moving_average:5"])
+@pytest.mark.parametrize(
+    "smooth", ["savgol:25:4", "gaussian:2", "moving_average:5", "lorentz:3", "lorentz:3:15"]
+)
 def test_smoothing_reduces_noise(smooth):
     clean = np.sin(np.linspace(0, 6, 600))
     noisy = clean + RNG.normal(scale=0.2, size=600)
     out = preprocess_spectra([noisy], PreprocessingConfig(smooth=smooth), 600)[0]
     assert np.abs(out - clean).mean() < np.abs(noisy - clean).mean()
+
+
+def test_lorentz_smoothing_matches_ttn_feature_map_kernel():
+    torch = pytest.importorskip("torch")
+    from spectroscopy_qml.tree_tensor_network.cnmr.model import LorentzianFeatureMap
+
+    spectra = RNG.random((3, 300)).astype(np.float32)
+    feature_map = LorentzianFeatureMap(gamma=3.0, kernel_half_width=15, norm_mode="max_abs")
+    expected = feature_map._apply_kernel(torch.from_numpy(spectra), feature_map._k0).numpy()
+    out = preprocess_spectra(spectra, PreprocessingConfig(smooth="lorentz:3:15"), 300)
+    np.testing.assert_allclose(out, expected, atol=1e-5)
+
+
+@pytest.mark.parametrize("smooth", ["lorentz:0", "lorentz:3:0", "lorentz:3:2.5", "lorentz:1:2:3"])
+def test_invalid_lorentz_parameters_fail_fast(smooth):
+    with pytest.raises(ValueError):
+        PreprocessingConfig(smooth=smooth)
+
+
+def test_quantile_normalization_matches_original_script():
+    spectra = RNG.random((6, 600)) * 10
+    expected = np.mean(np.sort(spectra, axis=1), axis=0)[
+        np.argsort(np.argsort(spectra, axis=1), axis=1)
+    ]
+    out = preprocess_spectra(spectra, PreprocessingConfig(norm="quantile"), 600)
+    np.testing.assert_allclose(out, expected, rtol=1e-5)
+    # Every spectrum ends up with the same value distribution.
+    np.testing.assert_allclose(np.sort(out, axis=1), np.sort(out, axis=1)[:1].repeat(6, axis=0))
+
+
+def test_pqn_normalization_matches_original_script():
+    spectra = RNG.random((8, 600)) + 0.1
+    tic = spectra / spectra.sum(axis=1, keepdims=True)
+    reference = np.median(tic, axis=0)
+    expected = tic / np.median(tic / reference, axis=1, keepdims=True)
+    out = preprocess_spectra(spectra, PreprocessingConfig(norm="pqn"), 600)
+    np.testing.assert_allclose(out, expected, rtol=1e-4)
+
+
+def test_pqn_removes_dilution_differences():
+    profile = RNG.random(600) + 0.1
+    spectra = np.stack([profile * factor for factor in (1.0, 2.0, 5.0)] + [profile])
+    out = preprocess_spectra(spectra, PreprocessingConfig(norm="pqn"), 600)
+    np.testing.assert_allclose(out, out[0:1].repeat(4, axis=0), rtol=1e-4)
+
+
+@pytest.mark.parametrize("norm", ["quantile", "pqn"])
+def test_cross_sample_normalizations_are_finite_with_degenerate_inputs(norm):
+    spectra = [RNG.random(1800), np.zeros(1800), np.array([]), RNG.random(10000), np.array([2.0])]
+    out = preprocess_spectra(spectra, PreprocessingConfig(norm=norm), 600)
+    assert out.shape == (5, 600)
+    assert out.dtype == np.float32
+    assert np.isfinite(out).all()
+    np.testing.assert_array_equal(out[2], 0.0)
+
+
+def test_cross_sample_normalization_spans_mixed_raw_lengths():
+    spectra = [RNG.random(1800), RNG.random(10000), RNG.random(1800)]
+    out = preprocess_spectra(spectra, PreprocessingConfig(norm="quantile"), 600)
+    np.testing.assert_allclose(np.sort(out, axis=1), np.sort(out, axis=1)[:1].repeat(3, axis=0))
 
 
 @pytest.mark.parametrize("representation", ["intensity", "sqrt", "log1p", "derivative"])

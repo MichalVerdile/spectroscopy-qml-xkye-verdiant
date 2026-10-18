@@ -14,9 +14,16 @@ preprocessing/representation ablations need.
 A spec is a comma separated ``key=value`` string, applied in this order::
 
     resample=<linear|bin_mean|bin_max|fir>
-    smooth=<none|savgol:<window>:<polyorder>|gaussian:<sigma>|moving_average:<window>>
+    smooth=<none|savgol:<window>:<polyorder>|gaussian:<sigma>|moving_average:<window>
+            |lorentz:<gamma>[:<half_width>]>
     repr=<intensity|sqrt|log1p|derivative>
-    norm=<none|snv|minmax|max|area|l2>
+    norm=<none|snv|minmax|max|area|l2|quantile|pqn>
+
+``lorentz`` convolves with a sum-normalised Lorentzian kernel (HWHM ``gamma`` in
+data points, truncated at ``+-half_width``, default 15) with mirror padding, like the
+TTN ``LorentzianFeatureMap``. ``quantile`` and ``pqn`` are cross-sample methods: they
+are computed over the whole batch passed to :func:`preprocess_spectra`, as in the
+original quantile / PQN CNN scripts (without their optional cluster grouping).
 
 Omitted keys take the values of ``shared_mssd`` (linear, none, intensity, none),
 which is the original MSSD protocol the paper describes.
@@ -32,18 +39,21 @@ from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
-from scipy.ndimage import gaussian_filter1d, uniform_filter1d
+from scipy.ndimage import convolve1d, gaussian_filter1d, uniform_filter1d
 from scipy.signal import resample_poly, savgol_filter
 
 LEGACY = "legacy"
 
 RESAMPLE_METHODS = ("linear", "bin_mean", "bin_max", "fir")
-SMOOTH_METHODS = ("none", "savgol", "gaussian", "moving_average")
+SMOOTH_METHODS = ("none", "savgol", "gaussian", "moving_average", "lorentz")
 REPRESENTATIONS = ("intensity", "sqrt", "log1p", "derivative")
-NORMALIZATIONS = ("none", "snv", "minmax", "max", "area", "l2")
+NORMALIZATIONS = ("none", "snv", "minmax", "max", "area", "l2", "quantile", "pqn")
+# Normalizations that use statistics of the whole batch instead of a single spectrum.
+CROSS_SAMPLE_NORMALIZATIONS = ("quantile", "pqn")
 
 _SPEC_KEYS = ("resample", "smooth", "repr", "norm")
 _EPS = 1e-8
+_LORENTZ_DEFAULT_HALF_WIDTH = 15
 
 
 def _parse_smooth(smooth: str) -> tuple[str, tuple[float, ...]]:
@@ -54,9 +64,21 @@ def _parse_smooth(smooth: str) -> tuple[str, tuple[float, ...]]:
         params = tuple(float(value) for value in raw_params)
     except ValueError as error:
         raise ValueError(f"Non-numeric smoothing parameter in {smooth!r}") from error
-    expected = {"none": 0, "savgol": 2, "gaussian": 1, "moving_average": 1}[name]
-    if len(params) != expected:
-        raise ValueError(f"Smoothing {name!r} takes {expected} parameter(s), got {smooth!r}")
+    expected = {
+        "none": (0,),
+        "savgol": (2,),
+        "gaussian": (1,),
+        "moving_average": (1,),
+        "lorentz": (1, 2),
+    }[name]
+    if len(params) not in expected:
+        counts = " or ".join(str(count) for count in expected)
+        raise ValueError(f"Smoothing {name!r} takes {counts} parameter(s), got {smooth!r}")
+    if name == "lorentz":
+        if params[0] <= 0:
+            raise ValueError(f"lorentz gamma must be positive, got {smooth!r}")
+        if len(params) == 2 and (not params[1].is_integer() or params[1] < 1):
+            raise ValueError(f"lorentz half_width must be a positive integer, got {smooth!r}")
     if name == "savgol":
         window, polyorder = params
         if not window.is_integer() or not polyorder.is_integer():
@@ -119,10 +141,13 @@ ABLATION_CONFIGS: dict[str, str] = {
     # Smoothing / signal filtering
     "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
     "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
+    "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
     # Normalization
     "norm_snv": PreprocessingConfig(norm="snv").spec,
     "norm_minmax": PreprocessingConfig(norm="minmax").spec,
     "norm_area": PreprocessingConfig(norm="area").spec,
+    "norm_quantile": PreprocessingConfig(norm="quantile").spec,
+    "norm_pqn": PreprocessingConfig(norm="pqn").spec,
     # Input representation
     "repr_sqrt": PreprocessingConfig(repr="sqrt").spec,
     "repr_derivative": PreprocessingConfig(repr="derivative").spec,
@@ -263,6 +288,14 @@ def smooth(spectra: np.ndarray, smooth_spec: str) -> np.ndarray:
         return savgol_filter(spectra, window_length=window, polyorder=polyorder, axis=1)
     if name == "gaussian":
         return gaussian_filter1d(spectra, sigma=params[0], axis=1, mode="nearest")
+    if name == "lorentz":
+        gamma = params[0]
+        half_width = int(params[1]) if len(params) == 2 else _LORENTZ_DEFAULT_HALF_WIDTH
+        positions = np.arange(-half_width, half_width + 1, dtype=np.float64)
+        kernel = 1.0 / (1.0 + (positions / gamma) ** 2)
+        kernel /= kernel.sum()
+        # "mirror" is numpy's "reflect" padding (edge sample not repeated); the kernel is symmetric.
+        return convolve1d(spectra, kernel, axis=1, mode="mirror")
     return uniform_filter1d(spectra, size=int(params[0]), axis=1, mode="nearest")
 
 
@@ -280,10 +313,43 @@ def represent(spectra: np.ndarray, representation: str) -> np.ndarray:
     raise ValueError(f"Unknown representation {representation!r}")
 
 
+def _quantile_normalize(spectra: np.ndarray) -> np.ndarray:
+    """Give every spectrum the mean sorted-value distribution of the batch."""
+    mean_quantiles = np.sort(spectra, axis=1).mean(axis=0)
+    ranks = np.argsort(np.argsort(spectra, axis=1), axis=1)
+    return mean_quantiles[ranks]
+
+
+def _pqn_normalize(spectra: np.ndarray) -> np.ndarray:
+    """Probabilistic quotient normalization against the batch median spectrum."""
+    # Step 1: total-intensity (row sum) normalization.
+    row_sums = spectra.sum(axis=1, keepdims=True)
+    tic_normalized = spectra / np.where(row_sums > _EPS, row_sums, 1.0)
+    # Step 2: reference spectrum is the median profile of the batch.
+    reference = np.median(tic_normalized, axis=0)
+    # Step 3: per-spectrum dilution factor is the median quotient to the reference.
+    mask = (tic_normalized > _EPS) & (reference > _EPS)
+    quotients = np.full(tic_normalized.shape, np.nan)
+    np.divide(tic_normalized, reference, out=quotients, where=mask)
+    all_nan = ~mask.any(axis=1)
+    dilution = np.ones(len(spectra))
+    if not all_nan.all():
+        dilution[~all_nan] = np.nanmedian(quotients[~all_nan], axis=1)
+    dilution = np.where(dilution > _EPS, dilution, 1.0)
+    return tic_normalized / dilution[:, None]
+
+
 def normalize(spectra: np.ndarray, method: str) -> np.ndarray:
-    """Per-spectrum normalization; constant spectra map to zeros, never NaN."""
+    """Normalize a batch; constant spectra map to zeros, never NaN.
+
+    ``quantile`` and ``pqn`` depend on the other spectra in ``spectra``.
+    """
     if method == "none":
         return spectra
+    if method == "quantile":
+        return _quantile_normalize(spectra)
+    if method == "pqn":
+        return _pqn_normalize(spectra)
     if method == "snv":
         centered = spectra - spectra.mean(axis=1, keepdims=True)
         scale = spectra.std(axis=1, keepdims=True)
@@ -305,11 +371,16 @@ def normalize(spectra: np.ndarray, method: str) -> np.ndarray:
     return np.where(scale < _EPS, centered * 0.0, centered / np.maximum(scale, _EPS))
 
 
-def _apply(spectra: np.ndarray, config: PreprocessingConfig, target_length: int) -> np.ndarray:
+def _apply(
+    spectra: np.ndarray,
+    config: PreprocessingConfig,
+    target_length: int,
+    apply_norm: bool = True,
+) -> np.ndarray:
     spectra = resample(spectra, target_length, config.resample)
     spectra = smooth(spectra, config.smooth)
     spectra = represent(spectra, config.repr)
-    return normalize(spectra, config.norm)
+    return normalize(spectra, config.norm) if apply_norm else spectra
 
 
 def preprocess_spectra(
@@ -322,7 +393,10 @@ def preprocess_spectra(
         np.nan_to_num(np.asarray(spec, dtype=np.float64).ravel(), nan=0.0, posinf=0.0, neginf=0.0)
         for spec in spectra
     ]
-    output = np.zeros((len(rows), target_length), dtype=np.float32)
+    # Cross-sample normalizations run once over all spectra (whatever their raw length),
+    # so they need the un-normalized rows in full precision.
+    cross_sample = config.norm in CROSS_SAMPLE_NORMALIZATIONS
+    output = np.zeros((len(rows), target_length), dtype=np.float64 if cross_sample else np.float32)
     by_length: dict[int, list[int]] = {}
     for index, row in enumerate(rows):
         by_length.setdefault(len(row), []).append(index)
@@ -332,7 +406,12 @@ def preprocess_spectra(
         batch = np.stack([rows[i] for i in indices])
         if length == 1:
             batch = np.repeat(batch, 2, axis=1)
-        output[indices] = _apply(batch, config, target_length).astype(np.float32)
+        output[indices] = _apply(batch, config, target_length, apply_norm=not cross_sample)
+    if cross_sample:
+        valid = np.array([len(row) > 0 for row in rows], dtype=bool)
+        if valid.any():
+            output[valid] = normalize(output[valid], config.norm)
+        output = output.astype(np.float32)
     return output
 
 
