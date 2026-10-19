@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=None)
     parser.add_argument(
         "--reference-config",
-        default="paper_lorentz_snv",
+        default="shared_lorentz_snv",
         help="Config name or spec every other config is compared against",
     )
     parser.add_argument("--reference-dim", type=int, default=600)

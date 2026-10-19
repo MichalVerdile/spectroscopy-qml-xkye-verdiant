@@ -243,13 +243,13 @@ require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold
 so one unambiguous training reference is used. The benchmark runner already
 supplies these options.
 
-The default ablation runs four shared configurations: the paper reference and
+The default ablation runs four shared configurations: a common experimental reference and
 one alternative method per preprocessing factor (one factor at a time), on shared
 splits. It writes separate architecture, preprocessing, representation and
 effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
 
 ```
-paper_lorentz_snv  reference: linear resampling, Lorentzian kernel (gamma 3, half width 15), SNV
+shared_lorentz_snv reference: linear resampling, Lorentzian kernel (gamma 3, half width 15), SNV
 resample_bin_max   alternative downsampling: max-pooling keeps narrow NMR/MS peaks
 smooth_savgol      alternative smoothing/filtering: Savitzky-Golay 25/4 (paper MPS filter)
 norm_area          alternative normalization: area (total intensity) instead of SNV
@@ -303,7 +303,7 @@ dimensions, modalities or configurations explicitly:
 PYTHONPATH=src python scripts/precompute_preprocessing_cache.py \
   --input-dims 600 \
   --modalities ir cnmr \
-  --configs paper_lorentz_snv norm_area smooth_savgol
+  --configs shared_lorentz_snv norm_area smooth_savgol
 ```
 
 Non-legacy caches are shared by CNN, XGBoost, MPS and TTN. The precompute runner
@@ -318,7 +318,7 @@ the expected NPZ compression and available storage have been checked manually.
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
 DEVICE=mps scripts/run_preprocessing_ablation.sh 600
 DEVICE=mps scripts/run_preprocessing_ablation.sh 1800
-# other configs (still all five spectra): CONFIGS="legacy paper_lorentz_snv norm_pqn" scripts/run_preprocessing_ablation.sh 600
+# other configs (still all five spectra): CONFIGS="legacy shared_lorentz_snv norm_pqn" scripts/run_preprocessing_ablation.sh 600
 ```
 
 Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,

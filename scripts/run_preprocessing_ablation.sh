@@ -11,7 +11,7 @@
 # architecture, preprocessing and representation tables.
 #
 # Usage: scripts/run_preprocessing_ablation.sh INPUT_DIM   (600 or 1800; one per call)
-# Env:   CONFIGS      space separated config names (default: paper_lorentz_snv resample_bin_max
+# Env:   CONFIGS      space separated config names (default: shared_lorentz_snv resample_bin_max
 #                     smooth_savgol norm_area; add legacy or extras by name,
 #                     --list --include-legacy --include-extra shows all)
 #        MODALITIES   default: all five spectra (cnmr hnmr ir msms_pos msms_neg)

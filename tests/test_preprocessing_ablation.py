@@ -30,14 +30,14 @@ BASE_SCORE = {"cnn": 0.80, "xgboost": 0.75, "mps": 0.70, "ttn": 0.72}
 # Synthetic truth: bin_max helps every model by 0.05, SNV only helps MPS.
 CONFIG_SHIFT = {
     "legacy": {},
-    "paper_lorentz_snv": {},
+    "shared_lorentz_snv": {},
     "resample_bin_max": {"cnn": 0.05, "xgboost": 0.05, "mps": 0.05, "ttn": 0.05},
     "norm_none": {"mps": 0.03},
 }
 
 
 def _write_ablation(root: Path) -> None:
-    for dim, configs in ((600, CONFIG_SHIFT), (1800, {"paper_lorentz_snv": {"cnn": -0.02}})):
+    for dim, configs in ((600, CONFIG_SHIFT), (1800, {"shared_lorentz_snv": {"cnn": -0.02}})):
         for config, shift in configs.items():
             for seed in SEEDS:
                 split_path = str(root / "splits" / f"ir_seed_{seed}.npz")
@@ -98,7 +98,7 @@ def test_aggregation_separates_architecture_preprocessing_and_representation(tmp
 
     arch = pd.read_csv(summary / "architecture_effect.csv")
     ref = arch[
-        (arch["config"] == "paper_lorentz_snv")
+        (arch["config"] == "shared_lorentz_snv")
         & (arch["input_dim"] == 600)
         & (arch["metric"] == "test_f1_micro")
     ]
@@ -134,7 +134,7 @@ def test_precompute_runner_resolves_shared_and_legacy_configs(tmp_path):
             "--input-dims",
             "600",
             "--configs",
-            "paper_lorentz_snv",
+            "shared_lorentz_snv",
             "norm_none",
             "legacy",
         ],
@@ -151,7 +151,7 @@ def test_precompute_runner_resolves_shared_and_legacy_configs(tmp_path):
 
 def test_ablation_configs_are_one_factor_at_a_time():
     assert list(SHARED_PREPROCESSING_CONFIGS) == [
-        "paper_lorentz_snv",
+        "shared_lorentz_snv",
         "resample_bin_max",
         "smooth_savgol",
         "norm_area",
@@ -159,9 +159,9 @@ def test_ablation_configs_are_one_factor_at_a_time():
     assert "legacy" not in SHARED_PREPROCESSING_CONFIGS
     assert list(ABLATION_CONFIGS)[0] == "legacy"
     assert not set(EXTRA_PREPROCESSING_CONFIGS) & set(ABLATION_CONFIGS)
-    reference = canonical_spec("paper_lorentz_snv").split(",")
+    reference = canonical_spec("shared_lorentz_snv").split(",")
     for name, spec in {**SHARED_PREPROCESSING_CONFIGS, **EXTRA_PREPROCESSING_CONFIGS}.items():
-        if name in ("paper_lorentz_snv", "shared_mssd"):
+        if name in ("shared_lorentz_snv", "shared_mssd"):
             continue
         changed = [a for a, b in zip(canonical_spec(spec).split(","), reference) if a != b]
         assert len(changed) == 1, (name, changed)
@@ -186,7 +186,7 @@ def test_aggregation_rejects_nonidentical_shared_inputs(tmp_path):
     metrics = (
         tmp_path
         / "dim_600"
-        / "paper_lorentz_snv"
+        / "shared_lorentz_snv"
         / "ir"
         / "seed_41"
         / "mps"
@@ -243,7 +243,7 @@ def test_completed_result_validation_rejects_stale_preprocessing(tmp_path):
         "--preprocessing",
     ]
     assert subprocess.run([*command, "norm_none"], cwd=PROJECT_ROOT).returncode == 0
-    assert subprocess.run([*command, "paper_lorentz_snv"], cwd=PROJECT_ROOT).returncode != 0
+    assert subprocess.run([*command, "shared_lorentz_snv"], cwd=PROJECT_ROOT).returncode != 0
 
 
 def pytest_approx(value):

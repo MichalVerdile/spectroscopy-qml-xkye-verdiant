@@ -27,7 +27,7 @@ behaviour. Training loaders defer these methods, fit their reference on the fixe
 training split, and then transform train, validation and test without refitting.
 
 Omitted keys take the values of ``shared_mssd`` (linear, none, intensity, none),
-the original MSSD protocol. The ablation reference is ``paper_lorentz_snv``.
+the original MSSD protocol. The shared ablation reference is ``shared_lorentz_snv``.
 """
 
 from __future__ import annotations
@@ -135,8 +135,9 @@ LEGACY_EFFECTIVE_SPECS = {
     "ttn": PreprocessingConfig(norm="snv").spec,
 }
 
-# Reference of the ablation: the paper's TTN preprocessing (SNV + Lorentzian kernel
-# of the TTN feature map, gamma 3, half width 15), applied to every model.
+# Shared experimental reference: SNV plus the Lorentzian kernel used by the TTN
+# feature map (gamma 3, half width 15), applied to every model input. This is not
+# the original per-model paper pipeline; the TTN still applies its internal map.
 REFERENCE_CONFIG = PreprocessingConfig(smooth="lorentz:3:15", norm="snv")
 
 
@@ -150,7 +151,7 @@ def _variant(**changes: str) -> str:
 # identically to every spectrum and model architecture. Input representation is
 # covered by running the same configs at 600 and 1800 points.
 SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
-    "paper_lorentz_snv": REFERENCE_CONFIG.spec,
+    "shared_lorentz_snv": REFERENCE_CONFIG.spec,
     # Max-pooling keeps narrow C-NMR/MS peaks that linear interpolation can miss
     "resample_bin_max": _variant(resample="bin_max"),
     # Savitzky-Golay 25/4 instead of Lorentz: the paper's MPS pipeline (savgol + SNV)
