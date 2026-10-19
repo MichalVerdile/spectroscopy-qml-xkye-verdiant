@@ -82,7 +82,7 @@ def test_integer_filter_parameters_are_validated(spec):
 
 def test_effective_spec_resolves_legacy_per_model():
     assert effective_spec("legacy", "mps") == LEGACY_EFFECTIVE_SPECS["mps"]
-    assert effective_spec("norm_snv", "cnn") == canonical_spec("norm=snv")
+    assert effective_spec("norm_none", "cnn") == canonical_spec("smooth=lorentz:3:15")
     assert metrics_fields("legacy", "ttn") == {
         "preprocessing": "legacy",
         "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=snv",
@@ -297,7 +297,7 @@ def test_preprocessing_cache_round_trip_and_validation(tmp_path):
         consumer="mps",
         modality="ir",
         target_length=600,
-        preprocessing="norm_snv",
+        preprocessing="norm_none",
         options={"max_files": None},
         cache_dir=cache_dir,
     )
@@ -323,7 +323,7 @@ def test_preprocessing_cache_key_changes_with_configuration(tmp_path):
         "cache_dir": tmp_path / "cache",
     }
     first, _ = preprocessing_cache_path(preprocessing="shared_mssd", **common)
-    changed, _ = preprocessing_cache_path(preprocessing="norm_snv", **common)
+    changed, _ = preprocessing_cache_path(preprocessing="norm_none", **common)
     assert first != changed
 
 

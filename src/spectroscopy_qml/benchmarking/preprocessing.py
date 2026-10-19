@@ -27,7 +27,7 @@ behaviour. Training loaders defer these methods, fit their reference on the fixe
 training split, and then transform train, validation and test without refitting.
 
 Omitted keys take the values of ``shared_mssd`` (linear, none, intensity, none),
-which is the original MSSD protocol the paper describes.
+the original MSSD protocol. The ablation reference is ``paper_lorentz_snv``.
 """
 
 from __future__ import annotations
@@ -135,36 +135,48 @@ LEGACY_EFFECTIVE_SPECS = {
     "ttn": PreprocessingConfig(norm="snv").spec,
 }
 
+# Reference of the ablation: the paper's TTN preprocessing (SNV + Lorentzian kernel
+# of the TTN feature map, gamma 3, half width 15), applied to every model.
+REFERENCE_CONFIG = PreprocessingConfig(smooth="lorentz:3:15", norm="snv")
+
+
+def _variant(**changes: str) -> str:
+    """Spec that differs from the reference in exactly the given keys."""
+    return PreprocessingConfig(**{**REFERENCE_CONFIG.__dict__, **changes}).spec
+
+
 # Default ablation: the reference plus one variant per factor the reviewers named
 # (downsampling, smoothing/filtering, normalization). Every entry is applied
 # identically to every spectrum and model architecture. Input representation is
 # covered by running the same configs at 600 and 1800 points.
 SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
-    # MSSD protocol the paper used: linear interpolation, nothing else
-    "shared_mssd": PreprocessingConfig().spec,
+    "paper_lorentz_snv": REFERENCE_CONFIG.spec,
     # Max-pooling keeps narrow C-NMR/MS peaks that linear interpolation can miss
-    "resample_bin_max": PreprocessingConfig(resample="bin_max").spec,
-    # Lorentzian kernel of the paper's TTN feature map (gamma 3, half width 15)
-    "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
-    # SNV: standard spectroscopic normalization, used by the old MPS/TTN pipelines
-    "norm_snv": PreprocessingConfig(norm="snv").spec,
+    "resample_bin_max": _variant(resample="bin_max"),
+    # Savitzky-Golay 25/4 instead of Lorentz: the paper's MPS pipeline (savgol + SNV)
+    "smooth_savgol": _variant(smooth="savgol:25:4"),
+    # Area (total intensity) normalization instead of SNV, standard for NMR/MS
+    "norm_area": _variant(norm="area"),
 }
-# Further one-factor variants, usable by name (CONFIGS=...) but not run by default.
+# Further one-factor variants of the reference, usable by name (CONFIGS=...) but
+# not run by default.
 EXTRA_PREPROCESSING_CONFIGS: dict[str, str] = {
-    "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
-    "resample_fir": PreprocessingConfig(resample="fir").spec,
-    "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
-    "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
-    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
-    "norm_minmax": PreprocessingConfig(norm="minmax").spec,
-    "norm_area": PreprocessingConfig(norm="area").spec,
-    "norm_pqn": PreprocessingConfig(norm="pqn").spec,
-    "norm_max": PreprocessingConfig(norm="max").spec,
-    "norm_l2": PreprocessingConfig(norm="l2").spec,
-    "norm_quantile": PreprocessingConfig(norm="quantile").spec,
-    "repr_sqrt": PreprocessingConfig(repr="sqrt").spec,
-    "repr_derivative": PreprocessingConfig(repr="derivative").spec,
-    "repr_log1p": PreprocessingConfig(repr="log1p").spec,
+    "resample_bin_mean": _variant(resample="bin_mean"),
+    "resample_fir": _variant(resample="fir"),
+    "smooth_none": _variant(smooth="none"),
+    "smooth_gaussian": _variant(smooth="gaussian:2"),
+    "smooth_moving_average": _variant(smooth="moving_average:5"),
+    "norm_minmax": _variant(norm="minmax"),
+    "norm_none": _variant(norm="none"),
+    "norm_pqn": _variant(norm="pqn"),
+    "norm_max": _variant(norm="max"),
+    "norm_l2": _variant(norm="l2"),
+    "norm_quantile": _variant(norm="quantile"),
+    "repr_sqrt": _variant(repr="sqrt"),
+    "repr_derivative": _variant(repr="derivative"),
+    "repr_log1p": _variant(repr="log1p"),
+    # Original MSSD protocol (linear interpolation only); default of the per-model runners
+    "shared_mssd": PreprocessingConfig().spec,
 }
 # ``legacy`` (per-model historical preprocessing) on request: CONFIGS="legacy ...".
 ABLATION_CONFIGS: dict[str, str] = {

@@ -243,33 +243,36 @@ require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold
 so one unambiguous training reference is used. The benchmark runner already
 supplies these options.
 
-The default ablation runs four shared configurations: the MSSD reference and
-one variation per preprocessing factor (one factor at a time), on shared splits.
-It writes separate architecture, preprocessing, representation and effect-size
-tables to `benchmark/preprocessing_ablation/summary/report.md`:
+The default ablation runs four shared configurations: the paper reference and
+one alternative method per preprocessing factor (one factor at a time), on shared
+splits. It writes separate architecture, preprocessing, representation and
+effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
 
 ```
-shared_mssd        reference: linear resampling, no smoothing, intensity, no normalization
-resample_bin_max   downsampling: max-pooling keeps narrow NMR/MS peaks
-smooth_lorentz     smoothing/filtering: Lorentzian kernel, gamma 3, half width 15 (paper TTN feature map)
-norm_snv           normalization: SNV (historical MPS/TTN normalization)
+paper_lorentz_snv  reference: linear resampling, Lorentzian kernel (gamma 3, half width 15), SNV
+resample_bin_max   alternative downsampling: max-pooling keeps narrow NMR/MS peaks
+smooth_savgol      alternative smoothing/filtering: Savitzky-Golay 25/4 (paper MPS filter)
+norm_area          alternative normalization: area (total intensity) instead of SNV
 ```
 
 Input representation is compared through the input dimension (600 vs 1800).
 The configurations use the same canonical specification for every spectrum
-modality and all four architectures. `legacy` (historical per-model
-preprocessing) and further variants (`resample_bin_mean`, `resample_fir`,
-`smooth_savgol`, `smooth_gaussian`, `smooth_moving_average`, `norm_minmax`,
-`norm_area`, `norm_pqn`, `norm_max`, `norm_l2`, `norm_quantile`, `repr_sqrt`,
-`repr_derivative`, `repr_log1p`) are not run by default but can be named in
-`CONFIGS` (`--list --include-legacy --include-extra` shows them).
+modality and all four architectures. The TTN keeps its Lorentzian feature map
+inside the model, so under the reference its input is Lorentz-smoothed twice.
+`legacy` (historical per-model preprocessing), `shared_mssd` (linear
+interpolation only) and further one-factor variants of the reference
+(`resample_bin_mean`, `resample_fir`, `smooth_none`, `smooth_gaussian`,
+`smooth_moving_average`, `norm_none`, `norm_minmax`, `norm_pqn`, `norm_max`,
+`norm_l2`, `norm_quantile`, `repr_sqrt`, `repr_derivative`, `repr_log1p`) are not
+run by default but can be named in `CONFIGS` (`--list --include-legacy
+--include-extra` shows them).
 
 Each configuration is applied with the same specification and the same input
 dimension to all five spectra (IR, H-NMR, C-NMR, MS/MS+, MS/MS-). The runner takes
 exactly one input dimension per call, and the aggregation refuses results where
 configurations at one input dimension cover different spectra. Note that IR
 already has 1800 points, so at 1800 the `resample_*` configs give IR the same
-input as `shared_mssd`.
+input as the reference.
 
 For every non-legacy run, all four models record a SHA-256 digest of their
 actual preprocessed `float32` input array. Aggregation fails if these digests
@@ -300,7 +303,7 @@ dimensions, modalities or configurations explicitly:
 PYTHONPATH=src python scripts/precompute_preprocessing_cache.py \
   --input-dims 600 \
   --modalities ir cnmr \
-  --configs shared_mssd norm_snv smooth_lorentz
+  --configs paper_lorentz_snv norm_area smooth_savgol
 ```
 
 Non-legacy caches are shared by CNN, XGBoost, MPS and TTN. The precompute runner
@@ -315,7 +318,7 @@ the expected NPZ compression and available storage have been checked manually.
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
 DEVICE=mps scripts/run_preprocessing_ablation.sh 600
 DEVICE=mps scripts/run_preprocessing_ablation.sh 1800
-# other configs (still all five spectra): CONFIGS="legacy shared_mssd norm_pqn" scripts/run_preprocessing_ablation.sh 600
+# other configs (still all five spectra): CONFIGS="legacy paper_lorentz_snv norm_pqn" scripts/run_preprocessing_ablation.sh 600
 ```
 
 Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,
