@@ -264,9 +264,14 @@ much of the original model differences came from per-model preprocessing.
 Near-duplicates (`smooth_moving_average` ~ gaussian, `norm_max` ~ minmax,
 `norm_l2` ~ area, `repr_log1p` ~ sqrt) and `norm_quantile` (erases intensity
 information in sparse NMR spectra) are not run by default but can still be named
-in `CONFIGS` (`--list --include-extra` shows them). IR spectra already have 1800
-points, so at input dim >= 1800 the runner skips the `resample_*` configs for IR,
-where they would only reproduce `shared_mssd`.
+in `CONFIGS` (`--list --include-extra` shows them).
+
+Each configuration is applied with the same specification and the same input
+dimension to all five spectra (IR, H-NMR, C-NMR, MS/MS+, MS/MS-). The runner takes
+exactly one input dimension per call, and the aggregation refuses results where
+configurations at one input dimension cover different spectra. Note that IR
+already has 1800 points, so at 1800 the `resample_*` configs give IR the same
+input as `shared_mssd`.
 
 For every non-legacy run, all four models record a SHA-256 digest of their
 actual preprocessed `float32` input array. Aggregation fails if these digests
@@ -310,8 +315,9 @@ the expected NPZ compression and available storage have been checked manually.
 
 ```bash
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list --include-legacy
-DEVICE=mps scripts/run_preprocessing_ablation.sh 600 1800
-# subset: CONFIGS="shared_mssd resample_bin_max norm_snv" MODALITIES="cnmr" scripts/run_preprocessing_ablation.sh 600
+DEVICE=mps scripts/run_preprocessing_ablation.sh 600
+DEVICE=mps scripts/run_preprocessing_ablation.sh 1800
+# subset of configs (still all five spectra): CONFIGS="legacy shared_mssd resample_bin_max norm_snv" scripts/run_preprocessing_ablation.sh 600
 ```
 
 Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,

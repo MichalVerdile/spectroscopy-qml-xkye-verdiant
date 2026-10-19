@@ -240,7 +240,7 @@ def pytest_approx(value):
     return pytest.approx(value, abs=1e-9)
 
 
-def test_ablation_runner_runs_legacy_and_skips_noop_ir_resampling(tmp_path):
+def test_ablation_runner_applies_every_config_to_all_five_spectra(tmp_path):
     scripts = tmp_path / "scripts"
     scripts.mkdir()
     (scripts / "run_preprocessing_ablation.sh").write_text(
@@ -253,16 +253,49 @@ def test_ablation_runner_runs_legacy_and_skips_noop_ir_resampling(tmp_path):
     for script in scripts.glob("*.sh"):
         script.chmod(0o755)
     (tmp_path / "src").symlink_to(PROJECT_ROOT / "src")
+    env = {**os.environ, "PYTHON": sys.executable}
+    env.pop("MODALITIES", None)
     result = subprocess.run(
-        [str(scripts / "run_preprocessing_ablation.sh"), "600", "1800"],
-        env={**os.environ, "PYTHON": sys.executable},
+        [str(scripts / "run_preprocessing_ablation.sh"), "1800"],
+        env=env,
         capture_output=True,
         text=True,
         check=True,
     )
     runs = [line for line in result.stdout.splitlines() if line.startswith("RUN")]
-    assert len(runs) == 2 * len(ABLATION_CONFIGS)
-    assert "RUN 600 legacy [ir cnmr]" in runs
-    assert "RUN 600 resample_fir [ir cnmr]" in runs
-    assert "RUN 1800 resample_fir [cnmr]" in runs
-    assert "RUN 1800 shared_mssd [ir cnmr]" in runs
+    assert runs == [
+        f"RUN 1800 {config} [cnmr hnmr ir msms_pos msms_neg]" for config in ABLATION_CONFIGS
+    ]
+    two_dims = subprocess.run(
+        [str(scripts / "run_preprocessing_ablation.sh"), "600", "1800"],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert two_dims.returncode == 2
+
+
+def test_aggregation_rejects_configs_with_different_spectra(tmp_path):
+    _write_ablation(tmp_path)
+    extra = tmp_path / "dim_600" / "norm_snv" / "cnmr"
+    source = tmp_path / "dim_600" / "norm_snv" / "ir"
+    for path in source.rglob("metrics.json"):
+        target = extra / path.relative_to(source)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.loads(path.read_text())
+        payload["modality"] = "cnmr"
+        payload["split_path"] = payload["split_path"].replace("ir_seed", "cnmr_seed")
+        target.write_text(json.dumps(payload))
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/aggregate_preprocessing_ablation.py",
+            "--ablation-dir",
+            str(tmp_path),
+        ],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "cover different spectra" in result.stderr

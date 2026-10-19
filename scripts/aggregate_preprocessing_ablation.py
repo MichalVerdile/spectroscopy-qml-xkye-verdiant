@@ -80,7 +80,17 @@ def load_ablation(ablation_dir: Path) -> pd.DataFrame:
             frames.append(frame)
     if not frames:
         raise FileNotFoundError(f"No dim_*/<config> experiment directories below {ablation_dir}")
-    return pd.concat(frames, ignore_index=True)
+    results = pd.concat(frames, ignore_index=True)
+    # Every config at one input dim must cover the same spectra, otherwise the
+    # comparison between preprocessing choices would mix modalities.
+    for input_dim, block in results.groupby("input_dim"):
+        coverage = block.groupby("config")["modality"].agg(lambda values: frozenset(values))
+        if coverage.nunique() > 1:
+            raise ValueError(
+                f"Configs at input dim {input_dim} cover different spectra: "
+                + ", ".join(f"{config}={sorted(mods)}" for config, mods in coverage.items())
+            )
+    return results
 
 
 def assign_factor(row: pd.Series, reference_spec: str, reference_dim: int) -> tuple[str, str]:
