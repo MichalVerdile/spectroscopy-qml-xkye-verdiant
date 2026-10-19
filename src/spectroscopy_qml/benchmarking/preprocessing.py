@@ -33,6 +33,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
+import os
+import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
@@ -54,6 +57,7 @@ CROSS_SAMPLE_NORMALIZATIONS = ("quantile", "pqn")
 _SPEC_KEYS = ("resample", "smooth", "repr", "norm")
 _EPS = 1e-8
 _LORENTZ_DEFAULT_HALF_WIDTH = 15
+_CACHE_SCHEMA_VERSION = 1
 
 
 def _parse_smooth(smooth: str) -> tuple[str, tuple[float, ...]]:
@@ -224,6 +228,87 @@ def dataset_fingerprint(data_dir: Path) -> str:
         digest.update(str(stat.st_size).encode("ascii"))
         digest.update(str(stat.st_mtime_ns).encode("ascii"))
     return digest.hexdigest()
+
+
+def preprocessing_cache_path(
+    data_dir: Path,
+    *,
+    consumer: str,
+    modality: str,
+    target_length: int,
+    preprocessing: str | None,
+    options: dict[str, object] | None = None,
+    cache_dir: Path | None = None,
+) -> tuple[Path, str]:
+    """Return a content-addressed cache path and its validation key.
+
+    The key changes when the source parquet metadata or any preprocessing input
+    changes.  Keeping the key inside the payload as well as in the filename makes
+    stale or accidentally renamed cache files safe to ignore.
+    """
+    metadata = {
+        "schema_version": _CACHE_SCHEMA_VERSION,
+        "consumer": consumer,
+        "modality": modality,
+        "target_length": int(target_length),
+        "preprocessing": canonical_spec(preprocessing),
+        "data_fingerprint": dataset_fingerprint(data_dir),
+        "options": options or {},
+    }
+    encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"), default=str)
+    cache_key = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    root = Path("data/cache/preprocessed") if cache_dir is None else Path(cache_dir)
+    safe_consumer = consumer.replace("/", "_")
+    safe_modality = modality.replace("/", "_")
+    filename = f"{safe_consumer}_{safe_modality}_len{target_length}_{cache_key[:16]}.npz"
+    return root / filename, cache_key
+
+
+def load_preprocessing_cache(
+    cache_path: Path, cache_key: str
+) -> tuple[np.ndarray, np.ndarray] | None:
+    """Load cached ``X``/``y`` arrays when the embedded key is compatible."""
+    cache_path = Path(cache_path)
+    if not cache_path.exists():
+        return None
+    try:
+        with np.load(cache_path, allow_pickle=False) as payload:
+            if str(payload["cache_key"]) != cache_key:
+                return None
+            X = np.asarray(payload["X"])
+            y = np.asarray(payload["y"])
+    except (OSError, ValueError, KeyError):
+        return None
+    if X.ndim != 2 or y.ndim != 2 or len(X) != len(y):
+        return None
+    return X, y
+
+
+def save_preprocessing_cache(
+    cache_path: Path,
+    cache_key: str,
+    X: np.ndarray,
+    y: np.ndarray,
+) -> None:
+    """Atomically save preprocessed inputs and labels as a compressed NPZ."""
+    cache_path = Path(cache_path)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=cache_path.parent, prefix=f".{cache_path.stem}-", suffix=".npz", delete=False
+        ) as temporary:
+            temporary_path = temporary.name
+        np.savez_compressed(
+            temporary_path,
+            X=np.asarray(X),
+            y=np.asarray(y),
+            cache_key=np.asarray(cache_key),
+        )
+        os.replace(temporary_path, cache_path)
+    finally:
+        if temporary_path is not None and os.path.exists(temporary_path):
+            os.unlink(temporary_path)
 
 
 def make_msms_spectrum(spectrum: object, length: int = 10_000) -> np.ndarray | None:

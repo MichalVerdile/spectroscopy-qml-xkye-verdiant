@@ -16,10 +16,13 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     canonical_spec,
     dataset_fingerprint,
     effective_spec,
+    load_preprocessing_cache,
     make_msms_spectrum,
     metrics_fields,
     parse_preprocessing,
     preprocess_spectra,
+    preprocessing_cache_path,
+    save_preprocessing_cache,
 )
 
 RNG = np.random.default_rng(0)
@@ -252,3 +255,43 @@ def test_dataset_fingerprint_changes_with_parquet_metadata(tmp_path):
     first = dataset_fingerprint(tmp_path)
     parquet.write_bytes(b"longer second value")
     assert dataset_fingerprint(tmp_path) != first
+
+
+def test_preprocessing_cache_round_trip_and_validation(tmp_path):
+    data_dir = tmp_path / "raw"
+    data_dir.mkdir()
+    (data_dir / "chunk.parquet").write_bytes(b"source metadata")
+    cache_dir = tmp_path / "cache"
+    cache_path, cache_key = preprocessing_cache_path(
+        data_dir,
+        consumer="mps",
+        modality="ir",
+        target_length=600,
+        preprocessing="norm_snv",
+        options={"max_files": None},
+        cache_dir=cache_dir,
+    )
+    X = RNG.random((3, 600)).astype(np.float32)
+    y = RNG.integers(0, 2, size=(3, 37), dtype=np.int32)
+
+    assert load_preprocessing_cache(cache_path, cache_key) is None
+    save_preprocessing_cache(cache_path, cache_key, X, y)
+    cached = load_preprocessing_cache(cache_path, cache_key)
+    assert cached is not None
+    np.testing.assert_array_equal(cached[0], X)
+    np.testing.assert_array_equal(cached[1], y)
+    assert load_preprocessing_cache(cache_path, "wrong-key") is None
+
+
+def test_preprocessing_cache_key_changes_with_configuration(tmp_path):
+    (tmp_path / "chunk.parquet").write_bytes(b"data")
+    common = {
+        "data_dir": tmp_path,
+        "consumer": "cnn",
+        "modality": "ir",
+        "target_length": 600,
+        "cache_dir": tmp_path / "cache",
+    }
+    first, _ = preprocessing_cache_path(preprocessing="shared_mssd", **common)
+    changed, _ = preprocessing_cache_path(preprocessing="norm_snv", **common)
+    assert first != changed

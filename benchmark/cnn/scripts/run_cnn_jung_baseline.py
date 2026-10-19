@@ -32,10 +32,13 @@ from sklearn.model_selection import KFold, train_test_split
 from spectroscopy_qml.benchmarking.preprocessing import (
     array_digest,
     canonical_spec,
+    load_preprocessing_cache,
     make_msms_spectrum,
     metrics_fields,
     parse_preprocessing,
     preprocess_spectra,
+    preprocessing_cache_path,
+    save_preprocessing_cache,
 )
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
@@ -485,7 +488,24 @@ def load_data_for_column(
     actual_col: str,
     target_length: int = 600,
     preprocessing: str | None = None,
+    cache_dir: Path | None = None,
+    overwrite_cache: bool = False,
 ) -> pd.DataFrame:
+    cache_path, cache_key = preprocessing_cache_path(
+        analytical_data,
+        consumer="cnn",
+        modality=actual_col,
+        target_length=target_length,
+        preprocessing=preprocessing,
+        cache_dir=cache_dir,
+    )
+    if not overwrite_cache:
+        cached = load_preprocessing_cache(cache_path, cache_key)
+        if cached is not None:
+            X, y = cached
+            print(f"Loaded cached CNN dataset from {cache_path}")
+            return pd.DataFrame({actual_col: list(X), "func_group": list(y)})
+
     shared_config = parse_preprocessing(preprocessing)
     if shared_config is not None:
         print(f"Shared preprocessing: {shared_config.spec}")
@@ -528,6 +548,11 @@ def load_data_for_column(
     if training_data is None:
         raise ValueError(f"No training data could be loaded for column: {actual_col}")
 
+    X = np.stack(training_data[actual_col].to_list()).astype(np.float32)
+    y = np.stack(training_data["func_group"].to_list()).astype(np.int32)
+    save_preprocessing_cache(cache_path, cache_key, X, y)
+    print(f"Saved CNN dataset cache to {cache_path}")
+
     return training_data
 
 
@@ -543,6 +568,13 @@ def load_data_for_column(
 @click.option("--seed", type=int, default=3245)
 @click.option("--input_dim", type=int, default=600, show_default=True)
 @click.option("--split_path", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option(
+    "--cache_dir",
+    type=click.Path(path_type=Path, file_okay=False),
+    default=Path("data/cache/preprocessed"),
+    show_default=True,
+)
+@click.option("--overwrite_cache", is_flag=True, help="Rebuild cached preprocessed arrays")
 @click.option(
     "--preprocessing",
     type=str,
@@ -563,6 +595,8 @@ def main(
     seed: int,
     input_dim: int,
     split_path: Path | None,
+    cache_dir: Path,
+    overwrite_cache: bool,
     preprocessing: str,
     n_folds: int,
     use_kfold: bool,
@@ -602,7 +636,12 @@ def main(
 
         load_start = time.perf_counter()
         training_data = load_data_for_column(
-            analytical_data, actual_col, input_dim, preprocessing
+            analytical_data,
+            actual_col,
+            input_dim,
+            preprocessing,
+            cache_dir,
+            overwrite_cache,
         )
         load_seconds = time.perf_counter() - load_start
 

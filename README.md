@@ -248,7 +248,11 @@ actual preprocessed `float32` input array. Aggregation fails if these digests
 differ, so architecture comparisons cannot silently use different inputs.
 Existing result files are reused only when model, seed, split, input dimension,
 and preprocessing spec match the requested run and a valid input digest is
-present. TTN cache files also include a fingerprint of the source parquet dataset.
+present. CNN, XGBoost, MPS and TTN cache their preprocessed arrays under
+`data/cache/`; cache keys include the source parquet fingerprint, modality,
+input dimension and preprocessing configuration. A changed input or configuration
+therefore rebuilds the cache automatically. CNN and XGBoost additionally accept
+`--cache_dir` and `--overwrite_cache`.
 
 ```bash
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list

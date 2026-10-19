@@ -15,9 +15,12 @@ from scipy.signal import savgol_filter
 from torch.utils.data import DataLoader, Dataset
 
 from spectroscopy_qml.benchmarking.preprocessing import (
+    load_preprocessing_cache,
     make_msms_spectrum,
     parse_preprocessing,
     preprocess_spectra,
+    preprocessing_cache_path,
+    save_preprocessing_cache,
 )
 
 # Functional groups definitions (same as Jung et al.)
@@ -199,6 +202,8 @@ def load_ir_data(
     savgol_window_length: int = 11,
     savgol_polyorder: int = 3,
     preprocessing: str | None = None,
+    cache_dir: Path | None = None,
+    overwrite_cache: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Load IR spectra data from parquet files.
@@ -230,6 +235,27 @@ def load_ir_data(
     if shared_config is not None:
         print(f"Shared preprocessing: {shared_config.spec} (apply_savgol/apply_snv ignored)")
         apply_savgol = apply_snv = False
+
+    cache_path, cache_key = preprocessing_cache_path(
+        data_dir,
+        consumer="mps",
+        modality="msms_neg",
+        target_length=target_length,
+        preprocessing=preprocessing,
+        options={
+            "max_files": max_files,
+            "apply_snv": apply_snv,
+            "apply_savgol": apply_savgol,
+            "savgol_window_length": savgol_window_length,
+            "savgol_polyorder": savgol_polyorder,
+        },
+        cache_dir=cache_dir,
+    )
+    if not overwrite_cache:
+        cached = load_preprocessing_cache(cache_path, cache_key)
+        if cached is not None:
+            print(f"Loaded cached MPS dataset from {cache_path}")
+            return cached
 
     all_spectra = []
     all_labels = []
@@ -291,6 +317,9 @@ def load_ir_data(
         )
     if apply_snv:
         print("SNV normalization applied")
+
+    save_preprocessing_cache(cache_path, cache_key, X, y)
+    print(f"Saved MPS dataset cache to {cache_path}")
 
     return X, y
 
