@@ -12,7 +12,7 @@
 #
 # Usage: scripts/run_preprocessing_ablation.sh INPUT_DIM   (600 or 1800; one per call)
 # Env:   CONFIGS      space separated config names (default: shared_mssd resample_bin_max
-#                     smooth_savgol norm_snv; add legacy or extras by name,
+#                     smooth_lorentz norm_snv; add legacy or extras by name,
 #                     --list --include-legacy --include-extra shows all)
 #        MODALITIES   default: all five spectra (cnmr hnmr ir msms_pos msms_neg)
 #        SEEDS, EPOCHS, DEVICE, DATA_DIR, PYTHON as in run_multiseed_benchmark.sh

@@ -251,7 +251,7 @@ tables to `benchmark/preprocessing_ablation/summary/report.md`:
 ```
 shared_mssd        reference: linear resampling, no smoothing, intensity, no normalization
 resample_bin_max   downsampling: max-pooling keeps narrow NMR/MS peaks
-smooth_savgol      smoothing/filtering: Savitzky-Golay 25/4 (historical MPS filter)
+smooth_lorentz     smoothing/filtering: Lorentzian kernel, gamma 3, half width 15 (paper TTN feature map)
 norm_snv           normalization: SNV (historical MPS/TTN normalization)
 ```
 
@@ -259,7 +259,7 @@ Input representation is compared through the input dimension (600 vs 1800).
 The configurations use the same canonical specification for every spectrum
 modality and all four architectures. `legacy` (historical per-model
 preprocessing) and further variants (`resample_bin_mean`, `resample_fir`,
-`smooth_gaussian`, `smooth_lorentz`, `smooth_moving_average`, `norm_minmax`,
+`smooth_savgol`, `smooth_gaussian`, `smooth_moving_average`, `norm_minmax`,
 `norm_area`, `norm_pqn`, `norm_max`, `norm_l2`, `norm_quantile`, `repr_sqrt`,
 `repr_derivative`, `repr_log1p`) are not run by default but can be named in
 `CONFIGS` (`--list --include-legacy --include-extra` shows them).
@@ -300,7 +300,7 @@ dimensions, modalities or configurations explicitly:
 PYTHONPATH=src python scripts/precompute_preprocessing_cache.py \
   --input-dims 600 \
   --modalities ir cnmr \
-  --configs shared_mssd norm_snv smooth_savgol
+  --configs shared_mssd norm_snv smooth_lorentz
 ```
 
 Non-legacy caches are shared by CNN, XGBoost, MPS and TTN. The precompute runner

@@ -144,8 +144,8 @@ SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
     "shared_mssd": PreprocessingConfig().spec,
     # Max-pooling keeps narrow C-NMR/MS peaks that linear interpolation can miss
     "resample_bin_max": PreprocessingConfig(resample="bin_max").spec,
-    # Savitzky-Golay: standard spectroscopic smoothing, used by the old MPS pipeline
-    "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
+    # Lorentzian kernel of the paper's TTN feature map (gamma 3, half width 15)
+    "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
     # SNV: standard spectroscopic normalization, used by the old MPS/TTN pipelines
     "norm_snv": PreprocessingConfig(norm="snv").spec,
 }
@@ -153,8 +153,8 @@ SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
 EXTRA_PREPROCESSING_CONFIGS: dict[str, str] = {
     "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
     "resample_fir": PreprocessingConfig(resample="fir").spec,
+    "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
     "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
-    "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
     "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
     "norm_minmax": PreprocessingConfig(norm="minmax").spec,
     "norm_area": PreprocessingConfig(norm="area").spec,

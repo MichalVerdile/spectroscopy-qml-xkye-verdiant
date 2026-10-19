@@ -153,7 +153,7 @@ def test_ablation_configs_are_one_factor_at_a_time():
     assert list(SHARED_PREPROCESSING_CONFIGS) == [
         "shared_mssd",
         "resample_bin_max",
-        "smooth_savgol",
+        "smooth_lorentz",
         "norm_snv",
     ]
     assert "legacy" not in SHARED_PREPROCESSING_CONFIGS
