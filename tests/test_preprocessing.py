@@ -12,6 +12,7 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     CROSS_SAMPLE_NORMALIZATIONS,
     LEGACY,
     LEGACY_EFFECTIVE_SPECS,
+    SINGLE_STEP_CONFIGS,
     PreprocessingConfig,
     apply_train_fitted_normalization,
     array_digest,
@@ -50,6 +51,23 @@ def test_spec_is_canonical_regardless_of_key_order():
     a = canonical_spec("norm=snv,resample=fir")
     b = canonical_spec("resample=fir,norm=snv")
     assert a == b == "resample=fir,smooth=none,repr=intensity,norm=snv"
+
+
+def test_single_step_names_only_change_that_step():
+    neutral = PreprocessingConfig()
+    assert parse_preprocessing("snv") == PreprocessingConfig(norm="snv")
+    assert parse_preprocessing("savgol") == PreprocessingConfig(smooth="savgol:25:4")
+    assert parse_preprocessing("bin_max") == PreprocessingConfig(resample="bin_max")
+    assert parse_preprocessing("sqrt") == PreprocessingConfig(repr="sqrt")
+    assert parse_preprocessing("none") == neutral
+    for name in SINGLE_STEP_CONFIGS:
+        config = parse_preprocessing(name)
+        changed = [
+            key
+            for key in ("resample", "smooth", "repr", "norm")
+            if getattr(config, key) != getattr(neutral, key)
+        ]
+        assert len(changed) <= 1, name
 
 
 def test_config_names_resolve_to_specs():

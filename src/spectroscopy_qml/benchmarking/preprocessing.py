@@ -28,6 +28,9 @@ training split, and then transform train, validation and test without refitting.
 
 Omitted keys take the values of ``shared_mssd`` (linear, none, intensity, none),
 the original MSSD protocol. The shared ablation reference is ``shared_lorentz_snv``.
+
+A bare step name (``snv``, ``savgol``, ``bin_max``, ``sqrt``, ...) applies only that
+step; every other step stays neutral, so ``snv`` equals ``norm=snv``.
 """
 
 from __future__ import annotations
@@ -187,6 +190,21 @@ ABLATION_CONFIGS: dict[str, str] = {
 # Every name parse_preprocessing() accepts.
 NAMED_CONFIGS: dict[str, str] = {**ABLATION_CONFIGS, **EXTRA_PREPROCESSING_CONFIGS}
 
+# Bare step names: exactly one step is applied and every other step keeps its
+# neutral default (linear resample, no smoothing, intensity, no normalization),
+# e.g. ``snv`` == ``norm=snv``. Unlike the ablation variants above, these are not
+# built on top of the Lorentz + SNV reference.
+SINGLE_STEP_CONFIGS: dict[str, str] = {
+    "none": PreprocessingConfig().spec,
+    **{name: PreprocessingConfig(resample=name).spec for name in RESAMPLE_METHODS},
+    "savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
+    "gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
+    "moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
+    "lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
+    **{name: PreprocessingConfig(repr=name).spec for name in REPRESENTATIONS},
+    **{name: PreprocessingConfig(norm=name).spec for name in NORMALIZATIONS},
+}
+
 
 def parse_preprocessing(spec: str | None) -> PreprocessingConfig | None:
     """Parse a spec or ablation config name. Returns ``None`` for ``legacy``."""
@@ -197,6 +215,8 @@ def parse_preprocessing(spec: str | None) -> PreprocessingConfig | None:
         return None
     if spec in NAMED_CONFIGS:
         return parse_preprocessing(NAMED_CONFIGS[spec])
+    if spec in SINGLE_STEP_CONFIGS:
+        return parse_preprocessing(SINGLE_STEP_CONFIGS[spec])
     values: dict[str, str] = {}
     for part in spec.split(","):
         key, sep, value = part.partition("=")

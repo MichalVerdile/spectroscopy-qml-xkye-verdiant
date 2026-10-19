@@ -8,6 +8,18 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 INPUT_DIM=1800
 PYTHON="${PYTHON:-python}"
 DATA_DIR="${DATA_DIR:-data/raw}"
+# Preprocessing: a single step name applies ONLY that step; every other step stays
+# neutral (linear resample, no smoothing, intensity, no normalization).
+# Selectable values (PREPROCESSING=<value>):
+#   shared_mssd (default) / none  linear interpolation only, no further processing
+#   Normalization: snv minmax max area l2 quantile pqn
+#   Smoothing:     savgol (25,4)  gaussian (sigma 2)  moving_average (window 5)  lorentz (gamma 3, half width 15)
+#   Representation: sqrt log1p derivative
+#   Resampling:    linear bin_mean bin_max fir
+#   Custom spec:   unlisted keys stay neutral, e.g. "norm=snv" or "smooth=savgol:11:3,norm=area"
+#                  (keys: resample, smooth, repr, norm; see src/spectroscopy_qml/benchmarking/preprocessing.py)
+#   legacy         historical per-model preprocessing
+#   Ablation presets (built on Lorentz + SNV): shared_lorentz_snv resample_bin_max smooth_savgol norm_area
 PREPROCESSING="${PREPROCESSING:-shared_mssd}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
 MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
@@ -68,4 +80,3 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --preprocessing "$PREPROCESSING"
     done
 done
-

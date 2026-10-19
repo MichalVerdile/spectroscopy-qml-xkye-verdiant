@@ -20,6 +20,15 @@ MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
 # "legacy" keeps every model's historical preprocessing. Any other spec or
 # ablation config name (see spectroscopy_qml.benchmarking.preprocessing) is
 # applied identically to all four models.
+# A single step name applies ONLY that step; every other step stays neutral
+# (linear resample, no smoothing, intensity, no normalization). Selectable values:
+#   Normalization: snv minmax max area l2 quantile pqn
+#   Smoothing:     savgol (25,4)  gaussian (sigma 2)  moving_average (window 5)  lorentz (gamma 3, half width 15)
+#   Representation: sqrt log1p derivative
+#   Resampling:    linear bin_mean bin_max fir
+#   none / shared_mssd  linear interpolation only
+#   Custom spec:   unlisted keys stay neutral, e.g. "norm=snv" or "smooth=savgol:11:3,norm=area"
+#   Ablation presets (built on Lorentz + SNV): shared_lorentz_snv resample_bin_max smooth_savgol norm_area
 PREPROCESSING="${PREPROCESSING:-legacy}"
 # Splits depend only on labels and seed, so ablations can share one split dir.
 SPLIT_DIR="${SPLIT_DIR:-$EXPERIMENT_DIR/splits}"
