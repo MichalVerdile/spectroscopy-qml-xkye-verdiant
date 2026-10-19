@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Preprocessing / input-representation ablation on top of the multi-seed benchmark.
 #
-# The default 18 configs feed identical inputs to CNN, XGBoost, MPS and TTN, and
+# The default run is legacy plus 13 shared configs; the shared ones feed identical
+# inputs to CNN, XGBoost, MPS and TTN, and
 # all configs and input dims reuse one set of shared splits, so differences
 # between configs are paired per seed. Results land in
 #   $ABLATION_DIR/dim_<INPUT_DIM>/<config>/<modality>/seed_<seed>/<model>/...
@@ -9,7 +10,8 @@
 # architecture, preprocessing and representation tables.
 #
 # Usage: scripts/run_preprocessing_ablation.sh INPUT_DIM [INPUT_DIM ...]
-# Env:   CONFIGS      space separated config names (default: all 18 shared configs)
+# Env:   CONFIGS      space separated config names (default: legacy + 13 shared configs;
+#                     --list --include-extra shows further, redundant variants)
 #        MODALITIES   default "ir cnmr" (the two modalities in the paper)
 #        SEEDS, EPOCHS, DEVICE, DATA_DIR, PYTHON as in run_multiseed_benchmark.sh
 #        ABLATION_DIR default benchmark/preprocessing_ablation
@@ -30,7 +32,7 @@ export MODALITIES="${MODALITIES:-ir cnmr}"
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 if [[ -z "${CONFIGS:-}" ]]; then
-    CONFIGS="$("$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing --list | cut -f1 | tr '\n' ' ')"
+    CONFIGS="$("$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing --list --include-legacy | cut -f1 | tr '\n' ' ')"
 fi
 read -r -a CONFIG_VALUES <<< "$CONFIGS"
 
@@ -41,7 +43,18 @@ done
 
 for input_dim in "$@"; do
     for config in "${CONFIG_VALUES[@]}"; do
-        echo "=== Ablation: input_dim=$input_dim config=$config ==="
+        modalities="$MODALITIES"
+        # IR spectra already have 1800 points: at >= 1800 every resampling method
+        # returns the reference input, so those runs would only duplicate shared_mssd.
+        if [[ "$config" == resample_* ]] && (( input_dim >= 1800 )); then
+            modalities="$(tr ' ' '\n' <<< "$MODALITIES" | grep -vx ir | tr '\n' ' ' | xargs || true)"
+        fi
+        if [[ -z "$modalities" ]]; then
+            echo "=== Skipping input_dim=$input_dim config=$config (no-op for $MODALITIES) ==="
+            continue
+        fi
+        echo "=== Ablation: input_dim=$input_dim config=$config modalities=$modalities ==="
+        MODALITIES="$modalities" \
         PREPROCESSING="$config" \
         EXPERIMENT_DIR="$ABLATION_DIR/dim_${input_dim}/$config" \
         SPLIT_DIR="$ABLATION_DIR/splits" \

@@ -12,15 +12,24 @@ from pathlib import Path
 import numpy as np
 
 from spectroscopy_qml.benchmarking.preprocessing import (
+    ABLATION_CONFIGS,
     LEGACY,
-    SHARED_PREPROCESSING_CONFIGS,
     canonical_spec,
+    legacy_linear_interpolate,
     load_preprocessing_cache,
+    make_msms_spectrum,
     preprocessing_cache_path,
     save_preprocessing_cache,
 )
 
 MODALITIES = ("ir", "cnmr", "hnmr", "msms_pos", "msms_neg")
+SPECTRUM_COLUMNS = {
+    "ir": "ir_spectra",
+    "cnmr": "c_nmr_spectra",
+    "hnmr": "h_nmr_spectra",
+    "msms_pos": "msms_positive_40ev",
+    "msms_neg": "msms_negative_40ev",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,10 +46,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--configs",
         nargs="+",
-        default=list(SHARED_PREPROCESSING_CONFIGS),
+        default=list(ABLATION_CONFIGS),
         help=(
-            "Named or explicit preprocessing specs (default: all 18 shared combinations; "
-            "pass legacy explicitly only for historical model-specific caches)"
+            "Named or explicit preprocessing specs (default: legacy plus the 13 shared "
+            "configs that scripts/run_preprocessing_ablation.sh runs)"
         ),
     )
     parser.add_argument(
@@ -120,6 +129,36 @@ def _load(
     )
 
 
+def _legacy_linear_arrays(
+    data_dir: Path, modality: str, input_dim: int, max_files: int | None
+) -> tuple[np.ndarray, np.ndarray]:
+    """Rebuild the CNN/XGBoost legacy arrays exactly as their loaders do."""
+    import pandas as pd
+
+    get_functional_groups = importlib.import_module(
+        f"spectroscopy_qml.mps_classifier.{modality}.data_loader"
+    ).get_functional_groups
+    column = SPECTRUM_COLUMNS[modality]
+    parquet_files = sorted(data_dir.glob("*.parquet"))
+    if max_files is not None:
+        parquet_files = parquet_files[:max_files]
+    frames = []
+    for parquet_file in parquet_files:
+        data = pd.read_parquet(parquet_file, columns=["smiles", column])
+        if modality.startswith("msms"):
+            data[column] = [make_msms_spectrum(s) for s in data[column]]
+        # Same SMARTS as the CNN/XGBoost scripts; they also map a missing SMILES to None.
+        data["func_group"] = [
+            None if s is None else get_functional_groups(str(s)) for s in data["smiles"]
+        ]
+        data[column] = [legacy_linear_interpolate(s, input_dim) for s in data[column]]
+        frames.append(data.dropna(subset=[column, "func_group"]))
+    data = pd.concat(frames, ignore_index=True)
+    X = np.stack(data[column].to_list()).astype(np.float32)
+    y = np.stack(data["func_group"].to_list()).astype(np.int32)
+    return X, y
+
+
 def _save_legacy_linear_cache(
     *,
     data_dir: Path,
@@ -192,10 +231,9 @@ def precompute(args: argparse.Namespace) -> None:
                 continue
 
             loader = _loader(modality)
-            shared_mssd: tuple[np.ndarray, np.ndarray] | None = None
             for config in shared_configs:
                 print(f"  Precomputing shared config: {config}")
-                arrays = _load(
+                _load(
                     loader,
                     data_dir=args.data_dir,
                     cache_dir=args.cache_dir,
@@ -204,26 +242,15 @@ def precompute(args: argparse.Namespace) -> None:
                     preprocessing=config,
                     overwrite=args.overwrite,
                 )
-                if config == canonical_spec("shared_mssd"):
-                    shared_mssd = arrays
-                else:
-                    del arrays
 
             if not include_legacy:
                 continue
 
-            # CNN and XGBoost historically use linear interpolation only, which is
-            # numerically the shared_mssd pipeline. Save an alias under the legacy key.
-            if shared_mssd is None:
-                shared_mssd = _load(
-                    loader,
-                    data_dir=args.data_dir,
-                    cache_dir=args.cache_dir,
-                    input_dim=input_dim,
-                    max_files=args.max_files,
-                    preprocessing="shared_mssd",
-                    overwrite=args.overwrite,
-                )
+            # CNN and XGBoost legacy inputs come from their own float32 interpolation,
+            # which is not bit-identical to resample=linear, so build them exactly.
+            X_legacy, y_legacy = _legacy_linear_arrays(
+                args.data_dir, modality, input_dim, args.max_files
+            )
             _save_legacy_linear_cache(
                 data_dir=args.data_dir,
                 cache_dir=args.cache_dir,
@@ -231,10 +258,10 @@ def precompute(args: argparse.Namespace) -> None:
                 input_dim=input_dim,
                 max_files=args.max_files,
                 overwrite=args.overwrite,
-                X=shared_mssd[0],
-                y=shared_mssd[1],
+                X=X_legacy,
+                y=y_legacy,
             )
-            del shared_mssd
+            del X_legacy, y_legacy
 
             print("  Precomputing legacy MPS config")
             mps_arrays = _load(

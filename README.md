@@ -243,23 +243,30 @@ require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold
 so one unambiguous training reference is used. The benchmark runner already
 supplies these options.
 
-The ablation uses exactly 18 shared, one-factor-at-a-time configurations around
-the MSSD protocol
+The default ablation runs `legacy` plus 13 shared, one-factor-at-a-time
+configurations around the MSSD protocol
 (`shared_mssd` = linear, no smoothing, intensity, no normalization) on shared
 splits, then writes separate architecture, preprocessing, representation and
 effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
 
 ```
-shared_mssd
+legacy                          historical per-model preprocessing (harmonization table)
+shared_mssd                     reference
 resample_bin_mean, resample_bin_max, resample_fir
-smooth_savgol, smooth_gaussian, smooth_moving_average, smooth_lorentz
-norm_snv, norm_minmax, norm_max, norm_area, norm_l2, norm_quantile, norm_pqn
-repr_sqrt, repr_log1p, repr_derivative
+smooth_savgol, smooth_gaussian, smooth_lorentz
+norm_snv, norm_minmax, norm_area, norm_pqn
+repr_sqrt, repr_derivative
 ```
 
-These 18 configurations use the same canonical specification for every
-spectrum modality and all four architectures. `legacy` remains available only
-as an explicit historical comparison and is not part of the shared matrix.
+The shared configurations use the same canonical specification for every
+spectrum modality and all four architectures. `legacy` is needed to report how
+much of the original model differences came from per-model preprocessing.
+Near-duplicates (`smooth_moving_average` ~ gaussian, `norm_max` ~ minmax,
+`norm_l2` ~ area, `repr_log1p` ~ sqrt) and `norm_quantile` (erases intensity
+information in sparse NMR spectra) are not run by default but can still be named
+in `CONFIGS` (`--list --include-extra` shows them). IR spectra already have 1800
+points, so at input dim >= 1800 the runner skips the `resample_*` configs for IR,
+where they would only reproduce `shared_mssd`.
 
 For every non-legacy run, all four models record a SHA-256 digest of their
 actual preprocessed `float32` input array. Aggregation fails if these digests
@@ -274,7 +281,7 @@ of the preprocessing implementation, so editing the code invalidates old caches.
 CNN and XGBoost additionally accept
 `--cache_dir` and `--overwrite_cache`.
 
-Precompute all 18 shared preprocessing configurations before starting any model
+Precompute the 13 default shared preprocessing configurations before starting any model
 training (five modalities at 600 and 1800 input points):
 
 ```bash
@@ -302,7 +309,7 @@ Prefer a smaller selection; `--allow-low-disk` overrides this guard only after
 the expected NPZ compression and available storage have been checked manually.
 
 ```bash
-PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
+PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list --include-legacy
 DEVICE=mps scripts/run_preprocessing_ablation.sh 600 1800
 # subset: CONFIGS="shared_mssd resample_bin_max norm_snv" MODALITIES="cnmr" scripts/run_preprocessing_ablation.sh 600
 ```

@@ -388,3 +388,22 @@ def test_mps_loader_populates_and_reuses_shared_cache(tmp_path, monkeypatch):
     np.testing.assert_array_equal(second[0], first[0])
     np.testing.assert_array_equal(second[1], first[1])
     assert len(list(cache_dir.glob("shared_ir_len4_*.npz"))) == 1
+
+
+def test_legacy_linear_interpolate_matches_historical_cnn_code():
+    from spectroscopy_qml.benchmarking.preprocessing import legacy_linear_interpolate
+
+    def historical(spec, target_length):
+        spec = np.asarray(spec, dtype=np.float32).flatten()
+        spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
+        old_x = np.arange(len(spec))
+        new_x = np.linspace(min(old_x), max(old_x), target_length)
+        return interp1d(old_x, spec)(new_x).astype(np.float32)
+
+    for length in (1800, 10000):
+        spectrum = RNG.random(length) * 3.7
+        np.testing.assert_array_equal(
+            legacy_linear_interpolate(spectrum, 600), historical(spectrum, 600)
+        )
+    assert legacy_linear_interpolate(None, 600) is None
+    np.testing.assert_array_equal(legacy_linear_interpolate([], 600), np.zeros(600, np.float32))

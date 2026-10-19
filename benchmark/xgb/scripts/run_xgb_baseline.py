@@ -26,6 +26,9 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     preprocessing_cache_path,
     save_preprocessing_cache,
 )
+from spectroscopy_qml.benchmarking.preprocessing import (
+    legacy_linear_interpolate as interpolate_spectrum,
+)
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
 XGB_N_ESTIMATORS = 300
@@ -99,33 +102,6 @@ def get_functional_groups(smiles: str) -> list | None:
         func_groups.append(match_group(mol, smarts))
 
     return func_groups
-
-
-def interpolate_spectrum(spec, target_length: int):
-    """
-    Interpolates any 1D spectrum/vector to exactly 600 values.
-    This mirrors the CNN input length.
-    """
-    if spec is None:
-        return None
-
-    spec = np.asarray(spec, dtype=np.float32).flatten()
-
-    if len(spec) == 0:
-        return np.zeros(target_length, dtype=np.float32)
-
-    spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
-
-    if len(spec) == 1:
-        return np.full(target_length, spec[0], dtype=np.float32)
-
-    old_x = np.arange(len(spec))
-    new_x = np.linspace(old_x.min(), old_x.max(), target_length)
-
-    interp = interp1d(old_x, spec, kind="linear")
-    new_spec = interp(new_x)
-
-    return new_spec.astype(np.float32)
 
 
 def build_xgboost_model(seed: int, device: str, n_jobs: int):

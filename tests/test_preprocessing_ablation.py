@@ -12,6 +12,7 @@ import pandas as pd
 
 from spectroscopy_qml.benchmarking.preprocessing import (
     ABLATION_CONFIGS,
+    EXTRA_PREPROCESSING_CONFIGS,
     SHARED_PREPROCESSING_CONFIGS,
     canonical_spec,
     metrics_fields,
@@ -149,17 +150,19 @@ def test_precompute_runner_resolves_shared_and_legacy_configs(tmp_path):
 
 
 def test_ablation_configs_are_one_factor_at_a_time():
-    assert len(SHARED_PREPROCESSING_CONFIGS) == 18
+    assert len(SHARED_PREPROCESSING_CONFIGS) == 13
     assert "legacy" not in SHARED_PREPROCESSING_CONFIGS
+    assert list(ABLATION_CONFIGS)[0] == "legacy"
+    assert not set(EXTRA_PREPROCESSING_CONFIGS) & set(ABLATION_CONFIGS)
     reference = canonical_spec("shared_mssd").split(",")
-    for name, spec in SHARED_PREPROCESSING_CONFIGS.items():
+    for name, spec in {**SHARED_PREPROCESSING_CONFIGS, **EXTRA_PREPROCESSING_CONFIGS}.items():
         if name == "shared_mssd":
             continue
         changed = [a for a, b in zip(canonical_spec(spec).split(","), reference) if a != b]
         assert len(changed) == 1, (name, changed)
 
 
-def test_cli_lists_exactly_the_18_shared_combinations():
+def test_cli_lists_exactly_the_default_shared_configs():
     result = subprocess.run(
         [sys.executable, "-m", "spectroscopy_qml.benchmarking.preprocessing", "--list"],
         cwd=PROJECT_ROOT,
@@ -235,3 +238,31 @@ def pytest_approx(value):
     import pytest
 
     return pytest.approx(value, abs=1e-9)
+
+
+def test_ablation_runner_runs_legacy_and_skips_noop_ir_resampling(tmp_path):
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "run_preprocessing_ablation.sh").write_text(
+        (PROJECT_ROOT / "scripts" / "run_preprocessing_ablation.sh").read_text()
+    )
+    (scripts / "run_multiseed_benchmark.sh").write_text(
+        '#!/usr/bin/env bash\necho "RUN $1 $PREPROCESSING [$MODALITIES]"\n'
+    )
+    (scripts / "aggregate_preprocessing_ablation.py").write_text("")
+    for script in scripts.glob("*.sh"):
+        script.chmod(0o755)
+    (tmp_path / "src").symlink_to(PROJECT_ROOT / "src")
+    result = subprocess.run(
+        [str(scripts / "run_preprocessing_ablation.sh"), "600", "1800"],
+        env={**os.environ, "PYTHON": sys.executable},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    runs = [line for line in result.stdout.splitlines() if line.startswith("RUN")]
+    assert len(runs) == 2 * len(ABLATION_CONFIGS)
+    assert "RUN 600 legacy [ir cnmr]" in runs
+    assert "RUN 600 resample_fir [ir cnmr]" in runs
+    assert "RUN 1800 resample_fir [cnmr]" in runs
+    assert "RUN 1800 shared_mssd [ir cnmr]" in runs

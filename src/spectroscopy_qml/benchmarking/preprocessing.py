@@ -135,39 +135,43 @@ LEGACY_EFFECTIVE_SPECS = {
     "ttn": PreprocessingConfig(norm="snv").spec,
 }
 
-# The 18 shared, one-factor-at-a-time combinations around ``shared_mssd``.
-# Every entry is applied identically to every spectrum and model architecture.
-# ``legacy`` is deliberately not part of this matrix because its historical
-# preprocessing differs between CNN/XGBoost, MPS and TTN.
+# Default one-factor-at-a-time design around ``shared_mssd`` (13 shared configs).
+# Every entry is applied identically to every spectrum and model architecture;
+# ``legacy`` (per-model historical preprocessing) is added in ABLATION_CONFIGS.
+# Near-duplicates live in EXTRA_PREPROCESSING_CONFIGS: usable by name, not run by default.
 SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
     "shared_mssd": PreprocessingConfig().spec,
-    # Downsampling method
+    # Downsampling method (no-ops when the raw spectrum already has input_dim points)
     "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
     "resample_bin_max": PreprocessingConfig(resample="bin_max").spec,
     "resample_fir": PreprocessingConfig(resample="fir").spec,
-    # Smoothing / signal filtering
+    # Smoothing / signal filtering: legacy MPS, generic low-pass, TTN-style Lorentzian
     "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
     "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
-    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
     "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
-    # Normalization
+    # Normalization: legacy MPS/TTN, range, total intensity, NMR dilution correction
     "norm_snv": PreprocessingConfig(norm="snv").spec,
     "norm_minmax": PreprocessingConfig(norm="minmax").spec,
-    "norm_max": PreprocessingConfig(norm="max").spec,
     "norm_area": PreprocessingConfig(norm="area").spec,
-    "norm_l2": PreprocessingConfig(norm="l2").spec,
-    "norm_quantile": PreprocessingConfig(norm="quantile").spec,
     "norm_pqn": PreprocessingConfig(norm="pqn").spec,
     # Input representation
     "repr_sqrt": PreprocessingConfig(repr="sqrt").spec,
-    "repr_log1p": PreprocessingConfig(repr="log1p").spec,
     "repr_derivative": PreprocessingConfig(repr="derivative").spec,
 }
-
-ABLATION_CONFIGS: dict[str, str] = {
-    **SHARED_PREPROCESSING_CONFIGS,
-    "legacy": LEGACY,
+# Redundant with a default config (see comments); available on request only.
+EXTRA_PREPROCESSING_CONFIGS: dict[str, str] = {
+    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,  # ~gaussian
+    "norm_max": PreprocessingConfig(norm="max").spec,  # ~minmax for baseline-zero spectra
+    "norm_l2": PreprocessingConfig(norm="l2").spec,  # pure rescaling like area
+    "norm_quantile": PreprocessingConfig(norm="quantile").spec,  # erases sparse NMR intensities
+    "repr_log1p": PreprocessingConfig(repr="log1p").spec,  # compresses like sqrt
 }
+ABLATION_CONFIGS: dict[str, str] = {
+    "legacy": LEGACY,
+    **SHARED_PREPROCESSING_CONFIGS,
+}
+# Every name parse_preprocessing() accepts.
+NAMED_CONFIGS: dict[str, str] = {**ABLATION_CONFIGS, **EXTRA_PREPROCESSING_CONFIGS}
 
 
 def parse_preprocessing(spec: str | None) -> PreprocessingConfig | None:
@@ -177,8 +181,8 @@ def parse_preprocessing(spec: str | None) -> PreprocessingConfig | None:
     spec = spec.strip()
     if spec in ("", LEGACY):
         return None
-    if spec in ABLATION_CONFIGS:
-        return parse_preprocessing(ABLATION_CONFIGS[spec])
+    if spec in NAMED_CONFIGS:
+        return parse_preprocessing(NAMED_CONFIGS[spec])
     values: dict[str, str] = {}
     for part in spec.split(","):
         key, sep, value = part.partition("=")
@@ -328,6 +332,27 @@ def save_preprocessing_cache(
     finally:
         if temporary_path is not None and os.path.exists(temporary_path):
             os.unlink(temporary_path)
+
+
+def legacy_linear_interpolate(spec: object, target_length: int) -> np.ndarray | None:
+    """Historical CNN/XGBoost resampling, kept bit-exact for ``legacy`` runs.
+
+    Unlike ``resample=linear`` it casts to float32 *before* interpolating, so the
+    two differ in the last bit; legacy caches must therefore be built with this.
+    """
+    from scipy.interpolate import interp1d
+
+    if spec is None:
+        return None
+    values = np.asarray(spec, dtype=np.float32).flatten()
+    if len(values) == 0:
+        return np.zeros(target_length, dtype=np.float32)
+    values = np.nan_to_num(values, nan=0.0, posinf=0.0, neginf=0.0)
+    if len(values) == 1:
+        return np.full(target_length, values[0], dtype=np.float32)
+    old_x = np.arange(len(values))
+    new_x = np.linspace(old_x.min(), old_x.max(), target_length)
+    return interp1d(old_x, values, kind="linear")(new_x).astype(np.float32)
 
 
 def make_msms_spectrum(spectrum: object, length: int = 10_000) -> np.ndarray | None:
@@ -602,16 +627,23 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Resolve preprocessing ablation configs.")
     parser.add_argument("name", nargs="?", help="Ablation config name or spec")
     parser.add_argument(
-        "--list", action="store_true", help="List the 18 shared preprocessing combinations"
+        "--list", action="store_true", help="List the 13 default shared preprocessing configs"
     )
     parser.add_argument(
         "--include-legacy",
         action="store_true",
         help="Include the model-specific historical legacy configuration in --list",
     )
+    parser.add_argument(
+        "--include-extra",
+        action="store_true",
+        help="Also list the redundant extra configs that are not run by default",
+    )
     args = parser.parse_args()
     if args.list or args.name is None:
-        configs = ABLATION_CONFIGS if args.include_legacy else SHARED_PREPROCESSING_CONFIGS
+        configs = dict(ABLATION_CONFIGS if args.include_legacy else SHARED_PREPROCESSING_CONFIGS)
+        if args.include_extra:
+            configs.update(EXTRA_PREPROCESSING_CONFIGS)
         for name, spec in configs.items():
             print(f"{name}\t{spec}")
         return
