@@ -27,6 +27,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import KFold, train_test_split
 from torch.utils.data import DataLoader
 
+from spectroscopy_qml.benchmarking.preprocessing import apply_train_fitted_normalization
 from spectroscopy_qml.mps_classifier.cnmr.config import (
     DATA_CONFIG,
     MODEL_CONFIG,
@@ -203,6 +204,14 @@ def _reconstruct_checkpoint_splits(
     This works for existing checkpoints as long as dataset loading order and config values
     are unchanged relative to the training run.
     """
+    fixed_split = checkpoint.get("fixed_split_indices")
+    if fixed_split is not None:
+        val_indices = np.asarray(fixed_split["val"], dtype=np.int64)
+        test_indices = np.asarray(fixed_split["test"], dtype=np.int64)
+        return (
+            _create_eval_dataloader(X[val_indices], y[val_indices]),
+            _create_eval_dataloader(X[test_indices], y[test_indices]),
+        )
     dataset_indices = np.arange(len(X))
     trainval_indices, test_indices = train_test_split(
         dataset_indices,
@@ -709,7 +718,7 @@ def main(
 
     if thresholds.shape != (model.num_classes,):
         raise ValueError(
-            f"Expected thresholds with shape ({model.num_classes},), " f"but got {thresholds.shape}"
+            f"Expected thresholds with shape ({model.num_classes},), but got {thresholds.shape}"
         )
 
     print(f"Thresholds: mean={thresholds.mean():.3f}, std={thresholds.std():.3f}")
@@ -723,7 +732,16 @@ def main(
         savgol_window_length=DATA_CONFIG.savgol_window_length,
         savgol_polyorder=DATA_CONFIG.savgol_polyorder,
         apply_snv=DATA_CONFIG.apply_snv,
+        preprocessing=checkpoint.get("preprocessing", DATA_CONFIG.preprocessing),
     )
+
+    fixed_split = checkpoint.get("fixed_split_indices")
+    if fixed_split is not None:
+        X = apply_train_fitted_normalization(
+            X,
+            checkpoint.get("preprocessing", DATA_CONFIG.preprocessing),
+            np.asarray(fixed_split["train"], dtype=np.int64),
+        )
 
     val_loader, test_loader = _reconstruct_checkpoint_splits(X, y, checkpoint)
 

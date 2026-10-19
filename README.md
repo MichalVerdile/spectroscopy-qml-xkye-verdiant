@@ -235,13 +235,31 @@ norm=none|snv|minmax|max|area|l2|quantile|pqn
 points, truncated at `±half_width`, default 15, mirror padding), identical to the
 TTN `LorentzianFeatureMap` smoothing channel. `quantile` and `pqn` (probabilistic
 quotient normalization) are cross-sample methods taken from the original
-quantile/PQN CNN scripts: they use statistics of all spectra passed to
-`preprocess_spectra` (the whole dataset), without the optional cluster grouping.
+quantile/PQN CNN scripts. In training runs, their reference distribution/profile
+is fitted exclusively on the fixed training split and then applied unchanged to
+training, validation and test data. Their split-independent resampling/smoothing
+output remains reusable in the shared dataset cache. Quantile/PQN runs therefore
+require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold`
+so one unambiguous training reference is used. The benchmark runner already
+supplies these options.
 
-The ablation runs one-factor-at-a-time configs around the MSSD protocol
+The ablation uses exactly 18 shared, one-factor-at-a-time configurations around
+the MSSD protocol
 (`shared_mssd` = linear, no smoothing, intensity, no normalization) on shared
 splits, then writes separate architecture, preprocessing, representation and
 effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
+
+```
+shared_mssd
+resample_bin_mean, resample_bin_max, resample_fir
+smooth_savgol, smooth_gaussian, smooth_moving_average, smooth_lorentz
+norm_snv, norm_minmax, norm_max, norm_area, norm_l2, norm_quantile, norm_pqn
+repr_sqrt, repr_log1p, repr_derivative
+```
+
+These 18 configurations use the same canonical specification for every
+spectrum modality and all four architectures. `legacy` remains available only
+as an explicit historical comparison and is not part of the shared matrix.
 
 For every non-legacy run, all four models record a SHA-256 digest of their
 actual preprocessed `float32` input array. Aggregation fails if these digests
@@ -251,8 +269,37 @@ and preprocessing spec match the requested run and a valid input digest is
 present. CNN, XGBoost, MPS and TTN cache their preprocessed arrays under
 `data/cache/`; cache keys include the source parquet fingerprint, modality,
 input dimension and preprocessing configuration. A changed input or configuration
-therefore rebuilds the cache automatically. CNN and XGBoost additionally accept
+therefore rebuilds the cache automatically. The key also contains a SHA-256 hash
+of the preprocessing implementation, so editing the code invalidates old caches.
+CNN and XGBoost additionally accept
 `--cache_dir` and `--overwrite_cache`.
+
+Precompute all 18 shared preprocessing configurations before starting any model
+training (five modalities at 600 and 1800 input points):
+
+```bash
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py --dry-run
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py
+```
+
+The first command only prints the plan. The second reads the raw parquet data and
+populates `data/cache/preprocessed/`. To prepare a smaller experiment, select the
+dimensions, modalities or configurations explicitly:
+
+```bash
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py \
+  --input-dims 600 \
+  --modalities ir cnmr \
+  --configs shared_mssd norm_snv smooth_savgol
+```
+
+Non-legacy caches are shared by CNN, XGBoost, MPS and TTN. The precompute runner
+creates separate legacy variants because the historical pipelines differ between
+the model families. Existing compatible caches are reused; pass `--overwrite` to
+rebuild them. Before processing, the runner reports a conservative uncompressed
+storage estimate and refuses to start if it exceeds the available disk space.
+Prefer a smaller selection; `--allow-low-disk` overrides this guard only after
+the expected NPZ compression and available storage have been checked manually.
 
 ```bash
 PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list

@@ -21,9 +21,10 @@ A spec is a comma separated ``key=value`` string, applied in this order::
 
 ``lorentz`` convolves with a sum-normalised Lorentzian kernel (HWHM ``gamma`` in
 data points, truncated at ``+-half_width``, default 15) with mirror padding, like the
-TTN ``LorentzianFeatureMap``. ``quantile`` and ``pqn`` are cross-sample methods: they
-are computed over the whole batch passed to :func:`preprocess_spectra`, as in the
-original quantile / PQN CNN scripts (without their optional cluster grouping).
+TTN ``LorentzianFeatureMap``. ``quantile`` and ``pqn`` are cross-sample methods.
+Direct calls to :func:`preprocess_spectra` retain the historical whole-batch
+behaviour. Training loaders defer these methods, fit their reference on the fixed
+training split, and then transform train, validation and test without refitting.
 
 Omitted keys take the values of ``shared_mssd`` (linear, none, intensity, none),
 which is the original MSSD protocol the paper describes.
@@ -39,6 +40,7 @@ import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -57,7 +59,7 @@ CROSS_SAMPLE_NORMALIZATIONS = ("quantile", "pqn")
 _SPEC_KEYS = ("resample", "smooth", "repr", "norm")
 _EPS = 1e-8
 _LORENTZ_DEFAULT_HALF_WIDTH = 15
-_CACHE_SCHEMA_VERSION = 1
+_CACHE_SCHEMA_VERSION = 2
 
 
 def _parse_smooth(smooth: str) -> tuple[str, tuple[float, ...]]:
@@ -133,10 +135,11 @@ LEGACY_EFFECTIVE_SPECS = {
     "ttn": PreprocessingConfig(norm="snv").spec,
 }
 
-# One-factor-at-a-time design around ``shared_mssd``. Every config except
-# ``legacy`` feeds identical inputs to all four models.
-ABLATION_CONFIGS: dict[str, str] = {
-    "legacy": LEGACY,
+# The 18 shared, one-factor-at-a-time combinations around ``shared_mssd``.
+# Every entry is applied identically to every spectrum and model architecture.
+# ``legacy`` is deliberately not part of this matrix because its historical
+# preprocessing differs between CNN/XGBoost, MPS and TTN.
+SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
     "shared_mssd": PreprocessingConfig().spec,
     # Downsampling method
     "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
@@ -145,16 +148,25 @@ ABLATION_CONFIGS: dict[str, str] = {
     # Smoothing / signal filtering
     "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
     "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
+    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
     "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
     # Normalization
     "norm_snv": PreprocessingConfig(norm="snv").spec,
     "norm_minmax": PreprocessingConfig(norm="minmax").spec,
+    "norm_max": PreprocessingConfig(norm="max").spec,
     "norm_area": PreprocessingConfig(norm="area").spec,
+    "norm_l2": PreprocessingConfig(norm="l2").spec,
     "norm_quantile": PreprocessingConfig(norm="quantile").spec,
     "norm_pqn": PreprocessingConfig(norm="pqn").spec,
     # Input representation
     "repr_sqrt": PreprocessingConfig(repr="sqrt").spec,
+    "repr_log1p": PreprocessingConfig(repr="log1p").spec,
     "repr_derivative": PreprocessingConfig(repr="derivative").spec,
+}
+
+ABLATION_CONFIGS: dict[str, str] = {
+    **SHARED_PREPROCESSING_CONFIGS,
+    "legacy": LEGACY,
 }
 
 
@@ -230,6 +242,12 @@ def dataset_fingerprint(data_dir: Path) -> str:
     return digest.hexdigest()
 
 
+@lru_cache(maxsize=1)
+def preprocessing_code_fingerprint() -> str:
+    """Hash this implementation so code changes automatically invalidate caches."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
 def preprocessing_cache_path(
     data_dir: Path,
     *,
@@ -253,6 +271,7 @@ def preprocessing_cache_path(
         "target_length": int(target_length),
         "preprocessing": canonical_spec(preprocessing),
         "data_fingerprint": dataset_fingerprint(data_dir),
+        "code_fingerprint": preprocessing_code_fingerprint(),
         "options": options or {},
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"), default=str)
@@ -424,6 +443,77 @@ def _pqn_normalize(spectra: np.ndarray) -> np.ndarray:
     return tic_normalized / dilution[:, None]
 
 
+@dataclass(frozen=True)
+class CrossSampleNormalizationState:
+    """Training-only reference required to transform quantile or PQN inputs."""
+
+    method: str
+    reference: np.ndarray
+
+
+def fit_cross_sample_normalization(
+    train_spectra: np.ndarray, method: str
+) -> CrossSampleNormalizationState:
+    """Fit a cross-sample normalization reference using training spectra only."""
+    spectra = np.asarray(train_spectra, dtype=np.float64)
+    if spectra.ndim != 2 or len(spectra) == 0:
+        raise ValueError("Cross-sample normalization needs a non-empty 2D training array")
+    if method == "quantile":
+        reference = np.sort(spectra, axis=1).mean(axis=0)
+    elif method == "pqn":
+        row_sums = spectra.sum(axis=1, keepdims=True)
+        tic_normalized = spectra / np.where(row_sums > _EPS, row_sums, 1.0)
+        reference = np.median(tic_normalized, axis=0)
+    else:
+        raise ValueError(f"{method!r} is not a cross-sample normalization")
+    return CrossSampleNormalizationState(method=method, reference=reference)
+
+
+def transform_cross_sample_normalization(
+    spectra: np.ndarray, state: CrossSampleNormalizationState
+) -> np.ndarray:
+    """Apply a fitted training reference to arbitrary spectra without refitting."""
+    values = np.asarray(spectra, dtype=np.float64)
+    if values.ndim != 2 or values.shape[1] != len(state.reference):
+        raise ValueError("Spectra width does not match the fitted normalization reference")
+    if state.method == "quantile":
+        ranks = np.argsort(np.argsort(values, axis=1), axis=1)
+        transformed = state.reference[ranks]
+    elif state.method == "pqn":
+        row_sums = values.sum(axis=1, keepdims=True)
+        tic_normalized = values / np.where(row_sums > _EPS, row_sums, 1.0)
+        mask = (tic_normalized > _EPS) & (state.reference > _EPS)
+        quotients = np.full(tic_normalized.shape, np.nan)
+        np.divide(tic_normalized, state.reference, out=quotients, where=mask)
+        all_nan = ~mask.any(axis=1)
+        dilution = np.ones(len(values))
+        if not all_nan.all():
+            dilution[~all_nan] = np.nanmedian(quotients[~all_nan], axis=1)
+        dilution = np.where(dilution > _EPS, dilution, 1.0)
+        transformed = tic_normalized / dilution[:, None]
+    else:
+        raise ValueError(f"Unknown fitted normalization {state.method!r}")
+    return np.nan_to_num(transformed, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
+
+
+def apply_train_fitted_normalization(
+    spectra: np.ndarray,
+    preprocessing: str | PreprocessingConfig | None,
+    train_indices: np.ndarray,
+) -> np.ndarray:
+    """Fit quantile/PQN on ``train_indices`` and transform the complete dataset."""
+    config = (
+        preprocessing
+        if isinstance(preprocessing, PreprocessingConfig)
+        else parse_preprocessing(preprocessing)
+    )
+    if config is None or config.norm not in CROSS_SAMPLE_NORMALIZATIONS:
+        return spectra
+    indices = np.asarray(train_indices, dtype=np.int64)
+    state = fit_cross_sample_normalization(np.asarray(spectra)[indices], config.norm)
+    return transform_cross_sample_normalization(spectra, state)
+
+
 def normalize(spectra: np.ndarray, method: str) -> np.ndarray:
     """Normalize a batch; constant spectra map to zeros, never NaN.
 
@@ -472,6 +562,8 @@ def preprocess_spectra(
     spectra: Sequence[np.ndarray] | np.ndarray,
     config: PreprocessingConfig,
     target_length: int,
+    *,
+    defer_cross_sample: bool = False,
 ) -> np.ndarray:
     """Turn dense raw spectra (any lengths) into a float32 (n, target_length) array."""
     rows = [
@@ -491,11 +583,17 @@ def preprocess_spectra(
         batch = np.stack([rows[i] for i in indices])
         if length == 1:
             batch = np.repeat(batch, 2, axis=1)
-        output[indices] = _apply(batch, config, target_length, apply_norm=not cross_sample)
-    if cross_sample:
+        output[indices] = _apply(
+            batch,
+            config,
+            target_length,
+            apply_norm=not cross_sample,
+        )
+    if cross_sample and not defer_cross_sample:
         valid = np.array([len(row) > 0 for row in rows], dtype=bool)
         if valid.any():
             output[valid] = normalize(output[valid], config.norm)
+    if cross_sample:
         output = output.astype(np.float32)
     return output
 
@@ -503,10 +601,18 @@ def preprocess_spectra(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Resolve preprocessing ablation configs.")
     parser.add_argument("name", nargs="?", help="Ablation config name or spec")
-    parser.add_argument("--list", action="store_true", help="List ablation config names")
+    parser.add_argument(
+        "--list", action="store_true", help="List the 18 shared preprocessing combinations"
+    )
+    parser.add_argument(
+        "--include-legacy",
+        action="store_true",
+        help="Include the model-specific historical legacy configuration in --list",
+    )
     args = parser.parse_args()
     if args.list or args.name is None:
-        for name, spec in ABLATION_CONFIGS.items():
+        configs = ABLATION_CONFIGS if args.include_legacy else SHARED_PREPROCESSING_CONFIGS
+        for name, spec in configs.items():
             print(f"{name}\t{spec}")
         return
     print(canonical_spec(args.name))

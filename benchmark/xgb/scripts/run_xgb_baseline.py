@@ -14,6 +14,8 @@ from sklearn.multioutput import MultiOutputClassifier
 from xgboost import XGBClassifier
 
 from spectroscopy_qml.benchmarking.preprocessing import (
+    CROSS_SAMPLE_NORMALIZATIONS,
+    apply_train_fitted_normalization,
     array_digest,
     canonical_spec,
     load_preprocessing_cache,
@@ -51,9 +53,7 @@ functional_groups = {
     "Hydrazine": Chem.MolFromSmarts("[NX3][NX3]"),
     "Hydrazone": Chem.MolFromSmarts("[NX3][NX2]=[#6]"),
     "Imide": Chem.MolFromSmarts("[CX3](=[OX1])[NX3][CX3](=[OX1])"),
-    "Imine": Chem.MolFromSmarts(
-        "[$([CX3]([#6])[#6]),$([CX3H][#6])]=[$([NX2][#6]),$([NX2H])]"
-    ),
+    "Imine": Chem.MolFromSmarts("[$([CX3]([#6])[#6]),$([CX3H][#6])]=[$([NX2][#6]),$([NX2H])]"),
     "Isocyanate": Chem.MolFromSmarts("[NX2]=[C]=[O]"),
     "Isothiocyanate": Chem.MolFromSmarts("[NX2]=[C]=[S]"),
     "Ketone": Chem.MolFromSmarts("[#6][CX3](=O)[#6]"),
@@ -191,12 +191,8 @@ def compute_f1_metrics(y_true, y_pred, prefix: str) -> dict:
     Computes micro and macro F1 for multi-label predictions.
     """
     return {
-        f"{prefix}_f1_micro": float(
-            f1_score(y_true, y_pred, average="micro", zero_division=0)
-        ),
-        f"{prefix}_f1_macro": float(
-            f1_score(y_true, y_pred, average="macro", zero_division=0)
-        ),
+        f"{prefix}_f1_micro": float(f1_score(y_true, y_pred, average="micro", zero_division=0)),
+        f"{prefix}_f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
     }
 
 
@@ -319,10 +315,18 @@ def load_data_for_column(
     cache_dir: Path | None = None,
     overwrite_cache: bool = False,
 ) -> pd.DataFrame:
+    shared_config = parse_preprocessing(preprocessing)
+    cache_modality = {
+        "h_nmr_spectra": "hnmr",
+        "c_nmr_spectra": "cnmr",
+        "ir_spectra": "ir",
+        "msms_positive_40ev": "msms_pos",
+        "msms_negative_40ev": "msms_neg",
+    }.get(actual_col, actual_col)
     cache_path, cache_key = preprocessing_cache_path(
         analytical_data,
-        consumer="xgboost",
-        modality=actual_col,
+        consumer="shared" if shared_config is not None else "legacy_linear",
+        modality=cache_modality,
         target_length=target_length,
         preprocessing=preprocessing,
         cache_dir=cache_dir,
@@ -334,7 +338,6 @@ def load_data_for_column(
             print(f"Loaded cached XGBoost dataset from {cache_path}")
             return pd.DataFrame({actual_col: list(X), "func_group": list(y)})
 
-    shared_config = parse_preprocessing(preprocessing)
     if shared_config is not None:
         print(f"Shared preprocessing: {shared_config.spec}")
     columns_to_load = ["smiles", actual_col]
@@ -363,7 +366,12 @@ def load_data_for_column(
             data = data.dropna(subset=[actual_col, "func_group"])
         else:
             data = data.dropna(subset=[actual_col, "func_group"]).copy()
-            processed = preprocess_spectra(list(data[actual_col]), shared_config, target_length)
+            processed = preprocess_spectra(
+                list(data[actual_col]),
+                shared_config,
+                target_length,
+                defer_cross_sample=True,
+            )
             data[actual_col] = list(processed)
 
         if training_data is None:
@@ -479,8 +487,7 @@ def main(
     for col_name in columns_to_process:
         if col_name not in column_mapping:
             raise ValueError(
-                f"Unknown column '{col_name}'. "
-                f"Valid columns are: {list(column_mapping.keys())}"
+                f"Unknown column '{col_name}'. Valid columns are: {list(column_mapping.keys())}"
             )
 
         actual_col, output_dir = column_mapping[col_name]
@@ -560,6 +567,18 @@ def main(
             if split_path is not None
             else None
         )
+        preprocessing_config = parse_preprocessing(preprocessing)
+        if (
+            preprocessing_config is not None
+            and preprocessing_config.norm in CROSS_SAMPLE_NORMALIZATIONS
+        ):
+            if shared_split is None:
+                raise ValueError("quantile/PQN preprocessing requires --split_path")
+            if use_kfold:
+                raise ValueError("quantile/PQN preprocessing requires --no_kfold")
+            X_data = apply_train_fitted_normalization(
+                X_data, preprocessing_config, shared_split["train"]
+            )
         if shared_split is not None:
             trainval_indices = np.concatenate((shared_split["train"], shared_split["val"]))
             X_train_full, y_train_full = X_data[trainval_indices], y_data[trainval_indices]
@@ -569,10 +588,7 @@ def main(
                 X_data, y_data, test_size=0.1, random_state=seed, shuffle=True
             )
 
-        print(
-            f"Initial split: Train-full={len(X_train_full)} 90%, "
-            f"Test={len(X_test)} 10%"
-        )
+        print(f"Initial split: Train-full={len(X_train_full)} 90%, Test={len(X_test)} 10%")
 
         if use_kfold:
             print(f"Performing {n_folds}-fold CV on training set...")
@@ -588,9 +604,7 @@ def main(
             best_fold_idx = None
             best_fold_f1 = -1.0
 
-            for fold_idx, (train_idx, val_idx) in enumerate(
-                kfold.split(X_train_full), start=1
-            ):
+            for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), start=1):
                 print(f"\n--- Fold {fold_idx}/{n_folds} ---")
 
                 X_train = X_train_full[train_idx]
@@ -614,8 +628,7 @@ def main(
 
                 if log_learning_curve:
                     print(
-                        f"Logging learning curve every {learning_curve_every} "
-                        f"boosting step(s)..."
+                        f"Logging learning curve every {learning_curve_every} boosting step(s)..."
                     )
 
                     append_learning_curve_logs(
@@ -843,10 +856,7 @@ def main(
                 pickle.dump(best_model, file)
 
             print(f"\nResults saved to: {out_path / 'results.pickle'}")
-            print(
-                "Best XGBoost model saved to: "
-                f"{out_path / f'{output_dir}_xgboost_model.pickle'}"
-            )
+            print(f"Best XGBoost model saved to: {out_path / f'{output_dir}_xgboost_model.pickle'}")
             print(f"Training logs saved to: {training_log_path}")
 
         else:
@@ -883,10 +893,7 @@ def main(
             fit_seconds = time.perf_counter() - fit_start
 
             if log_learning_curve:
-                print(
-                    f"Logging learning curve every {learning_curve_every} "
-                    f"boosting step(s)..."
-                )
+                print(f"Logging learning curve every {learning_curve_every} boosting step(s)...")
 
                 append_learning_curve_logs(
                     column_training_logs,

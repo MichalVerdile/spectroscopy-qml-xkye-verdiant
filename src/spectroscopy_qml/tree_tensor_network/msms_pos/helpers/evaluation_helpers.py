@@ -25,6 +25,7 @@ if str(SRC_DIR) not in sys.path:
 from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
     dataset_fingerprint,
     parse_preprocessing,
+    preprocessing_code_fingerprint,
 )
 from spectroscopy_qml.tree_tensor_network.msms_pos.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
@@ -66,7 +67,10 @@ def resolve_cache_path(args: argparse.Namespace) -> Path:
     if shared_config is not None:
         snv_suffix = f"pp{shared_config.short_hash}"
     data_suffix = dataset_fingerprint(args.data_dir)[:12]
-    return cache_dir / f"msms_pos_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}_{data_suffix}.npz"
+    code_suffix = preprocessing_code_fingerprint()[:12]
+    return cache_dir / (
+        f"msms_pos_spectra_len{args.input_dim}_{snv_suffix}_{file_suffix}_{data_suffix}_{code_suffix}.npz"
+    )
 
 
 def write_summary(

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Preprocessing / input-representation ablation on top of the multi-seed benchmark.
 #
-# Every config except "legacy" feeds identical inputs to CNN, XGBoost, MPS and TTN,
-# and all configs and input dims reuse one set of shared splits, so differences
+# The default 18 configs feed identical inputs to CNN, XGBoost, MPS and TTN, and
+# all configs and input dims reuse one set of shared splits, so differences
 # between configs are paired per seed. Results land in
 #   $ABLATION_DIR/dim_<INPUT_DIM>/<config>/<modality>/seed_<seed>/<model>/...
 # and scripts/aggregate_preprocessing_ablation.py turns them into separate
 # architecture, preprocessing and representation tables.
 #
 # Usage: scripts/run_preprocessing_ablation.sh INPUT_DIM [INPUT_DIM ...]
-# Env:   CONFIGS      space separated config names (default: all, see --list below)
+# Env:   CONFIGS      space separated config names (default: all 18 shared configs)
 #        MODALITIES   default "ir cnmr" (the two modalities in the paper)
 #        SEEDS, EPOCHS, DEVICE, DATA_DIR, PYTHON as in run_multiseed_benchmark.sh
 #        ABLATION_DIR default benchmark/preprocessing_ablation

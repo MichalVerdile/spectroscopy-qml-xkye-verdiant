@@ -9,9 +9,11 @@ from scipy.signal import savgol_filter
 
 from spectroscopy_qml.benchmarking.preprocessing import (
     ABLATION_CONFIGS,
+    CROSS_SAMPLE_NORMALIZATIONS,
     LEGACY,
     LEGACY_EFFECTIVE_SPECS,
     PreprocessingConfig,
+    apply_train_fitted_normalization,
     array_digest,
     canonical_spec,
     dataset_fingerprint,
@@ -22,6 +24,7 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     parse_preprocessing,
     preprocess_spectra,
     preprocessing_cache_path,
+    preprocessing_code_fingerprint,
     save_preprocessing_cache,
 )
 
@@ -219,6 +222,33 @@ def test_cross_sample_normalization_spans_mixed_raw_lengths():
     np.testing.assert_allclose(np.sort(out, axis=1), np.sort(out, axis=1)[:1].repeat(3, axis=0))
 
 
+@pytest.mark.parametrize("norm", CROSS_SAMPLE_NORMALIZATIONS)
+def test_deferred_cross_sample_normalization_keeps_split_independent_base(norm):
+    spectra = RNG.random((5, 1800)) + 0.1
+    deferred = preprocess_spectra(
+        spectra,
+        PreprocessingConfig(norm=norm),
+        600,
+        defer_cross_sample=True,
+    )
+    expected = preprocess_spectra(spectra, PreprocessingConfig(norm="none"), 600)
+    np.testing.assert_array_equal(deferred, expected)
+
+
+@pytest.mark.parametrize("norm", CROSS_SAMPLE_NORMALIZATIONS)
+def test_train_fitted_normalization_does_not_fit_on_validation_or_test(norm):
+    base = RNG.random((6, 20)) + 0.1
+    changed_test = base.copy()
+    changed_test[3:] *= 10_000
+    train_indices = np.array([0, 1, 2])
+
+    first = apply_train_fitted_normalization(base, f"norm={norm}", train_indices)
+    second = apply_train_fitted_normalization(changed_test, f"norm={norm}", train_indices)
+
+    np.testing.assert_array_equal(first[train_indices], second[train_indices])
+    assert first.dtype == second.dtype == np.float32
+
+
 @pytest.mark.parametrize("representation", ["intensity", "sqrt", "log1p", "derivative"])
 def test_representations_keep_shape(representation):
     out = preprocess_spectra(RNG.random((2, 1800)), PreprocessingConfig(repr=representation), 600)
@@ -295,3 +325,66 @@ def test_preprocessing_cache_key_changes_with_configuration(tmp_path):
     first, _ = preprocessing_cache_path(preprocessing="shared_mssd", **common)
     changed, _ = preprocessing_cache_path(preprocessing="norm_snv", **common)
     assert first != changed
+
+
+def test_preprocessing_cache_key_contains_code_fingerprint(tmp_path, monkeypatch):
+    (tmp_path / "chunk.parquet").write_bytes(b"data")
+    kwargs = {
+        "data_dir": tmp_path,
+        "consumer": "shared",
+        "modality": "ir",
+        "target_length": 600,
+        "preprocessing": "shared_mssd",
+        "cache_dir": tmp_path / "cache",
+    }
+    first, _ = preprocessing_cache_path(**kwargs)
+    monkeypatch.setattr(
+        "spectroscopy_qml.benchmarking.preprocessing.preprocessing_code_fingerprint",
+        lambda: "changed-code",
+    )
+    changed, _ = preprocessing_cache_path(**kwargs)
+    assert first != changed
+    assert len(preprocessing_code_fingerprint()) == 64
+
+
+def test_mps_loader_populates_and_reuses_shared_cache(tmp_path, monkeypatch):
+    pytest.importorskip("torch")
+    data_dir = tmp_path / "raw"
+    data_dir.mkdir()
+    (data_dir / "chunk.parquet").write_bytes(b"fingerprint only")
+    cache_dir = tmp_path / "cache"
+
+    from spectroscopy_qml.mps_classifier.ir import data_loader
+
+    frame = data_loader.pd.DataFrame(
+        {
+            "ir_spectra": [np.arange(8, dtype=np.float32), np.arange(8, dtype=np.float32) + 1],
+            "smiles": ["CC", "CO"],
+        }
+    )
+    monkeypatch.setattr(data_loader.pd, "read_parquet", lambda *args, **kwargs: frame.copy())
+    monkeypatch.setattr(
+        data_loader,
+        "get_functional_groups",
+        lambda smiles: np.zeros(len(data_loader.FUNCTIONAL_GROUPS), dtype=np.int32),
+    )
+    first = data_loader.load_ir_data(
+        data_dir,
+        target_length=4,
+        preprocessing="shared_mssd",
+        cache_dir=cache_dir,
+    )
+
+    def fail_if_raw_data_is_read(*args, **kwargs):
+        raise AssertionError("raw parquet should not be read after the cache is populated")
+
+    monkeypatch.setattr(data_loader.pd, "read_parquet", fail_if_raw_data_is_read)
+    second = data_loader.load_ir_data(
+        data_dir,
+        target_length=4,
+        preprocessing="shared_mssd",
+        cache_dir=cache_dir,
+    )
+    np.testing.assert_array_equal(second[0], first[0])
+    np.testing.assert_array_equal(second[1], first[1])
+    assert len(list(cache_dir.glob("shared_ir_len4_*.npz"))) == 1

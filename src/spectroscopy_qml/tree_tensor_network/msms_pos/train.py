@@ -23,6 +23,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
+    apply_train_fitted_normalization,
     array_digest,
     canonical_spec,
     metrics_fields,
@@ -319,6 +320,7 @@ def main() -> None:
         stratify_multilabel=True,
         overwrite=args.overwrite_split,
     )
+    X = apply_train_fitted_normalization(X, args.preprocessing, split_indices["train"])
     if specialist_indices is not None:
         y = y[:, specialist_indices]
         args.num_labels = len(specialist_indices)

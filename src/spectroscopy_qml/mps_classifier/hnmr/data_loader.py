@@ -237,11 +237,13 @@ def load_ir_data(
 
     cache_path, cache_key = preprocessing_cache_path(
         data_dir,
-        consumer="mps",
+        consumer="shared" if shared_config is not None else "mps",
         modality="hnmr",
         target_length=target_length,
         preprocessing=preprocessing,
-        options={
+        options=({} if max_files is None else {"max_files": max_files})
+        if shared_config is not None
+        else {
             "max_files": max_files,
             "apply_snv": apply_snv,
             "apply_savgol": apply_savgol,
@@ -271,7 +273,12 @@ def load_ir_data(
         df = df[df["h_nmr_spectra"].notna()]
 
         if shared_config is not None:
-            spectra = preprocess_spectra(df["h_nmr_spectra"].values, shared_config, target_length)
+            spectra = preprocess_spectra(
+                df["h_nmr_spectra"].values,
+                shared_config,
+                target_length,
+                defer_cross_sample=True,
+            )
         else:
             # Interpolate spectra
             spectra = np.stack(

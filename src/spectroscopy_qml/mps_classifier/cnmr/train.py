@@ -19,7 +19,13 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from spectroscopy_qml.benchmarking.preprocessing import array_digest, metrics_fields
+from spectroscopy_qml.benchmarking.preprocessing import (
+    CROSS_SAMPLE_NORMALIZATIONS,
+    apply_train_fitted_normalization,
+    array_digest,
+    metrics_fields,
+    parse_preprocessing,
+)
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 from spectroscopy_qml.mps_classifier.cnmr.config import (
     DATA_CONFIG,
@@ -764,11 +770,18 @@ def train_model(
     else:
         print("Using preloaded dataset passed to train_model()")
 
+    fixed_split_indices = None
     if split_path is not None:
         shared_split = load_split_artifact(split_path, y, expected_seed=TRAINING_CONFIG.random_seed)
         train_indices = shared_split["train"]
         val_indices = shared_split["val"]
         test_indices = shared_split["test"]
+        fixed_split_indices = {
+            "train": train_indices.copy(),
+            "val": val_indices.copy(),
+            "test": test_indices.copy(),
+        }
+        X = apply_train_fitted_normalization(X, DATA_CONFIG.preprocessing, train_indices)
         trainval_indices = np.concatenate((train_indices, val_indices))
         X_trainval, y_trainval = X[trainval_indices], y[trainval_indices]
         X_test, y_test = X[test_indices], y[test_indices]
@@ -780,6 +793,9 @@ def train_model(
         ]
         validation_mode = "shared multilabel-stratified holdout split"
     else:
+        config = parse_preprocessing(DATA_CONFIG.preprocessing)
+        if config is not None and config.norm in CROSS_SAMPLE_NORMALIZATIONS:
+            raise ValueError("quantile/PQN preprocessing requires a fixed split_path")
         X_trainval, X_test, y_trainval, y_test = train_test_split(
             X,
             y,
@@ -926,6 +942,8 @@ def train_model(
             "pos_weight": best_fold_result["pos_weight"],
             "cv_num_folds": n_folds,
             "config": MODEL_CONFIG,
+            "preprocessing": DATA_CONFIG.preprocessing,
+            "fixed_split_indices": fixed_split_indices,
         },
         PATH_CONFIG.best_model_path,
     )
@@ -939,7 +957,7 @@ def train_model(
             del fold_result["best_state"]
 
     total_time = time.time() - start_time
-    print(f"\nTraining completed in {total_time/60:.1f} minutes")
+    print(f"\nTraining completed in {total_time / 60:.1f} minutes")
 
     cv_val_metrics, cv_val_metric_stds = _aggregate_fold_metrics(fold_results)
     cv_val_loss_mean = float(np.mean([result["val_loss"] for result in fold_results]))
@@ -1029,7 +1047,7 @@ def train_model(
         )
         f.write(f"  Learning rate: {TRAINING_CONFIG.learning_rate}\n")
         f.write(f"  Weight decay: {TRAINING_CONFIG.weight_decay}\n")
-        f.write(f"  Training time: {total_time/60:.1f} minutes\n\n")
+        f.write(f"  Training time: {total_time / 60:.1f} minutes\n\n")
 
         f.write("Cross-Validation Results (mean ± std over folds):\n")
         f.write(f"  Val Loss: {cv_val_loss_mean:.4f} ± {cv_val_loss_std:.4f}\n")

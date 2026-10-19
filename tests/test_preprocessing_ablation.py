@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -11,6 +12,7 @@ import pandas as pd
 
 from spectroscopy_qml.benchmarking.preprocessing import (
     ABLATION_CONFIGS,
+    SHARED_PREPROCESSING_CONFIGS,
     canonical_spec,
     metrics_fields,
 )
@@ -117,26 +119,64 @@ def test_multiseed_runner_passes_preprocessing_to_all_four_models():
     assert 'PREPROCESSING="${PREPROCESSING:-legacy}"' in runner
 
 
+def test_precompute_runner_resolves_shared_and_legacy_configs(tmp_path):
+    pd.DataFrame({"value": [1]}).to_parquet(tmp_path / "chunk.parquet")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/precompute_preprocessing_cache.py",
+            "--data-dir",
+            str(tmp_path),
+            "--dry-run",
+            "--modalities",
+            "ir",
+            "--input-dims",
+            "600",
+            "--configs",
+            "shared_mssd",
+            "norm_snv",
+            "legacy",
+        ],
+        cwd=PROJECT_ROOT,
+        env={**os.environ, "PYTHONPATH": str(PROJECT_ROOT / "src")},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stdout.count("shared:") == 2
+    assert "legacy: CNN/XGBoost linear; MPS Savitzky-Golay+SNV; TTN SNV" in result.stdout
+    assert "Preprocessing cache plan complete." in result.stdout
+
+
 def test_ablation_configs_are_one_factor_at_a_time():
+    assert len(SHARED_PREPROCESSING_CONFIGS) == 18
+    assert "legacy" not in SHARED_PREPROCESSING_CONFIGS
     reference = canonical_spec("shared_mssd").split(",")
-    for name, spec in ABLATION_CONFIGS.items():
-        if name in ("legacy", "shared_mssd"):
+    for name, spec in SHARED_PREPROCESSING_CONFIGS.items():
+        if name == "shared_mssd":
             continue
         changed = [a for a, b in zip(canonical_spec(spec).split(","), reference) if a != b]
         assert len(changed) == 1, (name, changed)
 
 
+def test_cli_lists_exactly_the_18_shared_combinations():
+    result = subprocess.run(
+        [sys.executable, "-m", "spectroscopy_qml.benchmarking.preprocessing", "--list"],
+        cwd=PROJECT_ROOT,
+        env={**os.environ, "PYTHONPATH": str(PROJECT_ROOT / "src")},
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert [line.split("\t", 1)[0] for line in result.stdout.splitlines()] == list(
+        SHARED_PREPROCESSING_CONFIGS
+    )
+
+
 def test_aggregation_rejects_nonidentical_shared_inputs(tmp_path):
     _write_ablation(tmp_path)
     metrics = (
-        tmp_path
-        / "dim_600"
-        / "shared_mssd"
-        / "ir"
-        / "seed_41"
-        / "mps"
-        / "results"
-        / "metrics.json"
+        tmp_path / "dim_600" / "shared_mssd" / "ir" / "seed_41" / "mps" / "results" / "metrics.json"
     )
     payload = json.loads(metrics.read_text())
     payload["input_digest"] = "f" * 64
