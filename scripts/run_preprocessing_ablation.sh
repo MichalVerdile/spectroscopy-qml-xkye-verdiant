@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Preprocessing / input-representation ablation on top of the multi-seed benchmark.
 #
-# The default run is legacy plus 13 shared configs. Every config is applied with the
+# The default run is 4 shared configs. Every config is applied with the
 # same spec and the same input dim to all five spectra (IR, H-NMR, C-NMR, MS/MS+,
 # MS/MS-); the shared configs also feed identical inputs to CNN, XGBoost, MPS and
 # TTN. All configs reuse one set of shared splits, so differences between configs
@@ -11,8 +11,9 @@
 # architecture, preprocessing and representation tables.
 #
 # Usage: scripts/run_preprocessing_ablation.sh INPUT_DIM   (600 or 1800; one per call)
-# Env:   CONFIGS      space separated config names (default: legacy + 13 shared configs;
-#                     --list --include-extra shows further, redundant variants)
+# Env:   CONFIGS      space separated config names (default: shared_mssd resample_bin_max
+#                     smooth_savgol norm_snv; add legacy or extras by name,
+#                     --list --include-legacy --include-extra shows all)
 #        MODALITIES   default: all five spectra (cnmr hnmr ir msms_pos msms_neg)
 #        SEEDS, EPOCHS, DEVICE, DATA_DIR, PYTHON as in run_multiseed_benchmark.sh
 #        ABLATION_DIR default benchmark/preprocessing_ablation
@@ -34,7 +35,7 @@ export MODALITIES="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 if [[ -z "${CONFIGS:-}" ]]; then
-    CONFIGS="$("$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing --list --include-legacy | cut -f1 | tr '\n' ' ')"
+    CONFIGS="$("$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing --list | cut -f1 | tr '\n' ' ')"
 fi
 read -r -a CONFIG_VALUES <<< "$CONFIGS"
 

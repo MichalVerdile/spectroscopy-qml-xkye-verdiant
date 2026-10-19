@@ -12,8 +12,8 @@ from pathlib import Path
 import numpy as np
 
 from spectroscopy_qml.benchmarking.preprocessing import (
-    ABLATION_CONFIGS,
     LEGACY,
+    SHARED_PREPROCESSING_CONFIGS,
     canonical_spec,
     legacy_linear_interpolate,
     load_preprocessing_cache,
@@ -46,10 +46,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--configs",
         nargs="+",
-        default=list(ABLATION_CONFIGS),
+        default=list(SHARED_PREPROCESSING_CONFIGS),
         help=(
-            "Named or explicit preprocessing specs (default: legacy plus the 13 shared "
-            "configs that scripts/run_preprocessing_ablation.sh runs)"
+            "Named or explicit preprocessing specs (default: the 4 shared configs that "
+            "scripts/run_preprocessing_ablation.sh runs; pass legacy to add it)"
         ),
     )
     parser.add_argument(

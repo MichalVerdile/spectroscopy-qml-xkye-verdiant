@@ -243,28 +243,26 @@ require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold
 so one unambiguous training reference is used. The benchmark runner already
 supplies these options.
 
-The default ablation runs `legacy` plus 13 shared, one-factor-at-a-time
-configurations around the MSSD protocol
-(`shared_mssd` = linear, no smoothing, intensity, no normalization) on shared
-splits, then writes separate architecture, preprocessing, representation and
-effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
+The default ablation runs four shared configurations: the MSSD reference and
+one variation per preprocessing factor (one factor at a time), on shared splits.
+It writes separate architecture, preprocessing, representation and effect-size
+tables to `benchmark/preprocessing_ablation/summary/report.md`:
 
 ```
-legacy                          historical per-model preprocessing (harmonization table)
-shared_mssd                     reference
-resample_bin_mean, resample_bin_max, resample_fir
-smooth_savgol, smooth_gaussian, smooth_lorentz
-norm_snv, norm_minmax, norm_area, norm_pqn
-repr_sqrt, repr_derivative
+shared_mssd        reference: linear resampling, no smoothing, intensity, no normalization
+resample_bin_max   downsampling: max-pooling keeps narrow NMR/MS peaks
+smooth_savgol      smoothing/filtering: Savitzky-Golay 25/4 (historical MPS filter)
+norm_snv           normalization: SNV (historical MPS/TTN normalization)
 ```
 
-The shared configurations use the same canonical specification for every
-spectrum modality and all four architectures. `legacy` is needed to report how
-much of the original model differences came from per-model preprocessing.
-Near-duplicates (`smooth_moving_average` ~ gaussian, `norm_max` ~ minmax,
-`norm_l2` ~ area, `repr_log1p` ~ sqrt) and `norm_quantile` (erases intensity
-information in sparse NMR spectra) are not run by default but can still be named
-in `CONFIGS` (`--list --include-extra` shows them).
+Input representation is compared through the input dimension (600 vs 1800).
+The configurations use the same canonical specification for every spectrum
+modality and all four architectures. `legacy` (historical per-model
+preprocessing) and further variants (`resample_bin_mean`, `resample_fir`,
+`smooth_gaussian`, `smooth_lorentz`, `smooth_moving_average`, `norm_minmax`,
+`norm_area`, `norm_pqn`, `norm_max`, `norm_l2`, `norm_quantile`, `repr_sqrt`,
+`repr_derivative`, `repr_log1p`) are not run by default but can be named in
+`CONFIGS` (`--list --include-legacy --include-extra` shows them).
 
 Each configuration is applied with the same specification and the same input
 dimension to all five spectra (IR, H-NMR, C-NMR, MS/MS+, MS/MS-). The runner takes
@@ -286,7 +284,7 @@ of the preprocessing implementation, so editing the code invalidates old caches.
 CNN and XGBoost additionally accept
 `--cache_dir` and `--overwrite_cache`.
 
-Precompute the 13 default shared preprocessing configurations before starting any model
+Precompute the 4 default shared preprocessing configurations before starting any model
 training (five modalities at 600 and 1800 input points):
 
 ```bash
@@ -314,10 +312,10 @@ Prefer a smaller selection; `--allow-low-disk` overrides this guard only after
 the expected NPZ compression and available storage have been checked manually.
 
 ```bash
-PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list --include-legacy
+PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
 DEVICE=mps scripts/run_preprocessing_ablation.sh 600
 DEVICE=mps scripts/run_preprocessing_ablation.sh 1800
-# subset of configs (still all five spectra): CONFIGS="legacy shared_mssd resample_bin_max norm_snv" scripts/run_preprocessing_ablation.sh 600
+# other configs (still all five spectra): CONFIGS="legacy shared_mssd norm_pqn" scripts/run_preprocessing_ablation.sh 600
 ```
 
 Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,

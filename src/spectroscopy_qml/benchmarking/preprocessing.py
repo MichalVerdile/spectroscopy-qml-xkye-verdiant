@@ -135,37 +135,38 @@ LEGACY_EFFECTIVE_SPECS = {
     "ttn": PreprocessingConfig(norm="snv").spec,
 }
 
-# Default one-factor-at-a-time design around ``shared_mssd`` (13 shared configs).
-# Every entry is applied identically to every spectrum and model architecture;
-# ``legacy`` (per-model historical preprocessing) is added in ABLATION_CONFIGS.
-# Near-duplicates live in EXTRA_PREPROCESSING_CONFIGS: usable by name, not run by default.
+# Default ablation: the reference plus one variant per factor the reviewers named
+# (downsampling, smoothing/filtering, normalization). Every entry is applied
+# identically to every spectrum and model architecture. Input representation is
+# covered by running the same configs at 600 and 1800 points.
 SHARED_PREPROCESSING_CONFIGS: dict[str, str] = {
+    # MSSD protocol the paper used: linear interpolation, nothing else
     "shared_mssd": PreprocessingConfig().spec,
-    # Downsampling method (no-ops when the raw spectrum already has input_dim points)
-    "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
+    # Max-pooling keeps narrow C-NMR/MS peaks that linear interpolation can miss
     "resample_bin_max": PreprocessingConfig(resample="bin_max").spec,
-    "resample_fir": PreprocessingConfig(resample="fir").spec,
-    # Smoothing / signal filtering: legacy MPS, generic low-pass, TTN-style Lorentzian
+    # Savitzky-Golay: standard spectroscopic smoothing, used by the old MPS pipeline
     "smooth_savgol": PreprocessingConfig(smooth="savgol:25:4").spec,
+    # SNV: standard spectroscopic normalization, used by the old MPS/TTN pipelines
+    "norm_snv": PreprocessingConfig(norm="snv").spec,
+}
+# Further one-factor variants, usable by name (CONFIGS=...) but not run by default.
+EXTRA_PREPROCESSING_CONFIGS: dict[str, str] = {
+    "resample_bin_mean": PreprocessingConfig(resample="bin_mean").spec,
+    "resample_fir": PreprocessingConfig(resample="fir").spec,
     "smooth_gaussian": PreprocessingConfig(smooth="gaussian:2").spec,
     "smooth_lorentz": PreprocessingConfig(smooth="lorentz:3:15").spec,
-    # Normalization: legacy MPS/TTN, range, total intensity, NMR dilution correction
-    "norm_snv": PreprocessingConfig(norm="snv").spec,
+    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,
     "norm_minmax": PreprocessingConfig(norm="minmax").spec,
     "norm_area": PreprocessingConfig(norm="area").spec,
     "norm_pqn": PreprocessingConfig(norm="pqn").spec,
-    # Input representation
+    "norm_max": PreprocessingConfig(norm="max").spec,
+    "norm_l2": PreprocessingConfig(norm="l2").spec,
+    "norm_quantile": PreprocessingConfig(norm="quantile").spec,
     "repr_sqrt": PreprocessingConfig(repr="sqrt").spec,
     "repr_derivative": PreprocessingConfig(repr="derivative").spec,
+    "repr_log1p": PreprocessingConfig(repr="log1p").spec,
 }
-# Redundant with a default config (see comments); available on request only.
-EXTRA_PREPROCESSING_CONFIGS: dict[str, str] = {
-    "smooth_moving_average": PreprocessingConfig(smooth="moving_average:5").spec,  # ~gaussian
-    "norm_max": PreprocessingConfig(norm="max").spec,  # ~minmax for baseline-zero spectra
-    "norm_l2": PreprocessingConfig(norm="l2").spec,  # pure rescaling like area
-    "norm_quantile": PreprocessingConfig(norm="quantile").spec,  # erases sparse NMR intensities
-    "repr_log1p": PreprocessingConfig(repr="log1p").spec,  # compresses like sqrt
-}
+# ``legacy`` (per-model historical preprocessing) on request: CONFIGS="legacy ...".
 ABLATION_CONFIGS: dict[str, str] = {
     "legacy": LEGACY,
     **SHARED_PREPROCESSING_CONFIGS,
@@ -627,7 +628,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Resolve preprocessing ablation configs.")
     parser.add_argument("name", nargs="?", help="Ablation config name or spec")
     parser.add_argument(
-        "--list", action="store_true", help="List the 13 default shared preprocessing configs"
+        "--list", action="store_true", help="List the 4 default shared preprocessing configs"
     )
     parser.add_argument(
         "--include-legacy",
@@ -637,7 +638,7 @@ def main() -> None:
     parser.add_argument(
         "--include-extra",
         action="store_true",
-        help="Also list the redundant extra configs that are not run by default",
+        help="Also list the extra configs that are not run by default",
     )
     args = parser.parse_args()
     if args.list or args.name is None:

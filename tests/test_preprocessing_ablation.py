@@ -150,7 +150,12 @@ def test_precompute_runner_resolves_shared_and_legacy_configs(tmp_path):
 
 
 def test_ablation_configs_are_one_factor_at_a_time():
-    assert len(SHARED_PREPROCESSING_CONFIGS) == 13
+    assert list(SHARED_PREPROCESSING_CONFIGS) == [
+        "shared_mssd",
+        "resample_bin_max",
+        "smooth_savgol",
+        "norm_snv",
+    ]
     assert "legacy" not in SHARED_PREPROCESSING_CONFIGS
     assert list(ABLATION_CONFIGS)[0] == "legacy"
     assert not set(EXTRA_PREPROCESSING_CONFIGS) & set(ABLATION_CONFIGS)
@@ -264,7 +269,8 @@ def test_ablation_runner_applies_every_config_to_all_five_spectra(tmp_path):
     )
     runs = [line for line in result.stdout.splitlines() if line.startswith("RUN")]
     assert runs == [
-        f"RUN 1800 {config} [cnmr hnmr ir msms_pos msms_neg]" for config in ABLATION_CONFIGS
+        f"RUN 1800 {config} [cnmr hnmr ir msms_pos msms_neg]"
+        for config in SHARED_PREPROCESSING_CONFIGS
     ]
     two_dims = subprocess.run(
         [str(scripts / "run_preprocessing_ablation.sh"), "600", "1800"],
