@@ -16,6 +16,7 @@ EPOCHS="${EPOCHS:-200}"
 DATA_DIR="${DATA_DIR:-data/raw}"
 EXPERIMENT_DIR="${EXPERIMENT_DIR:-benchmark/multiseed_${INPUT_DIM}}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
+MIN_SEEDS="${MIN_SEEDS:-5}"
 MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
 # "legacy" keeps every model's historical preprocessing. Any other spec or
 # ablation config name (see spectroscopy_qml.benchmarking.preprocessing) is
@@ -37,8 +38,8 @@ SKIP_AGGREGATE="${SKIP_AGGREGATE:-0}"
 read -r -a SEED_VALUES <<< "$SEEDS_STRING"
 read -r -a MODALITY_VALUES <<< "$MODALITIES_STRING"
 
-if (( ${#SEED_VALUES[@]} < 5 )); then
-    echo "At least five seeds are required; received: $SEEDS_STRING" >&2
+if (( ${#SEED_VALUES[@]} < MIN_SEEDS )); then
+    echo "At least $MIN_SEEDS seed(s) are required; received: $SEEDS_STRING" >&2
     exit 2
 fi
 
