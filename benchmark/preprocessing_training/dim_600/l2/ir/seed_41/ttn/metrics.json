@@ -1,0 +1,12 @@
+{
+  "model": "ttn",
+  "modality": "ir",
+  "seed": 41,
+  "test_f1_micro": 0.8279419538119827,
+  "test_f1_macro": 0.5852806400596903,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/ir_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "f4fed2efd3d722ed954ad2d995cf4e379755180269a82b319f7e87090221d9a1",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=l2",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=l2"
+}

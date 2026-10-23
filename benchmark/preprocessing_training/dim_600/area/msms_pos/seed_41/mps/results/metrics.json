@@ -1,0 +1,12 @@
+{
+  "model": "mps",
+  "modality": "msms_pos",
+  "seed": 41,
+  "test_f1_micro": 0.28844672025208945,
+  "test_f1_macro": 0.17236100153664496,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_pos_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "38a895128dc6268e3bc583ecde273e607e9eb0bddea49740b4de57d1d53b9d91",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=area",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=area"
+}

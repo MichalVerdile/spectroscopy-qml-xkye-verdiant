@@ -1,0 +1,12 @@
+{
+  "model": "xgboost",
+  "modality": "neg_msms",
+  "seed": 41,
+  "test_f1_micro": 0.6224836951349154,
+  "test_f1_macro": 0.10806084982397728,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_neg_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "18f1cd05b6f31531cd013ff80b1d5af3ac851e93977960684f503a7958600228",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=minmax",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=minmax"
+}

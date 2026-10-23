@@ -1,0 +1,12 @@
+{
+  "model": "mps",
+  "modality": "ir",
+  "seed": 41,
+  "test_f1_micro": 0.8418422021239462,
+  "test_f1_macro": 0.6766921878957525,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/ir_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "63944baa8da216514f5e29c1294dda7f227b73058e8e8f342b17c3f907920252",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=area",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=area"
+}

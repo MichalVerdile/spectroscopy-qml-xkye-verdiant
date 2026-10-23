@@ -1,0 +1,12 @@
+{
+  "model": "cnn",
+  "modality": "ir",
+  "seed": 41,
+  "test_f1_micro": 0.8899877836758348,
+  "test_f1_macro": 0.665519151324364,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/ir_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "c1ce3b37cd0317bc25e2c6a6e85896b31f3a089a2b2487da064b085f74aa9952",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=max",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=max"
+}

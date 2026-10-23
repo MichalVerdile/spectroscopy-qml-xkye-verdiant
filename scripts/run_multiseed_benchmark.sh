@@ -31,9 +31,16 @@ MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
 #   Custom spec:   unlisted keys stay neutral, e.g. "norm=snv" or "smooth=savgol:11:3,norm=area"
 #   Ablation presets (built on Lorentz + SNV): shared_lorentz_snv resample_bin_max smooth_savgol norm_area
 PREPROCESSING="${PREPROCESSING:-legacy}"
+# TTN contractions can overflow in float16/bfloat16 on real batches. Keep the
+# benchmark numerically stable in float32 unless AMP is explicitly requested.
+TTN_AMP="${TTN_AMP:-0}"
 # Splits depend only on labels and seed, so ablations can share one split dir.
 SPLIT_DIR="${SPLIT_DIR:-$EXPERIMENT_DIR/splits}"
 SKIP_AGGREGATE="${SKIP_AGGREGATE:-0}"
+# Optional guard for short, requeued Slurm allocations. Before starting a new
+# model, requeue the job when less than this many seconds remain. This keeps a
+# model run inside one allocation instead of restarting it after a timeout.
+MIN_START_REMAINING_SECONDS="${MIN_START_REMAINING_SECONDS:-0}"
 
 read -r -a SEED_VALUES <<< "$SEEDS_STRING"
 read -r -a MODALITY_VALUES <<< "$MODALITIES_STRING"
@@ -44,6 +51,39 @@ if (( ${#SEED_VALUES[@]} < MIN_SEEDS )); then
 fi
 
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+
+slurm_time_left_seconds() {
+    local value days=0 hours=0 minutes=0 seconds=0
+    local -a fields
+
+    [[ -n "${SLURM_JOB_ID:-}" ]] || return 1
+    value="$(squeue -h -j "$SLURM_JOB_ID" -o '%L')" || return 1
+    [[ -n "$value" && "$value" != "N/A" && "$value" != "UNLIMITED" ]] || return 1
+
+    if [[ "$value" == *-* ]]; then
+        days="${value%%-*}"
+        value="${value#*-}"
+    fi
+    IFS=: read -r -a fields <<< "$value"
+    case "${#fields[@]}" in
+        3) hours="${fields[0]}"; minutes="${fields[1]}"; seconds="${fields[2]}" ;;
+        2) minutes="${fields[0]}"; seconds="${fields[1]}" ;;
+        1) seconds="${fields[0]}" ;;
+        *) return 1 ;;
+    esac
+    printf '%s\n' "$((10#$days * 86400 + 10#$hours * 3600 + 10#$minutes * 60 + 10#$seconds))"
+}
+
+requeue_before_new_model_if_needed() {
+    local remaining
+    (( MIN_START_REMAINING_SECONDS > 0 )) || return 0
+    remaining="$(slurm_time_left_seconds)" || return 0
+    if (( remaining < MIN_START_REMAINING_SECONDS )); then
+        echo "Only ${remaining}s remain; not starting another model. Requeueing ${SLURM_JOB_ID}."
+        scontrol requeue "$SLURM_JOB_ID"
+        exit 0
+    fi
+}
 
 # Fail fast on a typo before hours of training.
 "$PYTHON" -m spectroscopy_qml.benchmarking.preprocessing "$PREPROCESSING" > /dev/null
@@ -67,6 +107,7 @@ run_if_missing() {
     if [[ -f "$metrics_path" ]]; then
         echo "Existing result is stale or incompatible; rerunning: $metrics_path"
     fi
+    requeue_before_new_model_if_needed
     "$@"
 }
 
@@ -176,6 +217,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --device "$DEVICE" \
             --epochs "$EPOCHS" \
+            "$([[ "$TTN_AMP" == "1" ]] && printf '%s' '--amp' || printf '%s' '--no-amp')" \
             --preprocessing "$PREPROCESSING"
     done
 done
