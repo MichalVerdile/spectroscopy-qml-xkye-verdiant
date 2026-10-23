@@ -1,0 +1,12 @@
+{
+  "model": "ttn",
+  "modality": "msms_pos",
+  "seed": 41,
+  "test_f1_micro": 0.648002412531244,
+  "test_f1_macro": 0.14505743702834545,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_pos_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "e8382f5992b4cd9d72ff46d3e7809957a517b27145077802c5a3047424ce8f3e",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=minmax",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=minmax"
+}

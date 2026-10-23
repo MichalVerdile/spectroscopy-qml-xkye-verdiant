@@ -13,6 +13,22 @@ from sklearn.model_selection import KFold, train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 from xgboost import XGBClassifier
 
+from spectroscopy_qml.benchmarking.preprocessing import (
+    CROSS_SAMPLE_NORMALIZATIONS,
+    apply_train_fitted_normalization,
+    array_digest,
+    canonical_spec,
+    load_preprocessing_cache,
+    make_msms_spectrum,
+    metrics_fields,
+    parse_preprocessing,
+    preprocess_spectra,
+    preprocessing_cache_path,
+    save_preprocessing_cache,
+)
+from spectroscopy_qml.benchmarking.preprocessing import (
+    legacy_linear_interpolate as interpolate_spectrum,
+)
 from spectroscopy_qml.benchmarking.splits import load_split_artifact
 
 XGB_N_ESTIMATORS = 300
@@ -40,9 +56,7 @@ functional_groups = {
     "Hydrazine": Chem.MolFromSmarts("[NX3][NX3]"),
     "Hydrazone": Chem.MolFromSmarts("[NX3][NX2]=[#6]"),
     "Imide": Chem.MolFromSmarts("[CX3](=[OX1])[NX3][CX3](=[OX1])"),
-    "Imine": Chem.MolFromSmarts(
-        "[$([CX3]([#6])[#6]),$([CX3H][#6])]=[$([NX2][#6]),$([NX2H])]"
-    ),
+    "Imine": Chem.MolFromSmarts("[$([CX3]([#6])[#6]),$([CX3H][#6])]=[$([NX2][#6]),$([NX2H])]"),
     "Isocyanate": Chem.MolFromSmarts("[NX2]=[C]=[O]"),
     "Isothiocyanate": Chem.MolFromSmarts("[NX2]=[C]=[S]"),
     "Ketone": Chem.MolFromSmarts("[#6][CX3](=O)[#6]"),
@@ -88,56 +102,6 @@ def get_functional_groups(smiles: str) -> list | None:
         func_groups.append(match_group(mol, smarts))
 
     return func_groups
-
-
-def make_msms_spectrum(spectrum):
-    if spectrum is None:
-        return None
-
-    msms_spectrum = np.zeros(10000, dtype=np.float32)
-
-    for peak in spectrum:
-        if peak is None or len(peak) < 2:
-            continue
-
-        peak_pos = int(peak[0] * 10)
-
-        if peak_pos >= 10000:
-            peak_pos = 9999
-
-        if peak_pos < 0:
-            peak_pos = 0
-
-        msms_spectrum[peak_pos] = peak[1]
-
-    return msms_spectrum
-
-
-def interpolate_spectrum(spec, target_length: int):
-    """
-    Interpolates any 1D spectrum/vector to exactly 600 values.
-    This mirrors the CNN input length.
-    """
-    if spec is None:
-        return None
-
-    spec = np.asarray(spec, dtype=np.float32).flatten()
-
-    if len(spec) == 0:
-        return np.zeros(target_length, dtype=np.float32)
-
-    spec = np.nan_to_num(spec, nan=0.0, posinf=0.0, neginf=0.0)
-
-    if len(spec) == 1:
-        return np.full(target_length, spec[0], dtype=np.float32)
-
-    old_x = np.arange(len(spec))
-    new_x = np.linspace(old_x.min(), old_x.max(), target_length)
-
-    interp = interp1d(old_x, spec, kind="linear")
-    new_spec = interp(new_x)
-
-    return new_spec.astype(np.float32)
 
 
 def build_xgboost_model(seed: int, device: str, n_jobs: int):
@@ -203,12 +167,8 @@ def compute_f1_metrics(y_true, y_pred, prefix: str) -> dict:
     Computes micro and macro F1 for multi-label predictions.
     """
     return {
-        f"{prefix}_f1_micro": float(
-            f1_score(y_true, y_pred, average="micro", zero_division=0)
-        ),
-        f"{prefix}_f1_macro": float(
-            f1_score(y_true, y_pred, average="macro", zero_division=0)
-        ),
+        f"{prefix}_f1_micro": float(f1_score(y_true, y_pred, average="micro", zero_division=0)),
+        f"{prefix}_f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
     }
 
 
@@ -324,8 +284,38 @@ def append_learning_curve_logs(
 
 
 def load_data_for_column(
-    analytical_data: Path, actual_col: str, target_length: int = 600
+    analytical_data: Path,
+    actual_col: str,
+    target_length: int = 600,
+    preprocessing: str | None = None,
+    cache_dir: Path | None = None,
+    overwrite_cache: bool = False,
 ) -> pd.DataFrame:
+    shared_config = parse_preprocessing(preprocessing)
+    cache_modality = {
+        "h_nmr_spectra": "hnmr",
+        "c_nmr_spectra": "cnmr",
+        "ir_spectra": "ir",
+        "msms_positive_40ev": "msms_pos",
+        "msms_negative_40ev": "msms_neg",
+    }.get(actual_col, actual_col)
+    cache_path, cache_key = preprocessing_cache_path(
+        analytical_data,
+        consumer="shared" if shared_config is not None else "legacy_linear",
+        modality=cache_modality,
+        target_length=target_length,
+        preprocessing=preprocessing,
+        cache_dir=cache_dir,
+    )
+    if not overwrite_cache:
+        cached = load_preprocessing_cache(cache_path, cache_key)
+        if cached is not None:
+            X, y = cached
+            print(f"Loaded cached XGBoost dataset from {cache_path}")
+            return pd.DataFrame({actual_col: list(X), "func_group": list(y)})
+
+    if shared_config is not None:
+        print(f"Shared preprocessing: {shared_config.spec}")
     columns_to_load = ["smiles", actual_col]
 
     training_data = None
@@ -347,9 +337,18 @@ def load_data_for_column(
             data[actual_col] = [make_msms_spectrum(s) for s in data[actual_col]]
 
         data["func_group"] = [get_functional_groups(s) for s in data["smiles"]]
-        data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
-
-        data = data.dropna(subset=[actual_col, "func_group"])
+        if shared_config is None:
+            data[actual_col] = [interpolate_spectrum(s, target_length) for s in data[actual_col]]
+            data = data.dropna(subset=[actual_col, "func_group"])
+        else:
+            data = data.dropna(subset=[actual_col, "func_group"]).copy()
+            processed = preprocess_spectra(
+                list(data[actual_col]),
+                shared_config,
+                target_length,
+                defer_cross_sample=True,
+            )
+            data[actual_col] = list(processed)
 
         if training_data is None:
             training_data = data
@@ -360,6 +359,11 @@ def load_data_for_column(
 
     if training_data is None:
         raise ValueError(f"No training data could be loaded for column: {actual_col}")
+
+    X = np.stack(training_data[actual_col].to_list()).astype(np.float32)
+    y = np.stack(training_data["func_group"].to_list()).astype(np.int32)
+    save_preprocessing_cache(cache_path, cache_key, X, y)
+    print(f"Saved XGBoost dataset cache to {cache_path}")
 
     return training_data
 
@@ -376,6 +380,20 @@ def load_data_for_column(
 @click.option("--seed", type=int, default=42)
 @click.option("--input_dim", type=int, default=600, show_default=True)
 @click.option("--split_path", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option(
+    "--cache_dir",
+    type=click.Path(path_type=Path, file_okay=False),
+    default=Path("data/cache/preprocessed"),
+    show_default=True,
+)
+@click.option("--overwrite_cache", is_flag=True, help="Rebuild cached preprocessed arrays")
+@click.option(
+    "--preprocessing",
+    type=str,
+    default="legacy",
+    show_default=True,
+    help="Shared preprocessing spec or ablation config name (legacy = linear interpolation only)",
+)
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
 @click.option(
     "--use_kfold/--no_kfold",
@@ -412,6 +430,9 @@ def main(
     seed: int,
     input_dim: int,
     split_path: Path | None,
+    cache_dir: Path,
+    overwrite_cache: bool,
+    preprocessing: str,
     n_folds: int,
     use_kfold: bool,
     device: str,
@@ -419,6 +440,7 @@ def main(
     log_learning_curve: bool,
     learning_curve_every: int,
 ):
+    preprocessing = canonical_spec(preprocessing)
     if learning_curve_every <= 0:
         raise ValueError("--learning_curve_every must be greater than 0")
 
@@ -441,8 +463,7 @@ def main(
     for col_name in columns_to_process:
         if col_name not in column_mapping:
             raise ValueError(
-                f"Unknown column '{col_name}'. "
-                f"Valid columns are: {list(column_mapping.keys())}"
+                f"Unknown column '{col_name}'. Valid columns are: {list(column_mapping.keys())}"
             )
 
         actual_col, output_dir = column_mapping[col_name]
@@ -453,7 +474,14 @@ def main(
         print(f"{'=' * 60}")
 
         load_start = time.perf_counter()
-        training_data = load_data_for_column(analytical_data, actual_col, input_dim)
+        training_data = load_data_for_column(
+            analytical_data,
+            actual_col,
+            input_dim,
+            preprocessing,
+            cache_dir,
+            overwrite_cache,
+        )
         load_seconds = time.perf_counter() - load_start
 
         print(f"Total samples loaded: {len(training_data)}")
@@ -515,6 +543,18 @@ def main(
             if split_path is not None
             else None
         )
+        preprocessing_config = parse_preprocessing(preprocessing)
+        if (
+            preprocessing_config is not None
+            and preprocessing_config.norm in CROSS_SAMPLE_NORMALIZATIONS
+        ):
+            if shared_split is None:
+                raise ValueError("quantile/PQN preprocessing requires --split_path")
+            if use_kfold:
+                raise ValueError("quantile/PQN preprocessing requires --no_kfold")
+            X_data = apply_train_fitted_normalization(
+                X_data, preprocessing_config, shared_split["train"]
+            )
         if shared_split is not None:
             trainval_indices = np.concatenate((shared_split["train"], shared_split["val"]))
             X_train_full, y_train_full = X_data[trainval_indices], y_data[trainval_indices]
@@ -524,10 +564,7 @@ def main(
                 X_data, y_data, test_size=0.1, random_state=seed, shuffle=True
             )
 
-        print(
-            f"Initial split: Train-full={len(X_train_full)} 90%, "
-            f"Test={len(X_test)} 10%"
-        )
+        print(f"Initial split: Train-full={len(X_train_full)} 90%, Test={len(X_test)} 10%")
 
         if use_kfold:
             print(f"Performing {n_folds}-fold CV on training set...")
@@ -543,9 +580,7 @@ def main(
             best_fold_idx = None
             best_fold_f1 = -1.0
 
-            for fold_idx, (train_idx, val_idx) in enumerate(
-                kfold.split(X_train_full), start=1
-            ):
+            for fold_idx, (train_idx, val_idx) in enumerate(kfold.split(X_train_full), start=1):
                 print(f"\n--- Fold {fold_idx}/{n_folds} ---")
 
                 X_train = X_train_full[train_idx]
@@ -569,8 +604,7 @@ def main(
 
                 if log_learning_curve:
                     print(
-                        f"Logging learning curve every {learning_curve_every} "
-                        f"boosting step(s)..."
+                        f"Logging learning curve every {learning_curve_every} boosting step(s)..."
                     )
 
                     append_learning_curve_logs(
@@ -798,10 +832,7 @@ def main(
                 pickle.dump(best_model, file)
 
             print(f"\nResults saved to: {out_path / 'results.pickle'}")
-            print(
-                "Best XGBoost model saved to: "
-                f"{out_path / f'{output_dir}_xgboost_model.pickle'}"
-            )
+            print(f"Best XGBoost model saved to: {out_path / f'{output_dir}_xgboost_model.pickle'}")
             print(f"Training logs saved to: {training_log_path}")
 
         else:
@@ -838,10 +869,7 @@ def main(
             fit_seconds = time.perf_counter() - fit_start
 
             if log_learning_curve:
-                print(
-                    f"Logging learning curve every {learning_curve_every} "
-                    f"boosting step(s)..."
-                )
+                print(f"Logging learning curve every {learning_curve_every} boosting step(s)...")
 
                 append_learning_curve_logs(
                     column_training_logs,
@@ -991,6 +1019,9 @@ def main(
                         "test_f1_micro": float(test_metrics["test_f1_micro"]),
                         "test_f1_macro": float(test_metrics["test_f1_macro"]),
                         "split_path": str(split_path) if split_path is not None else None,
+                        "input_dim": input_dim,
+                        "input_digest": array_digest(X_data),
+                        **metrics_fields(preprocessing, "xgboost"),
                     },
                     indent=2,
                 )

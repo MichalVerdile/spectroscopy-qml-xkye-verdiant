@@ -10,6 +10,14 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 from torch.utils.data import DataLoader, Dataset
 
+from spectroscopy_qml.benchmarking.preprocessing import (
+    load_preprocessing_cache,
+    parse_preprocessing,
+    preprocess_spectra,
+    preprocessing_cache_path,
+    save_preprocessing_cache,
+)
+
 # Functional groups definitions (same as Jung et al.)
 FUNCTIONAL_GROUPS = {
     "Acid anhydride": Chem.MolFromSmarts("[CX3](=[OX1])[OX2][CX3](=[OX1])"),
@@ -188,6 +196,9 @@ def load_ir_data(
     apply_savgol: bool = False,
     savgol_window_length: int = 11,
     savgol_polyorder: int = 3,
+    preprocessing: str | None = None,
+    cache_dir: Path | None = None,
+    overwrite_cache: bool = False,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Load IR spectra data from parquet files.
@@ -200,6 +211,9 @@ def load_ir_data(
         apply_savgol: Whether to apply Savitzky-Golay smoothing (default: False)
         savgol_window_length: Window length for Savitzky-Golay filter
         savgol_polyorder: Polynomial order for Savitzky-Golay filter
+        preprocessing: Shared preprocessing spec (see
+            spectroscopy_qml.benchmarking.preprocessing). None or "legacy" keeps
+            the interpolation/apply_savgol/apply_snv path above.
 
     Returns:
         Tuple of (spectra, labels) as numpy arrays
@@ -211,6 +225,34 @@ def load_ir_data(
 
     if max_files:
         parquet_files = parquet_files[:max_files]
+
+    shared_config = parse_preprocessing(preprocessing)
+    if shared_config is not None:
+        print(f"Shared preprocessing: {shared_config.spec} (apply_savgol/apply_snv ignored)")
+        apply_savgol = apply_snv = False
+
+    cache_path, cache_key = preprocessing_cache_path(
+        data_dir,
+        consumer="shared" if shared_config is not None else "mps",
+        modality="ir",
+        target_length=target_length,
+        preprocessing=preprocessing,
+        options=({} if max_files is None else {"max_files": max_files})
+        if shared_config is not None
+        else {
+            "max_files": max_files,
+            "apply_snv": apply_snv,
+            "apply_savgol": apply_savgol,
+            "savgol_window_length": savgol_window_length,
+            "savgol_polyorder": savgol_polyorder,
+        },
+        cache_dir=cache_dir,
+    )
+    if not overwrite_cache:
+        cached = load_preprocessing_cache(cache_path, cache_key)
+        if cached is not None:
+            print(f"Loaded cached MPS dataset from {cache_path}")
+            return cached
 
     all_spectra = []
     all_labels = []
@@ -226,23 +268,31 @@ def load_ir_data(
         df = df[df["func_groups"].notna()]
         df = df[df["ir_spectra"].notna()]
 
-        # Interpolate spectra
-        spectra = np.stack(
-            [interpolate_spectrum(spec, target_length) for spec in df["ir_spectra"].values]
-        )
-
-        # Apply Savitzky-Golay smoothing before derivatives (cleans noise)
-        if apply_savgol:
+        if shared_config is not None:
+            spectra = preprocess_spectra(
+                df["ir_spectra"].values,
+                shared_config,
+                target_length,
+                defer_cross_sample=True,
+            )
+        else:
+            # Interpolate spectra
             spectra = np.stack(
-                [
-                    apply_savgol_smoothing(spec, savgol_window_length, savgol_polyorder)
-                    for spec in spectra
-                ]
+                [interpolate_spectrum(spec, target_length) for spec in df["ir_spectra"].values]
             )
 
-        # Apply SNV normalization if requested
-        if apply_snv:
-            spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
+            # Apply Savitzky-Golay smoothing before derivatives (cleans noise)
+            if apply_savgol:
+                spectra = np.stack(
+                    [
+                        apply_savgol_smoothing(spec, savgol_window_length, savgol_polyorder)
+                        for spec in spectra
+                    ]
+                )
+
+            # Apply SNV normalization if requested
+            if apply_snv:
+                spectra = np.stack([apply_snv_normalization(spec) for spec in spectra])
 
         labels = np.stack(df["func_groups"].values)
 
@@ -269,6 +319,9 @@ def load_ir_data(
         )
     if apply_snv:
         print("SNV normalization applied")
+
+    save_preprocessing_cache(cache_path, cache_key, X, y)
+    print(f"Saved MPS dataset cache to {cache_path}")
 
     return X, y
 

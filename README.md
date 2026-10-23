@@ -215,6 +215,128 @@ model:
    batch_size: 64
 ```
 
+**Preprocessing and representation ablation**
+
+The models historically used different preprocessing (CNN/XGBoost: linear
+interpolation only; MPS: + Savitzky-Golay 25/4 + SNV; TTN: + SNV). Every
+training entrypoint and `scripts/run_multiseed_benchmark.sh` now take a
+`--preprocessing` spec (`PREPROCESSING=` for the runner). `legacy` (the default)
+keeps the historical per-model behaviour; any other spec is applied identically
+to all four models via `src/spectroscopy_qml/benchmarking/preprocessing.py`:
+
+```
+resample=linear|bin_mean|bin_max|fir
+smooth=none|savgol:<window>:<order>|gaussian:<sigma>|moving_average:<window>|lorentz:<gamma>[:<half_width>]
+repr=intensity|sqrt|log1p|derivative
+norm=none|snv|minmax|max|area|l2|quantile|pqn
+```
+
+`lorentz` convolves with a normalised Lorentzian kernel (HWHM `gamma` in data
+points, truncated at `±half_width`, default 15, mirror padding), identical to the
+TTN `LorentzianFeatureMap` smoothing channel. `quantile` and `pqn` (probabilistic
+quotient normalization) are cross-sample methods taken from the original
+quantile/PQN CNN scripts. In training runs, their reference distribution/profile
+is fitted exclusively on the fixed training split and then applied unchanged to
+training, validation and test data. Their split-independent resampling/smoothing
+output remains reusable in the shared dataset cache. Quantile/PQN runs therefore
+require a fixed split artifact; CNN and XGBoost additionally require `--no_kfold`
+so one unambiguous training reference is used. The benchmark runner already
+supplies these options.
+
+The default ablation runs four shared configurations: a common experimental reference and
+one alternative method per preprocessing factor (one factor at a time), on shared
+splits. It writes separate architecture, preprocessing, representation and
+effect-size tables to `benchmark/preprocessing_ablation/summary/report.md`:
+
+```
+shared_lorentz_snv reference: linear resampling, Lorentzian kernel (gamma 3, half width 15), SNV
+resample_bin_max   alternative downsampling: max-pooling keeps narrow NMR/MS peaks
+smooth_savgol      alternative smoothing/filtering: Savitzky-Golay 25/4 (paper MPS filter)
+norm_area          alternative normalization: area (total intensity) instead of SNV
+```
+
+Input representation is compared through the input dimension (600 vs 1800).
+The configurations use the same canonical specification for every spectrum
+modality and all four architectures. The TTN keeps its Lorentzian feature map
+inside the model, so under the reference its input is Lorentz-smoothed twice.
+`legacy` (historical per-model preprocessing), `shared_mssd` (linear
+interpolation only) and further one-factor variants of the reference
+(`resample_bin_mean`, `resample_fir`, `smooth_none`, `smooth_gaussian`,
+`smooth_moving_average`, `norm_none`, `norm_minmax`, `norm_pqn`, `norm_max`,
+`norm_l2`, `norm_quantile`, `repr_sqrt`, `repr_derivative`, `repr_log1p`) are not
+run by default but can be named in `CONFIGS` (`--list --include-legacy
+--include-extra` shows them).
+
+Each configuration is applied with the same specification and the same input
+dimension to all five spectra (IR, H-NMR, C-NMR, MS/MS+, MS/MS-). The runner takes
+exactly one input dimension per call, and the aggregation refuses results where
+configurations at one input dimension cover different spectra. Note that IR
+already has 1800 points, so at 1800 the `resample_*` configs give IR the same
+input as the reference.
+
+For every non-legacy run, all four models record a SHA-256 digest of their
+actual preprocessed `float32` input array. Aggregation fails if these digests
+differ, so architecture comparisons cannot silently use different inputs.
+Existing result files are reused only when model, seed, split, input dimension,
+and preprocessing spec match the requested run and a valid input digest is
+present. CNN, XGBoost, MPS and TTN cache their preprocessed arrays under
+`data/cache/`; cache keys include the source parquet fingerprint, modality,
+input dimension and preprocessing configuration. A changed input or configuration
+therefore rebuilds the cache automatically. The key also contains a SHA-256 hash
+of the preprocessing implementation, so editing the code invalidates old caches.
+CNN and XGBoost additionally accept
+`--cache_dir` and `--overwrite_cache`.
+
+Precompute the 4 default shared preprocessing configurations before starting any model
+training (five modalities at 600 and 1800 input points):
+
+```bash
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py --dry-run
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py
+```
+
+The first command only prints the plan. The second reads the raw parquet data and
+populates `data/cache/preprocessed/`. To prepare a smaller experiment, select the
+dimensions, modalities or configurations explicitly:
+
+```bash
+PYTHONPATH=src python scripts/precompute_preprocessing_cache.py \
+  --input-dims 600 \
+  --modalities ir cnmr \
+  --configs shared_lorentz_snv norm_area smooth_savgol
+```
+
+Non-legacy caches are shared by CNN, XGBoost, MPS and TTN. The precompute runner
+creates separate legacy variants because the historical pipelines differ between
+the model families. Existing compatible caches are reused; pass `--overwrite` to
+rebuild them. Before processing, the runner reports a conservative uncompressed
+storage estimate and refuses to start if it exceeds the available disk space.
+Prefer a smaller selection; `--allow-low-disk` overrides this guard only after
+the expected NPZ compression and available storage have been checked manually.
+
+```bash
+PYTHONPATH=src python -m spectroscopy_qml.benchmarking.preprocessing --list
+DEVICE=mps scripts/run_preprocessing_ablation.sh 600
+DEVICE=mps scripts/run_preprocessing_ablation.sh 1800
+# other configs (still all five spectra): CONFIGS="legacy shared_lorentz_snv norm_pqn" scripts/run_preprocessing_ablation.sh 600
+```
+
+Model-specific 1800-point runners execute seeds 41--45 across C-NMR, H-NMR,
+IR, positive MS/MS and negative MS/MS without starting the other architectures:
+
+```bash
+scripts/run_cnn_all_modalities_1800.sh
+DEVICE=cpu scripts/run_mps_all_modalities_1800.sh
+DEVICE=mps scripts/run_ttn_all_modalities_1800.sh
+```
+
+They default to `PREPROCESSING=shared_mssd` and share split artifacts under
+`benchmark/shared_splits_1800`. Their results share the experiment root
+`benchmark/multiseed_1800/<preprocessing>` so the architectures remain directly
+comparable. `PREPROCESSING`, `SEEDS`, `MODALITIES`,
+`EPOCHS`, `DEVICE`, `DATA_DIR`, `SPLIT_DIR`, and `EXPERIMENT_DIR` can be
+overridden through environment variables where applicable.
+
 **Testing & quality checks**
 
 ```bash

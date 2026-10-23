@@ -1,0 +1,12 @@
+{
+  "model": "cnn",
+  "modality": "pos_msms",
+  "seed": 41,
+  "test_f1_micro": 0.6373888085015537,
+  "test_f1_macro": 0.1009607196425562,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_pos_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "7477b047b3f9c5d11b5c01c4acbe363bf4809915bdc135f0cead60faf5e8f674",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=l2",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=l2"
+}

@@ -27,6 +27,9 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
+    apply_train_fitted_normalization,
+)
 from spectroscopy_qml.tree_tensor_network.ir.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     IRSpectraDataset,
@@ -496,7 +499,7 @@ def print_detailed_results(results: dict, functional_groups: list[str], output_f
     print_line(f"Average labels per sample (pred): {y_pred.sum(axis=1).mean():.2f}")
     print_line(
         f"Samples with exact match: {(y_true == y_pred).all(axis=1).sum()} "
-        f"({(y_true == y_pred).all(axis=1).mean()*100:.1f}%)"
+        f"({(y_true == y_pred).all(axis=1).mean() * 100:.1f}%)"
     )
 
 
@@ -616,6 +619,7 @@ def main(
         target_length=int(run_config["input_dim"]),
         max_files=run_config.get("max_files"),
         apply_snv=bool(run_config.get("apply_snv", True)),
+        preprocessing=run_config.get("preprocessing", "legacy"),
         cache_path=_resolve_cache_path_from_run_config(run_config),
         overwrite_cache=False,
     )
@@ -625,6 +629,10 @@ def main(
     split_path = split_path or _resolve_split_path(run_config, run_dir, data_dir)
     if not split_path.exists():
         raise FileNotFoundError(f"Split artifact not found: {split_path}")
+    with np.load(split_path, allow_pickle=False) as split_payload:
+        X = apply_train_fitted_normalization(
+            X, run_config.get("preprocessing", "legacy"), split_payload["train_indices"]
+        )
 
     val_loader, test_loader = _build_eval_loaders(
         X,

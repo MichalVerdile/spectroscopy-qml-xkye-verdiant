@@ -58,6 +58,34 @@ def validate_complete(df: pd.DataFrame) -> None:
                 f"Models for {modality}, seed {seed} did not report one identical shared split: "
                 f"{sorted(split_paths)}"
             )
+    if "preprocessing" in df.columns:
+        provenance_columns = {"input_dim", "input_digest", "preprocessing_effective"}
+        missing_provenance = provenance_columns.difference(df.columns)
+        if missing_provenance:
+            raise ValueError(
+                "Preprocessing runs are missing input provenance fields: "
+                f"{sorted(missing_provenance)}"
+            )
+        specs = {str(value) for value in df["preprocessing"].fillna("legacy")}
+        if len(specs) != 1:
+            raise ValueError(
+                f"One experiment directory mixes preprocessing specs {sorted(specs)}; "
+                "run each spec into its own EXPERIMENT_DIR"
+            )
+        for (modality, seed), group in df.groupby(["modality", "seed"]):
+            input_dims = {int(value) for value in group["input_dim"]}
+            if len(input_dims) != 1:
+                raise ValueError(
+                    f"Models for {modality}, seed {seed} used different input dimensions: "
+                    f"{sorted(input_dims)}"
+                )
+            if group["preprocessing"].iloc[0] != "legacy":
+                input_digests = {str(value) for value in group["input_digest"]}
+                if len(input_digests) != 1:
+                    raise ValueError(
+                        f"Models for {modality}, seed {seed} did not receive byte-identical "
+                        f"preprocessed inputs: {sorted(input_digests)}"
+                    )
     modality_seed_sets = {
         modality: set(group["seed"].tolist()) for modality, group in df.groupby("modality")
     }

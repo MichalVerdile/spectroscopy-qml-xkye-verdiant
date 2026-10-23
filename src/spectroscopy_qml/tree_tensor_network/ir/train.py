@@ -22,6 +22,12 @@ if str(CURRENT_DIR) not in sys.path:
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+from spectroscopy_qml.benchmarking.preprocessing import (  # noqa: E402
+    apply_train_fitted_normalization,
+    array_digest,
+    canonical_spec,
+    metrics_fields,
+)
 from spectroscopy_qml.tree_tensor_network.ir.helpers.data_loader import (  # noqa: E402
     FUNCTIONAL_GROUPS,
     load_ir_data,
@@ -116,6 +122,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Per-channel normalisation: max_abs (original), z_score (÷std), percentile (÷99th pct).",
     )
     parser.add_argument("--apply-snv", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--preprocessing",
+        default="legacy",
+        help="Shared preprocessing spec or ablation config name; anything but legacy "
+        "replaces --apply-snv",
+    )
     parser.add_argument("--cache-path", type=Path, default=None)
     parser.add_argument("--overwrite-cache", action="store_true")
     parser.add_argument("--max-files", type=int, default=None)
@@ -223,6 +235,7 @@ def describe_args(args: argparse.Namespace, split_path: Path) -> None:
     print(f"Min epochs before stop:   {args.min_epochs_before_stopping}")
     print(f"Loss type:                {args.loss_type}")
     print(f"Apply SNV:                {args.apply_snv}")
+    print(f"Preprocessing:            {canonical_spec(args.preprocessing)}")
     print(f"Cache path:               {resolve_cache_path(args)}")
     print(f"Batch size:               {args.batch_size}")
     print(f"Epochs:                   {args.epochs}")
@@ -285,6 +298,7 @@ def main() -> None:
         target_length=args.input_dim,
         max_files=args.max_files,
         apply_snv=args.apply_snv,
+        preprocessing=args.preprocessing,
         cache_path=cache_path,
         overwrite_cache=args.overwrite_cache,
     )
@@ -304,6 +318,7 @@ def main() -> None:
         stratify_multilabel=True,
         overwrite=args.overwrite_split,
     )
+    X = apply_train_fitted_normalization(X, args.preprocessing, split_indices["train"])
     if specialist_indices is not None:
         y = y[:, specialist_indices]
         args.num_labels = len(specialist_indices)
@@ -548,6 +563,9 @@ def main() -> None:
                 "test_f1_micro": float(test_metrics["f1_micro"]),
                 "test_f1_macro": float(test_metrics["f1_macro"]),
                 "split_path": str(split_path),
+                "input_dim": args.input_dim,
+                "input_digest": array_digest(X),
+                **metrics_fields(args.preprocessing, "ttn"),
             },
             indent=2,
         )

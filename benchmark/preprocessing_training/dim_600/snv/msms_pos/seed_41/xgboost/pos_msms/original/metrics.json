@@ -1,0 +1,12 @@
+{
+  "model": "xgboost",
+  "modality": "pos_msms",
+  "seed": 41,
+  "test_f1_micro": 0.6354846907768975,
+  "test_f1_macro": 0.10316152067766401,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_pos_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "73d0bd54104d7b8217526517e682bad99df9228911d2e1e22d5805ac87c17602",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=snv",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=snv"
+}
