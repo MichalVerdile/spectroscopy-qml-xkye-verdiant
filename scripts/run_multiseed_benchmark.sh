@@ -13,6 +13,7 @@ INPUT_DIM="$1"
 PYTHON="${PYTHON:-python}"
 DEVICE="${DEVICE:-auto}"
 EPOCHS="${EPOCHS:-200}"
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-}"
 DATA_DIR="${DATA_DIR:-data/raw}"
 EXPERIMENT_DIR="${EXPERIMENT_DIR:-benchmark/multiseed_${INPUT_DIM}}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
@@ -34,6 +35,8 @@ PREPROCESSING="${PREPROCESSING:-legacy}"
 # TTN contractions can overflow in float16/bfloat16 on real batches. Keep the
 # benchmark numerically stable in float32 unless AMP is explicitly requested.
 TTN_AMP="${TTN_AMP:-0}"
+TTN_THRESHOLD_MODE="${TTN_THRESHOLD_MODE:-per_class}"
+TTN_THRESHOLD_GRID_STEP="${TTN_THRESHOLD_GRID_STEP:-0.02}"
 # Splits depend only on labels and seed, so ablations can share one split dir.
 SPLIT_DIR="${SPLIT_DIR:-$EXPERIMENT_DIR/splits}"
 SKIP_AGGREGATE="${SKIP_AGGREGATE:-0}"
@@ -172,6 +175,8 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --input_dim "$INPUT_DIM" \
             --split_path "$split_path" \
             --preprocessing "$PREPROCESSING" \
+            --epochs "$EPOCHS" \
+            ${EARLY_STOPPING_PATIENCE:+--early_stopping_patience "$EARLY_STOPPING_PATIENCE"} \
             --no_kfold
 
         xgb_device="$DEVICE"
@@ -206,6 +211,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --epochs "$EPOCHS" \
             --device "$mps_device" \
+            ${EARLY_STOPPING_PATIENCE:+--early-stopping-patience "$EARLY_STOPPING_PATIENCE"} \
             --preprocessing "$PREPROCESSING"
 
         run_if_missing "$run_dir/ttn/metrics.json" ttn "$seed" "$split_path" \
@@ -217,6 +223,9 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --device "$DEVICE" \
             --epochs "$EPOCHS" \
+            ${EARLY_STOPPING_PATIENCE:+--early-stopping-patience "$EARLY_STOPPING_PATIENCE"} \
+            --threshold-mode "$TTN_THRESHOLD_MODE" \
+            --threshold-grid-step "$TTN_THRESHOLD_GRID_STEP" \
             "$([[ "$TTN_AMP" == "1" ]] && printf '%s' '--amp' || printf '%s' '--no-amp')" \
             --preprocessing "$PREPROCESSING"
     done

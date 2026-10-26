@@ -320,6 +320,8 @@ def train_model(
     aug,
     num,
     weighted,
+    epochs=200,
+    early_stopping_patience=20,
 ):
     """Trains final model with the best hyper-parameters."""
 
@@ -424,7 +426,7 @@ def train_model(
 
     early_stopping = EarlyStopping(
         monitor=monitor_metric,
-        patience=20,
+        patience=early_stopping_patience,
         mode="min",
         restore_best_weights=True,
         verbose=1,
@@ -433,7 +435,7 @@ def train_model(
     fit_kwargs = {
         "x": X_train,
         "y": y_train,
-        "epochs": 200,
+        "epochs": epochs,
         "batch_size": 1024,
         "verbose": 1,
         "callbacks": [
@@ -575,6 +577,13 @@ def load_data_for_column(
     help="Shared preprocessing spec or ablation config name (legacy = linear interpolation only)",
 )
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
+@click.option("--epochs", type=click.IntRange(min=1), default=200, show_default=True)
+@click.option(
+    "--early_stopping_patience",
+    type=click.IntRange(min=1),
+    default=20,
+    show_default=True,
+)
 @click.option(
     "--use_kfold/--no_kfold",
     default=True,
@@ -591,6 +600,8 @@ def main(
     overwrite_cache: bool,
     preprocessing: str,
     n_folds: int,
+    epochs: int,
+    early_stopping_patience: int,
     use_kfold: bool,
 ):
     preprocessing = canonical_spec(preprocessing)
@@ -746,6 +757,8 @@ def main(
                     "e",
                     0,
                     0,
+                    epochs,
+                    early_stopping_patience,
                 )
 
                 fold_f1_micro = f1_score(
@@ -989,6 +1002,8 @@ def main(
                 "e",
                 0,
                 0,
+                epochs,
+                early_stopping_patience,
             )
 
             val_predict_start = time.perf_counter()

@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-dim", type=int, default=600)
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--epochs", type=int, default=200)
+    parser.add_argument("--early-stopping-patience", type=int, default=None)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
     parser.add_argument(
         "--preprocessing",
@@ -58,6 +59,8 @@ def main() -> None:
     module.DATA_CONFIG.preprocessing = canonical_spec(args.preprocessing)
     module.TRAINING_CONFIG.random_seed = args.seed
     module.TRAINING_CONFIG.num_epochs = args.epochs
+    if args.early_stopping_patience is not None:
+        module.TRAINING_CONFIG.patience = args.early_stopping_patience
     module.TRAINING_CONFIG.num_folds = 1
     module.TRAINING_CONFIG.parallel_fold_workers = 1
     module.TRAINING_CONFIG.device = (

@@ -1,0 +1,80 @@
+experiment:
+  input_dimension: 600
+  labels: 37
+  seeds: [41, 42, 43, 44, 45]
+  modalities: [cnmr, hnmr, ir, msms_pos, msms_neg]
+  split: [0.8, 0.1, 0.1]
+  preprocessing: legacy
+  output_directory: benchmark/paper_all_spectra_seed_41_45
+
+training:
+  neural_models:
+    maximum_epochs: practically_unbounded
+    implementation_epoch_bound: 2147483647
+    early_stopping_patience: 15
+  xgboost:
+    unchanged: true
+
+cnn:
+  convolution_blocks:
+    - {filters: 31, kernel_size: 11, stride: 1, padding: same, batch_norm: true, activation: relu, max_pool: 2}
+    - {filters: 62, kernel_size: 11, stride: 1, padding: same, batch_norm: true, activation: relu, max_pool: 2}
+  dense_units: [4927, 2785, 1574]
+  dropout: 0.48599073736368
+  batch_size: 1024
+  optimizer: adam
+  learning_rate: 0.00025
+  preprocessing: linear_resampling_only
+
+xgboost:
+  estimators_per_label: 300
+  learning_rate: 0.05
+  max_depth: 6
+  subsample: 0.8
+  colsample_bytree: 0.8
+  tree_method: hist
+  preprocessing: linear_resampling_only
+
+mps:
+  classifier_head: mps
+  physical_dimensions: [450, 450]
+  bond_dimensions: [128, 128]
+  dropout: 0.49
+  readout_hidden_units: 256
+  batch_size: 2048
+  optimizer: adam
+  learning_rate: 0.00025
+  weight_decay: 0.000001
+  gradient_clip: 1.0
+  sites_by_modality:
+    ir: [5, 10]
+    cnmr: [25, 10]
+    hnmr: [10, 5]
+    msms_pos: [5, 10]
+    msms_neg: [5, 10]
+  preprocessing:
+    resampling: linear
+    savgol: {window: 25, polynomial_order: 4}
+    normalization: snv
+
+ttn:
+  bond_dimension: 64
+  lorentz_channels: [raw, first_derivative, second_derivative]
+  lorentz_gamma: 3.0
+  lorentz_kernel_half_width: 15
+  lorentz_channel_normalization: percentile
+  segment_window: 48
+  segment_stride: 43
+  segment_count: 14
+  segment_state_normalization: l2
+  merge_mode: relaxed
+  merge_residual_weight: 0.1
+  batch_size: 1024
+  optimizer: adam
+  learning_rate: 0.0003
+  weight_decay: 0.000001
+  gradient_clip: 1.0
+  threshold: 0.5
+  preprocessing:
+    resampling: linear
+    normalization: snv
