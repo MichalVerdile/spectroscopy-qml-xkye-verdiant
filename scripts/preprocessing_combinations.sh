@@ -35,7 +35,8 @@ sweep_preprocessing_combinations() {
 
     while IFS=$'\t' read -r name spec; do
         echo "##### Preprocessing combination: $name ($spec) #####"
-        PREPROCESSING="$spec" EXPERIMENT_DIR="$root/$name" bash "$script"
+        # set -e is inactive inside the caller's `if`, so propagate failures explicitly
+        PREPROCESSING="$spec" EXPERIMENT_DIR="$root/$name" bash "$script" || exit $?
     done < <(list_preprocessing_combinations)
     return 0
 }
