@@ -1,0 +1,12 @@
+{
+  "model": "mps",
+  "modality": "cnmr",
+  "seed": 41,
+  "test_f1_micro": 0.6681722181846561,
+  "test_f1_macro": 0.349938024159798,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/cnmr_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "8ea51452dd04662e43ebd6ad10c9367051f1e1826ab959f7275b5654d138523e",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=minmax",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=minmax"
+}

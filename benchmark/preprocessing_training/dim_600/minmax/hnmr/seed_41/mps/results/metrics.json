@@ -1,0 +1,12 @@
+{
+  "model": "mps",
+  "modality": "hnmr",
+  "seed": 41,
+  "test_f1_micro": 0.7011714267832182,
+  "test_f1_macro": 0.3650554921691385,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/hnmr_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "c2754ad0054104545df5362e2fb6e6efeaf9423bbb851a14dbb9c891bfb45658",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=minmax",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=minmax"
+}

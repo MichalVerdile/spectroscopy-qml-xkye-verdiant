@@ -9,6 +9,8 @@ from pathlib import Path
 
 import torch
 
+from spectroscopy_qml.benchmarking.preprocessing import canonical_spec
+
 MPS_TRAINING_MODULES = {
     "ir": "spectroscopy_qml.mps_classifier.ir.train",
     "cnmr": "spectroscopy_qml.mps_classifier.cnmr.train",
@@ -32,6 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    parser.add_argument(
+        "--preprocessing",
+        default="legacy",
+        help="Shared preprocessing spec or ablation config name (default: legacy MPS path)",
+    )
     return parser.parse_args()
 
 
@@ -48,6 +55,7 @@ def main() -> None:
 
     module.MODEL_CONFIG.input_dim = args.input_dim
     module.DATA_CONFIG.target_length = args.input_dim
+    module.DATA_CONFIG.preprocessing = canonical_spec(args.preprocessing)
     module.TRAINING_CONFIG.random_seed = args.seed
     module.TRAINING_CONFIG.num_epochs = args.epochs
     module.TRAINING_CONFIG.num_folds = 1

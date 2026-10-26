@@ -1,0 +1,12 @@
+{
+  "model": "mps",
+  "modality": "msms_neg",
+  "seed": 41,
+  "test_f1_micro": 0.3000396701747547,
+  "test_f1_macro": 0.16693659673123193,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/msms_neg_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "b0aeb97359886b0f39cdca4923a063fd7f6033966163a8d2ad4d3b151a74f48a",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=snv",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=snv"
+}

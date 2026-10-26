@@ -1,0 +1,12 @@
+{
+  "model": "ttn",
+  "modality": "cnmr",
+  "seed": 41,
+  "test_f1_micro": 0.7135132446473613,
+  "test_f1_macro": 0.3280616378056144,
+  "split_path": "benchmark/preprocessing_training/shared_splits_600/cnmr_seed_41.npz",
+  "input_dim": 600,
+  "input_digest": "bbc4fe1a3b230d3bdfa3f02cebf929e72619a9f46f715e9a95ec08e202a88644",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=snv",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=snv"
+}
