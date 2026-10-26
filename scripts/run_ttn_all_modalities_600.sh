@@ -20,6 +20,15 @@ DATA_DIR="${DATA_DIR:-data/raw}"
 #                  (keys: resample, smooth, repr, norm; see src/spectroscopy_qml/benchmarking/preprocessing.py)
 #   legacy         historical per-model preprocessing
 #   Ablation presets (built on Lorentz + SNV): shared_lorentz_snv resample_bin_max smooth_savgol norm_area
+#
+# Default (PREPROCESSING unset): run ALL 15 combinations of FIR resampling, Gaussian
+# smoothing, sqrt representation and SNV normalization, each into
+# $EXPERIMENT_DIR/<combination> (default benchmark/multiseed_600/combinations).
+# Setting PREPROCESSING runs only that single preprocessing, as before.
+source scripts/preprocessing_combinations.sh
+if sweep_preprocessing_combinations "${BASH_SOURCE[0]}" "${EXPERIMENT_DIR:-benchmark/multiseed_600/combinations}"; then
+    exit 0
+fi
 PREPROCESSING="${PREPROCESSING:-shared_mssd}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
 MODALITIES_STRING="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}"
