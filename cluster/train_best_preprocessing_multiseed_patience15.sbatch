@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run FIR + Gaussian + sqrt + SNV for seeds 41, 43, 44, and 45.
-# One seed runs at a time so the array occupies at most one H100.
+# Each task runs one seed/modality pair. At most five tasks occupy H100s.
 # All model families use early-stopping patience 15. The practical training
 # ceiling is intentionally unreachable under normal early stopping.
 #SBATCH --job-name=bestpp600-p15
@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128G
 #SBATCH --time=1-00:00:00
-#SBATCH --array=0-3%1
+#SBATCH --array=0-19%5
 #SBATCH --requeue
 #SBATCH --signal=B:USR1@600
 #SBATCH --open-mode=append
@@ -24,17 +24,23 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR}"
 
 seeds=(41 43 44 45)
+modalities=(cnmr hnmr ir msms_pos msms_neg)
 task_id="${SLURM_ARRAY_TASK_ID}"
-if [[ ! "$task_id" =~ ^[0-9]+$ ]] || ((task_id >= ${#seeds[@]})); then
-    echo "Invalid SLURM_ARRAY_TASK_ID=${task_id}; expected 0-$(( ${#seeds[@]} - 1 ))." >&2
+task_count=$(( ${#seeds[@]} * ${#modalities[@]} ))
+if [[ ! "$task_id" =~ ^[0-9]+$ ]] || ((task_id >= task_count)); then
+    echo "Invalid SLURM_ARRAY_TASK_ID=${task_id}; expected 0-$((task_count - 1))." >&2
     exit 2
 fi
 
-seed="${seeds[task_id]}"
+seed_index=$((task_id / ${#modalities[@]}))
+modality_index=$((task_id % ${#modalities[@]}))
+seed="${seeds[seed_index]}"
+modality="${modalities[modality_index]}"
 preprocessing="resample=fir,smooth=gaussian:2,repr=sqrt,norm=snv"
 
-echo "Array task ${task_id}: seed ${seed}, preprocessing ${preprocessing}, patience 15"
+echo "Array task ${task_id}: seed ${seed}, modality ${modality}, preprocessing ${preprocessing}, patience 15"
 export SEEDS="$seed"
+export MODALITIES="$modality"
 export EPOCHS=1000000
 export XGB_N_ESTIMATORS=1000000
 export EARLY_STOPPING_PATIENCE=15
