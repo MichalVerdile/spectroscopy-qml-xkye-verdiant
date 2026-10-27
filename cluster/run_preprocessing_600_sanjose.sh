@@ -43,7 +43,9 @@ print("Training dependencies imported successfully")
 PREPROCESSING="$preprocessing" \
 PYTHON=.venv/bin/python \
 DEVICE=cuda \
-EPOCHS=200 \
+EPOCHS="${EPOCHS:-1000000}" \
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-15}" \
+XGB_N_ESTIMATORS="${XGB_N_ESTIMATORS:-1000000}" \
 SEEDS="${SEEDS:-41}" \
 MIN_SEEDS=1 \
 MODALITIES="cnmr hnmr ir msms_pos msms_neg" \

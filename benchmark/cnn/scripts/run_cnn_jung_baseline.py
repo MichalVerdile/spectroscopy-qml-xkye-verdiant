@@ -320,6 +320,8 @@ def train_model(
     aug,
     num,
     weighted,
+    epochs,
+    early_stopping_patience,
 ):
     """Trains final model with the best hyper-parameters."""
 
@@ -424,7 +426,7 @@ def train_model(
 
     early_stopping = EarlyStopping(
         monitor=monitor_metric,
-        patience=20,
+        patience=early_stopping_patience,
         mode="min",
         restore_best_weights=True,
         verbose=1,
@@ -433,7 +435,7 @@ def train_model(
     fit_kwargs = {
         "x": X_train,
         "y": y_train,
-        "epochs": 200,
+        "epochs": epochs,
         "batch_size": 1024,
         "verbose": 1,
         "callbacks": [
@@ -575,6 +577,8 @@ def load_data_for_column(
     help="Shared preprocessing spec or ablation config name (legacy = linear interpolation only)",
 )
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
+@click.option("--epochs", type=int, default=200, show_default=True)
+@click.option("--early-stopping-patience", type=int, default=20, show_default=True)
 @click.option(
     "--use_kfold/--no_kfold",
     default=True,
@@ -591,8 +595,14 @@ def main(
     overwrite_cache: bool,
     preprocessing: str,
     n_folds: int,
+    epochs: int,
+    early_stopping_patience: int,
     use_kfold: bool,
 ):
+    if epochs <= 0:
+        raise ValueError("--epochs must be greater than 0")
+    if early_stopping_patience <= 0:
+        raise ValueError("--early-stopping-patience must be greater than 0")
     preprocessing = canonical_spec(preprocessing)
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -746,6 +756,8 @@ def main(
                     "e",
                     0,
                     0,
+                    epochs,
+                    early_stopping_patience,
                 )
 
                 fold_f1_micro = f1_score(
@@ -989,6 +1001,8 @@ def main(
                 "e",
                 0,
                 0,
+                epochs,
+                early_stopping_patience,
             )
 
             val_predict_start = time.perf_counter()

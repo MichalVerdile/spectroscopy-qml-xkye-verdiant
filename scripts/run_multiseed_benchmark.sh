@@ -13,6 +13,8 @@ INPUT_DIM="$1"
 PYTHON="${PYTHON:-python}"
 DEVICE="${DEVICE:-auto}"
 EPOCHS="${EPOCHS:-200}"
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-15}"
+XGB_N_ESTIMATORS="${XGB_N_ESTIMATORS:-1000000}"
 DATA_DIR="${DATA_DIR:-data/raw}"
 EXPERIMENT_DIR="${EXPERIMENT_DIR:-benchmark/multiseed_${INPUT_DIM}}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
@@ -172,6 +174,8 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --input_dim "$INPUT_DIM" \
             --split_path "$split_path" \
             --preprocessing "$PREPROCESSING" \
+            --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --no_kfold
 
         xgb_device="$DEVICE"
@@ -188,6 +192,8 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --split_path "$split_path" \
             --device "$xgb_device" \
             --preprocessing "$PREPROCESSING" \
+            --n-estimators "$XGB_N_ESTIMATORS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --no_log_learning_curve \
             --no_kfold
 
@@ -205,6 +211,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --split-path "$split_path" \
             --seed "$seed" \
             --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --device "$mps_device" \
             --preprocessing "$PREPROCESSING"
 
@@ -217,6 +224,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --device "$DEVICE" \
             --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             "$([[ "$TTN_AMP" == "1" ]] && printf '%s' '--amp' || printf '%s' '--no-amp')" \
             --preprocessing "$PREPROCESSING"
     done
