@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem, RDLogger
 from scipy.interpolate import interp1d
+from sklearn.base import clone
 from sklearn.metrics import f1_score
 from sklearn.model_selection import KFold, train_test_split
 from sklearn.multioutput import MultiOutputClassifier
@@ -104,7 +105,12 @@ def get_functional_groups(smiles: str) -> list | None:
     return func_groups
 
 
-def build_xgboost_model(seed: int, device: str, n_jobs: int):
+def build_xgboost_model(
+    seed: int,
+    device: str,
+    n_jobs: int,
+    early_stopping_patience: int,
+):
     """
     MultiOutputClassifier trains one binary XGBoost classifier per functional group.
     This makes the model explicitly multi-label, matching the CNN sigmoid output setup.
@@ -122,6 +128,7 @@ def build_xgboost_model(seed: int, device: str, n_jobs: int):
         colsample_bytree=0.8,
         n_jobs=n_jobs,
         verbosity=1,
+        early_stopping_rounds=early_stopping_patience,
     )
 
     return MultiOutputClassifier(base_classifier, n_jobs=1)
@@ -130,12 +137,32 @@ def build_xgboost_model(seed: int, device: str, n_jobs: int):
 def train_xgboost_model(
     X_train,
     y_train,
+    X_val,
+    y_val,
     seed: int,
     device: str,
     n_jobs: int,
+    early_stopping_patience: int,
 ):
-    model = build_xgboost_model(seed=seed, device=device, n_jobs=n_jobs)
-    model.fit(X_train, y_train)
+    # MultiOutputClassifier does not split eval_set labels per target. Fit the
+    # binary estimators explicitly so every label gets correct validation data
+    # and its own early-stopping state.
+    model = build_xgboost_model(
+        seed=seed,
+        device=device,
+        n_jobs=n_jobs,
+        early_stopping_patience=early_stopping_patience,
+    )
+    model.estimators_ = []
+    for target_index in range(y_train.shape[1]):
+        estimator = clone(model.estimator)
+        estimator.fit(
+            X_train,
+            y_train[:, target_index],
+            eval_set=[(X_val, y_val[:, target_index])],
+            verbose=False,
+        )
+        model.estimators_.append(estimator)
     return model
 
 
@@ -183,11 +210,13 @@ def predict_multioutput_at_step(model: MultiOutputClassifier, X, step: int) -> n
     predictions = []
 
     for estimator in model.estimators_:
+        fitted_rounds = int(estimator.get_booster().num_boosted_rounds())
+        estimator_step = min(step, fitted_rounds)
         try:
-            pred = estimator.predict(X, iteration_range=(0, step))
+            pred = estimator.predict(X, iteration_range=(0, estimator_step))
         except TypeError:
             # Compatibility fallback for older XGBoost versions.
-            pred = estimator.predict(X, ntree_limit=step)
+            pred = estimator.predict(X, ntree_limit=estimator_step)
 
         predictions.append(pred.astype(int))
 
@@ -230,7 +259,12 @@ def append_learning_curve_logs(
 
     Filter `event == "learning_curve"` when plotting.
     """
-    n_estimators = int(model.estimators_[0].get_params()["n_estimators"])
+    fitted_rounds = [
+        int(estimator.get_booster().num_boosted_rounds()) for estimator in model.estimators_
+    ]
+    if not fitted_rounds or min(fitted_rounds) <= 0:
+        raise ValueError("Every fitted XGBoost target must contain at least one boosting round")
+    n_estimators = max(fitted_rounds)
 
     steps = list(range(learning_curve_every, n_estimators + 1, learning_curve_every))
 
@@ -395,6 +429,8 @@ def load_data_for_column(
     help="Shared preprocessing spec or ablation config name (legacy = linear interpolation only)",
 )
 @click.option("--n_folds", type=int, default=5, help="Number of folds for cross-validation")
+@click.option("--n-estimators", type=int, default=300, show_default=True)
+@click.option("--early-stopping-patience", type=int, default=15, show_default=True)
 @click.option(
     "--use_kfold/--no_kfold",
     default=True,
@@ -434,12 +470,20 @@ def main(
     overwrite_cache: bool,
     preprocessing: str,
     n_folds: int,
+    n_estimators: int,
+    early_stopping_patience: int,
     use_kfold: bool,
     device: str,
     n_jobs: int,
     log_learning_curve: bool,
     learning_curve_every: int,
 ):
+    global XGB_N_ESTIMATORS
+    if n_estimators <= 0:
+        raise ValueError("--n-estimators must be greater than 0")
+    if early_stopping_patience <= 0:
+        raise ValueError("--early-stopping-patience must be greater than 0")
+    XGB_N_ESTIMATORS = n_estimators
     preprocessing = canonical_spec(preprocessing)
     if learning_curve_every <= 0:
         raise ValueError("--learning_curve_every must be greater than 0")
@@ -595,9 +639,12 @@ def main(
                 model = train_xgboost_model(
                     X_train=X_train,
                     y_train=y_train,
+                    X_val=X_val,
+                    y_val=y_val,
                     seed=seed,
                     device=device,
                     n_jobs=n_jobs,
+                    early_stopping_patience=early_stopping_patience,
                 )
 
                 fit_seconds = time.perf_counter() - fit_start
@@ -861,9 +908,12 @@ def main(
             model = train_xgboost_model(
                 X_train=X_train,
                 y_train=y_train,
+                X_val=X_val,
+                y_val=y_val,
                 seed=seed,
                 device=device,
                 n_jobs=n_jobs,
+                early_stopping_patience=early_stopping_patience,
             )
 
             fit_seconds = time.perf_counter() - fit_start
@@ -1021,7 +1071,12 @@ def main(
                         "split_path": str(split_path) if split_path is not None else None,
                         "input_dim": input_dim,
                         "input_digest": array_digest(X_data),
-                        **metrics_fields(preprocessing, "xgboost"),
+                        **metrics_fields(
+                            preprocessing,
+                            "xgboost",
+                            n_estimators=XGB_N_ESTIMATORS,
+                            early_stopping_patience=early_stopping_patience,
+                        ),
                     },
                     indent=2,
                 )

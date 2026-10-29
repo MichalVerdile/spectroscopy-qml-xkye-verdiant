@@ -13,6 +13,8 @@ INPUT_DIM="$1"
 PYTHON="${PYTHON:-python}"
 DEVICE="${DEVICE:-auto}"
 EPOCHS="${EPOCHS:-200}"
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-15}"
+XGB_N_ESTIMATORS="${XGB_N_ESTIMATORS:-1000000}"
 DATA_DIR="${DATA_DIR:-data/raw}"
 EXPERIMENT_DIR="${EXPERIMENT_DIR:-benchmark/multiseed_${INPUT_DIM}}"
 SEEDS_STRING="${SEEDS:-41 42 43 44 45}"
@@ -93,14 +95,18 @@ run_if_missing() {
     local expected_model="$2"
     local expected_seed="$3"
     local expected_split="$4"
-    shift 4
+    local expected_limit_option="$5"
+    local expected_limit="$6"
+    shift 6
     if [[ -f "$metrics_path" ]] && "$PYTHON" scripts/validate_benchmark_result.py \
         --metrics "$metrics_path" \
         --model "$expected_model" \
         --preprocessing "$PREPROCESSING" \
         --input-dim "$INPUT_DIM" \
         --seed "$expected_seed" \
-        --split-path "$expected_split"; then
+        --split-path "$expected_split" \
+        --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
+        "$expected_limit_option" "$expected_limit"; then
         echo "Skipping completed run: $metrics_path"
         return
     fi
@@ -163,7 +169,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
                 --output "$split_path"
         fi
 
-        run_if_missing "$run_dir/cnn/$baseline_output_dir/original/metrics.json" cnn "$seed" "$split_path" \
+        run_if_missing "$run_dir/cnn/$baseline_output_dir/original/metrics.json" cnn "$seed" "$split_path" --max-epochs "$EPOCHS" \
             "$PYTHON" benchmark/cnn/scripts/run_cnn_jung_baseline.py \
             --analytical_data "$DATA_DIR" \
             --base_out_path "$run_dir/cnn" \
@@ -172,13 +178,15 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --input_dim "$INPUT_DIM" \
             --split_path "$split_path" \
             --preprocessing "$PREPROCESSING" \
+            --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --no_kfold
 
         xgb_device="$DEVICE"
         if [[ "$xgb_device" == "auto" || "$xgb_device" == "mps" ]]; then
             xgb_device="cpu"
         fi
-        run_if_missing "$run_dir/xgboost/$baseline_output_dir/original/metrics.json" xgboost "$seed" "$split_path" \
+        run_if_missing "$run_dir/xgboost/$baseline_output_dir/original/metrics.json" xgboost "$seed" "$split_path" --n-estimators "$XGB_N_ESTIMATORS" \
             "$PYTHON" benchmark/xgb/scripts/run_xgb_baseline.py \
             --analytical_data "$DATA_DIR" \
             --base_out_path "$run_dir/xgboost" \
@@ -188,6 +196,8 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --split_path "$split_path" \
             --device "$xgb_device" \
             --preprocessing "$PREPROCESSING" \
+            --n-estimators "$XGB_N_ESTIMATORS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --no_log_learning_curve \
             --no_kfold
 
@@ -196,7 +206,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             echo "MPS classifier does not support Apple's MPS backend; using CPU for this model."
             mps_device="cpu"
         fi
-        run_if_missing "$run_dir/mps/results/metrics.json" mps "$seed" "$split_path" \
+        run_if_missing "$run_dir/mps/results/metrics.json" mps "$seed" "$split_path" --max-epochs "$EPOCHS" \
             "$PYTHON" scripts/run_mps_benchmark.py \
             --data-dir "$DATA_DIR" \
             --output-dir "$run_dir/mps" \
@@ -205,10 +215,11 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --split-path "$split_path" \
             --seed "$seed" \
             --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             --device "$mps_device" \
             --preprocessing "$PREPROCESSING"
 
-        run_if_missing "$run_dir/ttn/metrics.json" ttn "$seed" "$split_path" \
+        run_if_missing "$run_dir/ttn/metrics.json" ttn "$seed" "$split_path" --max-epochs "$EPOCHS" \
             "$PYTHON" "$ttn_script" \
             --data-dir "$DATA_DIR" \
             --output-dir "$run_dir/ttn" \
@@ -217,6 +228,7 @@ for modality in "${MODALITY_VALUES[@]}"; do
             --seed "$seed" \
             --device "$DEVICE" \
             --epochs "$EPOCHS" \
+            --early-stopping-patience "$EARLY_STOPPING_PATIENCE" \
             "$([[ "$TTN_AMP" == "1" ]] && printf '%s' '--amp' || printf '%s' '--no-amp')" \
             --preprocessing "$PREPROCESSING"
     done
