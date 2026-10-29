@@ -27,11 +27,11 @@ list_preprocessing_combinations() {
 
 # Usage: if sweep_preprocessing_combinations "$0" "$ROOT_DIR"; then exit 0; fi
 # With PREPROCESSING unset, re-runs the calling script once per combination
-# (EXPERIMENT_DIR=<root>/<name>) and returns 0. With PREPROCESSING set, returns 1
-# so the caller runs that single preprocessing as before.
+# (EXPERIMENT_DIR=<root>/<name>) and returns 0. With PREPROCESSING set, including
+# an explicitly empty value, returns 1 so the caller runs one preprocessing.
 sweep_preprocessing_combinations() {
     local script="$1" root="$2" name spec
-    [[ -z "${PREPROCESSING:-}" ]] || return 1
+    [[ "${PREPROCESSING+x}" == x ]] && return 1
 
     while IFS=$'\t' read -r name spec; do
         echo "##### Preprocessing combination: $name ($spec) #####"

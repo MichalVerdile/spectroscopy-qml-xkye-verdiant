@@ -18,6 +18,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-dim", type=int, required=True)
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--split-path", type=Path, required=True)
+    parser.add_argument("--max-epochs", type=int)
+    parser.add_argument("--n-estimators", type=int)
+    parser.add_argument("--early-stopping-patience", type=int)
     return parser.parse_args()
 
 
@@ -42,6 +45,24 @@ def main() -> None:
         digest = payload.get("input_digest")
         if not isinstance(digest, str) or len(digest) != 64:
             mismatches["input_digest"] = (digest, "64-character SHA-256 digest")
+        expected_training_config = {
+            key: value
+            for key, value in {
+                "max_epochs": args.max_epochs,
+                "n_estimators": args.n_estimators,
+                "early_stopping_patience": args.early_stopping_patience,
+            }.items()
+            if value is not None
+        }
+        recorded_training_config = payload.get("training_config")
+        for key, value in expected_training_config.items():
+            recorded_value = (
+                recorded_training_config.get(key)
+                if isinstance(recorded_training_config, dict)
+                else None
+            )
+            if recorded_value != value:
+                mismatches[f"training_config.{key}"] = (recorded_value, value)
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as error:
         raise SystemExit(f"Invalid existing metrics {args.metrics}: {error}") from error
     if mismatches:

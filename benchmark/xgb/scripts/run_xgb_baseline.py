@@ -210,11 +210,13 @@ def predict_multioutput_at_step(model: MultiOutputClassifier, X, step: int) -> n
     predictions = []
 
     for estimator in model.estimators_:
+        fitted_rounds = int(estimator.get_booster().num_boosted_rounds())
+        estimator_step = min(step, fitted_rounds)
         try:
-            pred = estimator.predict(X, iteration_range=(0, step))
+            pred = estimator.predict(X, iteration_range=(0, estimator_step))
         except TypeError:
             # Compatibility fallback for older XGBoost versions.
-            pred = estimator.predict(X, ntree_limit=step)
+            pred = estimator.predict(X, ntree_limit=estimator_step)
 
         predictions.append(pred.astype(int))
 
@@ -257,7 +259,12 @@ def append_learning_curve_logs(
 
     Filter `event == "learning_curve"` when plotting.
     """
-    n_estimators = int(model.estimators_[0].get_params()["n_estimators"])
+    fitted_rounds = [
+        int(estimator.get_booster().num_boosted_rounds()) for estimator in model.estimators_
+    ]
+    if not fitted_rounds or min(fitted_rounds) <= 0:
+        raise ValueError("Every fitted XGBoost target must contain at least one boosting round")
+    n_estimators = max(fitted_rounds)
 
     steps = list(range(learning_curve_every, n_estimators + 1, learning_curve_every))
 
@@ -1064,7 +1071,12 @@ def main(
                         "split_path": str(split_path) if split_path is not None else None,
                         "input_dim": input_dim,
                         "input_digest": array_digest(X_data),
-                        **metrics_fields(preprocessing, "xgboost"),
+                        **metrics_fields(
+                            preprocessing,
+                            "xgboost",
+                            n_estimators=XGB_N_ESTIMATORS,
+                            early_stopping_patience=early_stopping_patience,
+                        ),
                     },
                     indent=2,
                 )

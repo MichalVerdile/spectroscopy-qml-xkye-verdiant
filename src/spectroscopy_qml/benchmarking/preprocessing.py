@@ -243,12 +243,31 @@ def effective_spec(spec: str | None, model: str) -> str:
     return LEGACY_EFFECTIVE_SPECS[model] if config is None else config.spec
 
 
-def metrics_fields(spec: str | None, model: str) -> dict[str, str]:
+def metrics_fields(
+    spec: str | None,
+    model: str,
+    *,
+    max_epochs: int | None = None,
+    n_estimators: int | None = None,
+    early_stopping_patience: int | None = None,
+) -> dict[str, object]:
     """Fields every model writes into metrics.json for the ablation aggregation."""
-    return {
+    fields: dict[str, object] = {
         "preprocessing": canonical_spec(spec),
         "preprocessing_effective": effective_spec(spec, model),
     }
+    training_config = {
+        key: int(value)
+        for key, value in {
+            "max_epochs": max_epochs,
+            "n_estimators": n_estimators,
+            "early_stopping_patience": early_stopping_patience,
+        }.items()
+        if value is not None
+    }
+    if training_config:
+        fields["training_config"] = training_config
+    return fields
 
 
 def array_digest(array: np.ndarray) -> str:

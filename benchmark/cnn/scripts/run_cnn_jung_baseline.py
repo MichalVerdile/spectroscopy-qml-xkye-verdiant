@@ -1143,7 +1143,12 @@ def main(
                         "split_path": str(split_path) if split_path is not None else None,
                         "input_dim": input_dim,
                         "input_digest": array_digest(X_data),
-                        **metrics_fields(preprocessing, "cnn"),
+                        **metrics_fields(
+                            preprocessing,
+                            "cnn",
+                            max_epochs=epochs,
+                            early_stopping_patience=early_stopping_patience,
+                        ),
                     },
                     indent=2,
                 )
