@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Run FIR + Gaussian + sqrt + SNV for seeds 41, 43, 44, and 45.
+# Run FIR + Gaussian + sqrt + SNV for the configured seeds.
+# Override the default list with SEED_LIST, for example SEED_LIST="42".
 # Each task runs one seed/modality pair. At most five tasks occupy H100s.
 # All model families use early-stopping patience 15. The practical training
 # ceiling is intentionally unreachable under normal early stopping.
@@ -23,10 +24,20 @@ set -euo pipefail
 
 cd "${SLURM_SUBMIT_DIR}"
 
-seeds=(41 43 44 45)
+read -r -a seeds <<< "${SEED_LIST:-41 43 44 45}"
 modalities=(cnmr hnmr ir msms_pos msms_neg)
 task_id="${SLURM_ARRAY_TASK_ID}"
 task_count=$(( ${#seeds[@]} * ${#modalities[@]} ))
+if (( ${#seeds[@]} == 0 )); then
+    echo "SEED_LIST must contain at least one seed." >&2
+    exit 2
+fi
+for configured_seed in "${seeds[@]}"; do
+    if [[ ! "$configured_seed" =~ ^[0-9]+$ ]]; then
+        echo "Invalid seed '${configured_seed}' in SEED_LIST." >&2
+        exit 2
+    fi
+done
 if [[ ! "$task_id" =~ ^[0-9]+$ ]] || ((task_id >= task_count)); then
     echo "Invalid SLURM_ARRAY_TASK_ID=${task_id}; expected 0-$((task_count - 1))." >&2
     exit 2
