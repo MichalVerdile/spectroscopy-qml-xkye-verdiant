@@ -7,6 +7,13 @@
 
 This repository contains code and experiments for functional-group classification from multi-modal spectroscopic data (H-NMR, C-NMR, IR, MS/MS).
 
+**Strict raw-native benchmark:** See [setup and commands](docs/RAW_NATIVE_BENCHMARK.md),
+[comparability](docs/MODEL_COMPARABILITY.md), [protocol](docs/EXPERIMENT_PROTOCOL.md),
+[model versions](docs/TENSOR_NETWORK_OPTIMIZATION.md), and
+[verified findings and limits](docs/RESEARCH_FINDINGS.md).
+The new runner preserves native Parquet values and uses separate result directories.
+Historical commands below retain their historical preprocessing and selection behavior.
+
 **Quick links:** [benchmark scripts](benchmark/), [configs](configs/), [data layout](data/), [src package](src/)
 
 **Reproducible environment (first)**

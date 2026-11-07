@@ -1,0 +1,493 @@
+{
+  "date_utc": "2026-11-07",
+  "source": {
+    "git_head": "bb134a5b17ea33462c194cd5bd1715a743d81067",
+    "source_sha256": "155bb48ebb464e23f6c139b27172050d6e692c2c5a5e25e2bb7b120f0988ba18"
+  },
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Linux-6.18.57-x86_64-with-glibc2.39",
+    "device": "cpu",
+    "device_name": "x86_64",
+    "packages": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "torch": "2.15.0",
+      "xgboost": "3.4.1",
+      "pyarrow": "26.0.1",
+      "scikit-learn": "1.8.0",
+      "rdkit": "2026.9.1"
+    }
+  },
+  "pytest": {
+    "command": "RAW_NATIVE_REAL_PARQUET=/tmp/aligned_chunk_0.parquet PYTHONPATH=src python -m pytest -o addopts='' -q",
+    "passed": 165,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 63.26
+  },
+  "checks": {
+    "ruff_check": "passed",
+    "ruff_format_check": "21 files formatted",
+    "mypy": "passed: 14 source files",
+    "python_compileall": "passed",
+    "bash_wrapper_help": "passed",
+    "python_entrypoint_help": "passed",
+    "bash_slurm_syntax": "passed",
+    "synthetic_native_20_combinations": "passed in integration suite",
+    "tune_test_isolation_and_pretest_seal": "passed",
+    "exact_interrupted_neural_resume": "passed bitwise",
+    "xgb_cpu_external_memory_and_per_label_reference": "passed",
+    "real_128_row_value_invariance": "passed"
+  },
+  "real_pilot": {
+    "source_rows": 128,
+    "seeds": [
+      42
+    ],
+    "neural_epochs": 1,
+    "xgb_rounds": 3,
+    "trial_count": 1,
+    "purpose": "Engineering validation only. No model superiority or full-dataset performance claim.",
+    "runs": [
+      {
+        "model": "cnn",
+        "modality": "cnmr",
+        "input_hash": "37643622da23e6179a2e78e89b2e40c77c978d06e7c67b9cb534e160eaf26a29",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "cnn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "width": 12
+        },
+        "result_sha256": "f6d966062ae8d9658c517035b633a9acdc67597f97250d0fe8a90b71cab35d3d",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "mps",
+        "modality": "cnmr",
+        "input_hash": "37643622da23e6179a2e78e89b2e40c77c978d06e7c67b9cb534e160eaf26a29",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "mps_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "bidirectional": true,
+          "bond_dim": 8,
+          "dropout": 0.2,
+          "dual_scale": false,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "normalize": true,
+          "physical_dim": 8,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "565e6808824966bb2014a7e954317176d2a84af2eeabae37b4060d66f63ace1a",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "ttn",
+        "modality": "cnmr",
+        "input_hash": "37643622da23e6179a2e78e89b2e40c77c978d06e7c67b9cb534e160eaf26a29",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "ttn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "chi": 8,
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "merge_mode": "relaxed",
+          "multiscale": true,
+          "normalize": true,
+          "overlap": 0.5,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "dfa4d19c99baf045cdd3fb4840eff38e71c6de04cde9802891283220513c7820",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "xgb",
+        "modality": "cnmr",
+        "input_hash": "37643622da23e6179a2e78e89b2e40c77c978d06e7c67b9cb534e160eaf26a29",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "xgb_raw_native_v1",
+        "selection_checks": 3,
+        "config": {
+          "colsample_bytree": 1.0,
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "min_child_weight": 1.0,
+          "n_estimators": 3,
+          "reg_alpha": 0.0,
+          "reg_lambda": 1.0,
+          "subsample": 1.0
+        },
+        "result_sha256": "2b4a40d1f32a512eac3bb4b633f0f5e6579ab546c83fb474ae3e4a2938613043",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "cnn",
+        "modality": "hnmr",
+        "input_hash": "1900db047dcc0115d8f0e61ef25271878e2be46a897cc1dfcba038a41e4daf5b",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "cnn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "width": 12
+        },
+        "result_sha256": "99dea201239c2c48cd9694854945531adb5e006d363a1d0934b799e10ecc4f51",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "mps",
+        "modality": "hnmr",
+        "input_hash": "1900db047dcc0115d8f0e61ef25271878e2be46a897cc1dfcba038a41e4daf5b",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "mps_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "bidirectional": true,
+          "bond_dim": 8,
+          "dropout": 0.2,
+          "dual_scale": false,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "normalize": true,
+          "physical_dim": 8,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "4edc754754f61c0ae8b57aae243892745cc75e890a73306a52c6763f884e3dfb",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "ttn",
+        "modality": "hnmr",
+        "input_hash": "1900db047dcc0115d8f0e61ef25271878e2be46a897cc1dfcba038a41e4daf5b",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "ttn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "chi": 8,
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "merge_mode": "relaxed",
+          "multiscale": true,
+          "normalize": true,
+          "overlap": 0.5,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "8382d560652e44eb3eb56f0fb13ffcda9cc9d824c6fdf5a793f43e8636ec59a0",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "xgb",
+        "modality": "hnmr",
+        "input_hash": "1900db047dcc0115d8f0e61ef25271878e2be46a897cc1dfcba038a41e4daf5b",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "xgb_raw_native_v1",
+        "selection_checks": 3,
+        "config": {
+          "colsample_bytree": 1.0,
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "min_child_weight": 1.0,
+          "n_estimators": 3,
+          "reg_alpha": 0.0,
+          "reg_lambda": 1.0,
+          "subsample": 1.0
+        },
+        "result_sha256": "7146e17893ddad23de7404d760a4e6a2cb9ef195bea9af3c38458ee5ed447e3e",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "cnn",
+        "modality": "ir",
+        "input_hash": "ce15059638ab9e9c6d735e067adface53aaa8f1efd49bc50f79557e8b473176d",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "cnn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "width": 12
+        },
+        "result_sha256": "a40dc3de003970936d9cccf67c5167101b0c7072738d25aafa8013f485cc506f",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "mps",
+        "modality": "ir",
+        "input_hash": "ce15059638ab9e9c6d735e067adface53aaa8f1efd49bc50f79557e8b473176d",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "mps_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "bidirectional": true,
+          "bond_dim": 8,
+          "dropout": 0.2,
+          "dual_scale": false,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "normalize": true,
+          "physical_dim": 8,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "8a412f23332521b5f806598122c8d0b1bb2324a740b178791af1f69d32625c40",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "ttn",
+        "modality": "ir",
+        "input_hash": "ce15059638ab9e9c6d735e067adface53aaa8f1efd49bc50f79557e8b473176d",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "ttn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "chi": 8,
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "merge_mode": "relaxed",
+          "multiscale": true,
+          "normalize": true,
+          "overlap": 0.5,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "83d6aeec9536a0ab6c5321dea321433ad2b9579eb7e67c0e1a74085635ed92a6",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "xgb",
+        "modality": "ir",
+        "input_hash": "ce15059638ab9e9c6d735e067adface53aaa8f1efd49bc50f79557e8b473176d",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "xgb_raw_native_v1",
+        "selection_checks": 3,
+        "config": {
+          "colsample_bytree": 1.0,
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "min_child_weight": 1.0,
+          "n_estimators": 3,
+          "reg_alpha": 0.0,
+          "reg_lambda": 1.0,
+          "subsample": 1.0
+        },
+        "result_sha256": "9aab6d9951424d100edac4ad04e3a59e1f157c04b6fc0cbb2327e1125e8d88f1",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "cnn",
+        "modality": "msms_neg",
+        "input_hash": "4ffae769431caf4d0a870f57d2d5a5dd0840fb5f088d205a55c07d3f4711f828",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "cnn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "width": 12
+        },
+        "result_sha256": "088951289b9b690855e2979165484ab7a9791e87005fa8ace902c3269ca6cc10",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "mps",
+        "modality": "msms_neg",
+        "input_hash": "4ffae769431caf4d0a870f57d2d5a5dd0840fb5f088d205a55c07d3f4711f828",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "mps_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "bidirectional": true,
+          "bond_dim": 8,
+          "dropout": 0.2,
+          "dual_scale": false,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "normalize": true,
+          "physical_dim": 8,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "8bb423c2b99a95ba2568b0bd049ee30251b8125037cdbf92cb0c88e67553700f",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "ttn",
+        "modality": "msms_neg",
+        "input_hash": "4ffae769431caf4d0a870f57d2d5a5dd0840fb5f088d205a55c07d3f4711f828",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "ttn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "chi": 8,
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "merge_mode": "relaxed",
+          "multiscale": true,
+          "normalize": true,
+          "overlap": 0.5,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "f5e013bb254359957f265f923f6c6ff1f0cca5379a9f3e2a1c1e5a452086363e",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "xgb",
+        "modality": "msms_neg",
+        "input_hash": "4ffae769431caf4d0a870f57d2d5a5dd0840fb5f088d205a55c07d3f4711f828",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "xgb_raw_native_v1",
+        "selection_checks": 3,
+        "config": {
+          "colsample_bytree": 1.0,
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "min_child_weight": 1.0,
+          "n_estimators": 3,
+          "reg_alpha": 0.0,
+          "reg_lambda": 1.0,
+          "subsample": 1.0
+        },
+        "result_sha256": "0da2d97eab627182470f3246985f11113cdc15e0af6e399eeab676059c4405ab",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "cnn",
+        "modality": "msms_pos",
+        "input_hash": "14ae938044d925cb7815ce7ddb4b2edb9eca477155ac60068f24676868d65693",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "cnn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "width": 12
+        },
+        "result_sha256": "621f2a0b90e5baf9e21dc55363c664961c827efd890a5ce7dcaf5e483889f271",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "mps",
+        "modality": "msms_pos",
+        "input_hash": "14ae938044d925cb7815ce7ddb4b2edb9eca477155ac60068f24676868d65693",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "mps_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "bidirectional": true,
+          "bond_dim": 8,
+          "dropout": 0.2,
+          "dual_scale": false,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "normalize": true,
+          "physical_dim": 8,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "2f98257949fd829c133ac841ec4dba41683053453a623c7b3e7c649e064cdcc7",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "ttn",
+        "modality": "msms_pos",
+        "input_hash": "14ae938044d925cb7815ce7ddb4b2edb9eca477155ac60068f24676868d65693",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "ttn_raw_native_v1",
+        "selection_checks": 1,
+        "config": {
+          "chi": 8,
+          "dropout": 0.2,
+          "learning_rate": 0.001,
+          "mapping": "small",
+          "merge_mode": "relaxed",
+          "multiscale": true,
+          "normalize": true,
+          "overlap": 0.5,
+          "residual": 0.1,
+          "weight_decay": 0.0001,
+          "window": 128
+        },
+        "result_sha256": "2d104a30ac50d34a4fe18b170a85963805a03542d475ecf5b12a512103827420",
+        "status": "completed and artifact hashes verified"
+      },
+      {
+        "model": "xgb",
+        "modality": "msms_pos",
+        "input_hash": "14ae938044d925cb7815ce7ddb4b2edb9eca477155ac60068f24676868d65693",
+        "split_hash": "92fde9255e095e3b1dc6673c2431e70ef718be047b33d48b2b6a18cbaa087c33",
+        "dataset_hash": "3ad81b3205b8b12226156eef1c48ba2a8c21f20291d95934e2c8812096450ba4",
+        "architecture": "xgb_raw_native_v1",
+        "selection_checks": 3,
+        "config": {
+          "colsample_bytree": 1.0,
+          "learning_rate": 0.05,
+          "max_depth": 2,
+          "min_child_weight": 1.0,
+          "n_estimators": 3,
+          "reg_alpha": 0.0,
+          "reg_lambda": 1.0,
+          "subsample": 1.0
+        },
+        "result_sha256": "b918b32d6894c3c7425c1129ad59f8326933b458219417dba294d3670bf165de",
+        "status": "completed and artifact hashes verified"
+      }
+    ]
+  },
+  "not_executed": [
+    "full dataset/five-seed/12-trial experiments",
+    "H100/CUDA training and GPU external-memory XGBoost",
+    "Slurm submission",
+    "Windows PowerShell 5.1/7 runtime and remote GitHub Actions",
+    "legacy MPS runtime/gradients/GPU memory",
+    "independent scientific confirmation"
+  ]
+}

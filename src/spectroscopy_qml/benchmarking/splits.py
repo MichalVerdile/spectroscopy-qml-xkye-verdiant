@@ -3,10 +3,31 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import tempfile
 from pathlib import Path
 
 import numpy as np
-from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
+
+
+def _atomic_savez_compressed(path: Path, **arrays) -> None:
+    """Write a NumPy archive completely before publishing it at ``path``."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(file_descriptor, "wb") as temporary_file:
+            np.savez_compressed(temporary_file, **arrays)
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
 
 
 def label_digest(labels: np.ndarray) -> str:
@@ -30,13 +51,13 @@ def create_split_artifact(
     test_ratio: float = 0.1,
 ) -> dict[str, np.ndarray]:
     """Create one deterministic 80/10/10 multilabel-stratified split."""
+    from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
+
     if not np.isclose(train_ratio + val_ratio + test_ratio, 1.0):
         raise ValueError("train_ratio + val_ratio + test_ratio must equal 1")
 
     indices = np.arange(len(labels), dtype=np.int64)
-    first = MultilabelStratifiedShuffleSplit(
-        n_splits=1, test_size=test_ratio, random_state=seed
-    )
+    first = MultilabelStratifiedShuffleSplit(n_splits=1, test_size=test_ratio, random_state=seed)
     trainval_local, test_local = next(first.split(indices, labels))
     trainval_indices = indices[trainval_local]
     test_indices = indices[test_local]
@@ -45,15 +66,12 @@ def create_split_artifact(
     second = MultilabelStratifiedShuffleSplit(
         n_splits=1, test_size=relative_val_ratio, random_state=seed + 1
     )
-    train_local, val_local = next(
-        second.split(trainval_indices, labels[trainval_indices])
-    )
+    train_local, val_local = next(second.split(trainval_indices, labels[trainval_indices]))
     train_indices = trainval_indices[train_local]
     val_indices = trainval_indices[val_local]
 
     path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(
+    _atomic_savez_compressed(
         path,
         train_indices=train_indices,
         val_indices=val_indices,
@@ -74,7 +92,15 @@ def load_split_artifact(
 ) -> dict[str, np.ndarray]:
     """Load and strictly validate a shared split against a model's labels."""
     with np.load(path, allow_pickle=False) as payload:
-        required = {"train_indices", "val_indices", "test_indices", "num_samples", "num_labels", "random_seed", "label_digest"}
+        required = {
+            "train_indices",
+            "val_indices",
+            "test_indices",
+            "num_samples",
+            "num_labels",
+            "random_seed",
+            "label_digest",
+        }
         missing = required.difference(payload.files)
         if missing:
             raise ValueError(f"Split artifact {path} is missing fields: {sorted(missing)}")

@@ -2,12 +2,13 @@
 
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 PREPROCESSING" >&2
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+    echo "Usage: $0 PREPROCESSING [EXPERIMENT_NAME]" >&2
     exit 2
 fi
 
 preprocessing="$1"
+experiment_name="${2:-$preprocessing}"
 
 requeue_before_timeout() {
     echo "Approaching the 24-hour limit; requeueing ${SLURM_JOB_ID}."
@@ -42,12 +43,14 @@ print("Training dependencies imported successfully")
 PREPROCESSING="$preprocessing" \
 PYTHON=.venv/bin/python \
 DEVICE=cuda \
-EPOCHS=200 \
-SEEDS="41" \
+EPOCHS="${EPOCHS:-1000000}" \
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-15}" \
+XGB_N_ESTIMATORS="${XGB_N_ESTIMATORS:-1000000}" \
+SEEDS="${SEEDS:-41}" \
 MIN_SEEDS=1 \
-MODALITIES="cnmr hnmr ir msms_pos msms_neg" \
+MODALITIES="${MODALITIES:-cnmr hnmr ir msms_pos msms_neg}" \
 DATA_DIR=data/raw \
-EXPERIMENT_DIR="benchmark/preprocessing_training/dim_600/${preprocessing}" \
+EXPERIMENT_DIR="benchmark/preprocessing_training/dim_600/${experiment_name}" \
 SPLIT_DIR=benchmark/preprocessing_training/shared_splits_600 \
 SKIP_AGGREGATE=1 \
     scripts/run_multiseed_benchmark.sh 600

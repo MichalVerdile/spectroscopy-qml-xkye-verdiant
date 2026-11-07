@@ -88,3 +88,7 @@ docs/.doctrees/
 
 # Pre-commit
 .pre-commit-config.yaml.backup
+
+# Raw-native data maps and new benchmark artifacts
+/data/cache/raw_native_v1/
+/benchmark/raw_native_v1/

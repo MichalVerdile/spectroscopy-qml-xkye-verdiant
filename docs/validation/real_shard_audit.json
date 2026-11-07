@@ -1,0 +1,89 @@
+{
+  "dataset_hash": "60fa8cfc6f72fc1c6ee95dec52d266776f55d0fb50c245e07dd2297613e492e1",
+  "implementation": {
+    "raw_labels.py": "d639f98d01059308f9ff818dfe2bc4d941d1bec157f2f2d51db14f4a6864e940",
+    "raw_native.py": "c7f6972bc878e0d10599e5914ecaee4e8d09bb83d2c9fc8ccab60e78a4713636"
+  },
+  "sources": [
+    {
+      "name": "aligned_chunk_0.parquet",
+      "sha256": "d98564fbd5e7b92d79920672c2649bdb62ebbabba973b187f8a2c8bc21d55c73"
+    }
+  ],
+  "sample_count": 3235,
+  "rejected_count": 0,
+  "modalities": {
+    "cnmr": {
+      "axis": "cnmr_axis.npy",
+      "length_max": 10000,
+      "length_min": 10000,
+      "mask_hash": "a25e8908143ff531cd6b6e6ccb2fdbaa325fa0c9562ebcc96b090ecbe85b9b33",
+      "model_input_hash": "4be0380b0ffb1610162af98c0ac121a6b6b1002e5cf632ea4fc4f0f9c8796542",
+      "original_values_hash": "604758b0fae6785278da39606d6acfedfa50926d3f634ab15725130d96b43648",
+      "shape": [
+        3235,
+        10000,
+        1
+      ]
+    },
+    "hnmr": {
+      "axis": "hnmr_axis.npy",
+      "length_max": 10000,
+      "length_min": 10000,
+      "mask_hash": "a25e8908143ff531cd6b6e6ccb2fdbaa325fa0c9562ebcc96b090ecbe85b9b33",
+      "model_input_hash": "68b4c21bab873221a73ee0f828481797ba5565297fbe47335ccfd4a528a0b5d1",
+      "original_values_hash": "812bce02723e99bd2631d134696585bdac57399c9d0780122e472b83977c9959",
+      "shape": [
+        3235,
+        10000,
+        1
+      ]
+    },
+    "ir": {
+      "axis": "ir_axis.npy",
+      "length_max": 1800,
+      "length_min": 1800,
+      "mask_hash": "e0192e08d1f02ec34fa79074ceb8bb791fd165cb693404fed1cb93630721af4c",
+      "model_input_hash": "eaf9470b44b3b2990c59413824bba36f88ef0c1b35779881d14c60433cecc0a5",
+      "original_values_hash": "55721046c2cfb19d617f1a087e348ad903165050995807ece14b1e25b34ec23e",
+      "shape": [
+        3235,
+        1800,
+        1
+      ]
+    },
+    "msms_neg": {
+      "axis": "first channel: m/z",
+      "length_max": 31,
+      "length_min": 1,
+      "mask_hash": "e30506cba04d4d0863f7a4cf1c56f594d158881e794d3b63c3acee64721433ce",
+      "model_input_hash": "49e7bd6b35624926c419f0e481b7481e594ceba57633401446e01666f838ed45",
+      "original_values_hash": "9ac13e7a77cb70ec42289b34fd6fdb28f90bef70d54db28b2a1cb27e6b0f27cd",
+      "shape": [
+        3235,
+        31,
+        2
+      ]
+    },
+    "msms_pos": {
+      "axis": "first channel: m/z",
+      "length_max": 31,
+      "length_min": 1,
+      "mask_hash": "5be7c9af0edf50b8ac578a8f0e05da78feff45de117a195fbd00fd7dd056bc4b",
+      "model_input_hash": "96b0ccff2f9c63d633d69bcab1759af7f472e426682ce0ea4558297789ff6fed",
+      "original_values_hash": "d9714c9fdf7135d4f61e3c67f0a2d54483bbbe1fce4ba623a231bea6a7142efc",
+      "shape": [
+        3235,
+        31,
+        2
+      ]
+    }
+  },
+  "precision": {
+    "atol": 0,
+    "model": "float32",
+    "rtol": 1e-06,
+    "storage": "float64"
+  },
+  "scope": "Single real source shard; all rows validated before the final shared-packing refactor. Final-source 128-row invariance and end-to-end checks recorded separately."
+}
