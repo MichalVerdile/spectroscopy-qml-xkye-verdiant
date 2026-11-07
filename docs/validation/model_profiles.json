@@ -1,0 +1,273 @@
+{
+  "batch_size": 2,
+  "device": "cpu",
+  "rows": [
+    {
+      "adamw_parameter_gradient_moments_bytes_lower_bound": 7823432592,
+      "config": {
+        "bond_dim": 128,
+        "bond_dim_2": 128,
+        "classifier_head": "mps",
+        "dropout_rate": 0.49,
+        "input_dim": 600,
+        "num_classes": 37,
+        "num_sites": 25,
+        "num_sites_2": 10,
+        "physical_dim": 450,
+        "physical_dim_2": 450
+      },
+      "float32_weight_bytes": 1955858148,
+      "forward_backward_seconds": null,
+      "gpu_peak_bytes": null,
+      "gradient_norm": null,
+      "modality": "cnmr",
+      "model": "mps_legacy",
+      "note": "Meta-device exact parameter census; no legacy runtime or GPU measurement",
+      "parameter_count": 488964537
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.15715359599994372,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 8.592592239379883,
+      "input_length": 10000,
+      "modality": "cnmr",
+      "model": "cnn_raw_native_v1",
+      "parameter_count": 554837
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.2491200370000115,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 0.3119635283946991,
+      "input_length": 10000,
+      "modality": "cnmr",
+      "model": "mps_raw_native_v1",
+      "parameter_count": 2784457
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.008144125999933749,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 14.61040210723877,
+      "input_length": 10000,
+      "modality": "cnmr",
+      "model": "ttn_raw_native_v1",
+      "parameter_count": 296997
+    },
+    {
+      "adamw_parameter_gradient_moments_bytes_lower_bound": 3095576464,
+      "config": {
+        "bond_dim": 128,
+        "bond_dim_2": 128,
+        "classifier_head": "mps",
+        "dropout_rate": 0.49,
+        "input_dim": 600,
+        "num_classes": 37,
+        "num_sites": 10,
+        "num_sites_2": 5,
+        "physical_dim": 450,
+        "physical_dim_2": 450
+      },
+      "float32_weight_bytes": 773894116,
+      "forward_backward_seconds": null,
+      "gpu_peak_bytes": null,
+      "gradient_norm": null,
+      "modality": "hnmr",
+      "model": "mps_legacy",
+      "note": "Meta-device exact parameter census; no legacy runtime or GPU measurement",
+      "parameter_count": 193473529
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.09235862199989242,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 8.592592239379883,
+      "input_length": 10000,
+      "modality": "hnmr",
+      "model": "cnn_raw_native_v1",
+      "parameter_count": 554837
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.18075667099992643,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 0.3119635283946991,
+      "input_length": 10000,
+      "modality": "hnmr",
+      "model": "mps_raw_native_v1",
+      "parameter_count": 2784457
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.007815989999926387,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 14.61040210723877,
+      "input_length": 10000,
+      "modality": "hnmr",
+      "model": "ttn_raw_native_v1",
+      "parameter_count": 296997
+    },
+    {
+      "adamw_parameter_gradient_moments_bytes_lower_bound": 3095576464,
+      "config": {
+        "bond_dim": 128,
+        "bond_dim_2": 128,
+        "classifier_head": "mps",
+        "dropout_rate": 0.49,
+        "input_dim": 600,
+        "num_classes": 37,
+        "num_sites": 5,
+        "num_sites_2": 10,
+        "physical_dim": 450,
+        "physical_dim_2": 450
+      },
+      "float32_weight_bytes": 773894116,
+      "forward_backward_seconds": null,
+      "gpu_peak_bytes": null,
+      "gradient_norm": null,
+      "modality": "ir",
+      "model": "mps_legacy",
+      "note": "Meta-device exact parameter census; no legacy runtime or GPU measurement",
+      "parameter_count": 193473529
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.04774145200008206,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 5.997829914093018,
+      "input_length": 1800,
+      "modality": "ir",
+      "model": "cnn_raw_native_v1",
+      "parameter_count": 161237
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.019909052000002703,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 0.6146311163902283,
+      "input_length": 1800,
+      "modality": "ir",
+      "model": "mps_raw_native_v1",
+      "parameter_count": 555209
+    },
+    {
+      "channels_including_mask": 2,
+      "forward_backward_seconds": 0.005102008999983809,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 6.014958381652832,
+      "input_length": 1800,
+      "modality": "ir",
+      "model": "ttn_raw_native_v1",
+      "parameter_count": 190853
+    },
+    {
+      "adamw_parameter_gradient_moments_bytes_lower_bound": 3095576464,
+      "config": {
+        "bond_dim": 128,
+        "bond_dim_2": 128,
+        "classifier_head": "mps",
+        "dropout_rate": 0.49,
+        "input_dim": 600,
+        "num_classes": 37,
+        "num_sites": 5,
+        "num_sites_2": 10,
+        "physical_dim": 450,
+        "physical_dim_2": 450
+      },
+      "float32_weight_bytes": 773894116,
+      "forward_backward_seconds": null,
+      "gpu_peak_bytes": null,
+      "gradient_norm": null,
+      "modality": "msms_pos",
+      "model": "mps_legacy",
+      "note": "Meta-device exact parameter census; no legacy runtime or GPU measurement",
+      "parameter_count": 193473529
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.01991625200003,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 2.2392995357513428,
+      "input_length": 31,
+      "modality": "msms_pos",
+      "model": "cnn_raw_native_v1",
+      "parameter_count": 77045
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.004904227999986688,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 0.7753242254257202,
+      "input_length": 31,
+      "modality": "msms_pos",
+      "model": "mps_raw_native_v1",
+      "parameter_count": 71657
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.0023488199999519566,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 3.6419615745544434,
+      "input_length": 31,
+      "modality": "msms_pos",
+      "model": "ttn_raw_native_v1",
+      "parameter_count": 28101
+    },
+    {
+      "adamw_parameter_gradient_moments_bytes_lower_bound": 3095576464,
+      "config": {
+        "bond_dim": 128,
+        "bond_dim_2": 128,
+        "classifier_head": "mps",
+        "dropout_rate": 0.49,
+        "input_dim": 600,
+        "num_classes": 37,
+        "num_sites": 5,
+        "num_sites_2": 10,
+        "physical_dim": 450,
+        "physical_dim_2": 450
+      },
+      "float32_weight_bytes": 773894116,
+      "forward_backward_seconds": null,
+      "gpu_peak_bytes": null,
+      "gradient_norm": null,
+      "modality": "msms_neg",
+      "model": "mps_legacy",
+      "note": "Meta-device exact parameter census; no legacy runtime or GPU measurement",
+      "parameter_count": 193473529
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.0047684659998594725,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 2.2392995357513428,
+      "input_length": 31,
+      "modality": "msms_neg",
+      "model": "cnn_raw_native_v1",
+      "parameter_count": 77045
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.0017514579999442503,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 0.7753242254257202,
+      "input_length": 31,
+      "modality": "msms_neg",
+      "model": "mps_raw_native_v1",
+      "parameter_count": 71657
+    },
+    {
+      "channels_including_mask": 3,
+      "forward_backward_seconds": 0.0005469979998906638,
+      "gpu_peak_bytes": null,
+      "gradient_norm": 3.6419615745544434,
+      "input_length": 31,
+      "modality": "msms_neg",
+      "model": "ttn_raw_native_v1",
+      "parameter_count": 28101
+    }
+  ],
+  "threads": 2,
+  "timing": "single forward/backward, no warmup, diagnostic only"
+}
