@@ -78,6 +78,11 @@ def checked_float32(values: np.ndarray) -> np.ndarray:
     return result
 
 
+def pack_native(values: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """The only canonical model-input packing/conversion used by all adapters."""
+    return np.concatenate([checked_float32(values), mask[..., None].astype(np.float32)], axis=-1)
+
+
 def validate_signal(value, modality: str, expected_lengths: dict) -> np.ndarray:
     if value is None:
         raise ValueError(f"Missing {modality} signal")
@@ -168,9 +173,7 @@ class RawCohort:
         Dense: [intensity, 1]. MS/MS: [m/z, intensity, occupied]. Padding is
         [0, 0, 0], distinct even from a genuine measured (0, 0) peak [0, 0, 1].
         """
-        raw = checked_float32(self.values(modality)[indices])
-        mask = self.masks(modality)[indices].astype(np.float32)
-        return np.concatenate([raw, mask[..., None]], axis=-1)
+        return pack_native(self.values(modality)[indices], self.masks(modality)[indices])
 
     def input_hash(self, modality: str) -> str:
         return self.manifest["modalities"][modality]["model_input_hash"]
@@ -287,13 +290,7 @@ def prepare_cohort(
             h = hashlib.sha256()
             h.update(str((len(records), maxima[m], arrays[m].shape[2] + 1)).encode())
             for start in range(0, len(records), 64):
-                packed = np.concatenate(
-                    [
-                        checked_float32(arrays[m][start : start + 64]),
-                        masks[m][start : start + 64, :, None].astype(np.float32),
-                    ],
-                    axis=-1,
-                )
+                packed = pack_native(arrays[m][start : start + 64], masks[m][start : start + 64])
                 h.update(packed.tobytes())
             axis = metadata.get(COLUMNS[m][0], {}).get("dimensions")
             if axis is not None:

@@ -1,0 +1,17 @@
+# Standalone raw-native environment; historical requirements.txt stays unchanged.
+# Install a torch wheel compatible with the cluster driver before this file if needed.
+numpy>=2.0,<3
+scipy>=1.14,<2
+scikit-learn>=1.5,<2
+pyarrow>=16,<27
+torch>=2.3,<3
+xgboost>=3.1,<4
+rdkit>=2024.3
+pandas>=2.2,<4
+matplotlib>=3.9,<4
+filelock>=3.16
+iterative-stratification>=0.1.9,<0.2
+pytest>=8,<10
+pytest-cov>=5,<8
+ruff>=0.14,<1
+mypy>=1.10,<3
