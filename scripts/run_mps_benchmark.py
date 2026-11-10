@@ -7,6 +7,7 @@ import argparse
 import importlib
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from spectroscopy_qml.benchmarking.preprocessing import canonical_spec
@@ -36,6 +37,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--early-stopping-patience", type=int, default=10)
     parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
     parser.add_argument(
+        "--fixed-threshold",
+        type=float,
+        default=None,
+        help="Use one fixed classification threshold instead of validation tuning.",
+    )
+    parser.add_argument(
         "--preprocessing",
         default="legacy",
         help="Shared preprocessing spec or ablation config name (default: legacy MPS path)",
@@ -47,6 +54,16 @@ def main() -> None:
     args = parse_args()
     module_name = MPS_TRAINING_MODULES[args.modality]
     module = importlib.import_module(module_name)
+
+    if args.fixed_threshold is not None:
+        if not 0.0 <= args.fixed_threshold <= 1.0:
+            raise ValueError("--fixed-threshold must be between 0 and 1")
+
+        def fixed_thresholds(_labels, probabilities, **_kwargs):
+            return np.full(probabilities.shape[1], args.fixed_threshold, dtype=np.float32)
+
+        module.tune_thresholds = fixed_thresholds
+        print(f"Using fixed classification threshold: {args.fixed_threshold:.3f}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     model_dir = args.output_dir / "models"
