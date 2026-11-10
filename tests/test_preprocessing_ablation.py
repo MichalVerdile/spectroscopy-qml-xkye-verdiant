@@ -6,8 +6,10 @@ import json
 import os
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from spectroscopy_qml.benchmarking.preprocessing import (
@@ -16,6 +18,11 @@ from spectroscopy_qml.benchmarking.preprocessing import (
     SHARED_PREPROCESSING_CONFIGS,
     canonical_spec,
     metrics_fields,
+)
+from spectroscopy_qml.benchmarking.splits import (
+    _atomic_savez_compressed,
+    label_digest,
+    load_split_artifact,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -244,6 +251,116 @@ def test_completed_result_validation_rejects_stale_preprocessing(tmp_path):
     ]
     assert subprocess.run([*command, "norm_none"], cwd=PROJECT_ROOT).returncode == 0
     assert subprocess.run([*command, "shared_lorentz_snv"], cwd=PROJECT_ROOT).returncode != 0
+
+
+def test_completed_result_validation_rejects_stale_training_config(tmp_path):
+    split_path = tmp_path / "split.npz"
+    split_path.touch()
+    metrics_path = tmp_path / "metrics.json"
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "model": "cnn",
+                "seed": 42,
+                "input_dim": 600,
+                "input_digest": "0" * 64,
+                "preprocessing": canonical_spec("norm_none"),
+                "split_path": str(split_path),
+                "training_config": {
+                    "max_epochs": 1_000_000,
+                    "early_stopping_patience": 15,
+                },
+            }
+        )
+    )
+    command = [
+        sys.executable,
+        "scripts/validate_benchmark_result.py",
+        "--metrics",
+        str(metrics_path),
+        "--model",
+        "cnn",
+        "--input-dim",
+        "600",
+        "--seed",
+        "42",
+        "--split-path",
+        str(split_path),
+        "--preprocessing",
+        "norm_none",
+        "--max-epochs",
+        "1000000",
+        "--early-stopping-patience",
+        "15",
+    ]
+    assert subprocess.run(command, cwd=PROJECT_ROOT).returncode == 0
+    stale_command = ["20" if value == "15" else value for value in command]
+    result = subprocess.run(stale_command, cwd=PROJECT_ROOT, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "training_config.early_stopping_patience" in result.stderr
+
+    payload = json.loads(metrics_path.read_text())
+    payload["model"] = "xgboost"
+    payload["training_config"] = {
+        "n_estimators": 1_000_000,
+        "early_stopping_patience": 15,
+    }
+    metrics_path.write_text(json.dumps(payload))
+    xgb_command = [
+        "xgboost" if value == "cnn" else "--n-estimators" if value == "--max-epochs" else value
+        for value in command
+    ]
+    assert subprocess.run(xgb_command, cwd=PROJECT_ROOT).returncode == 0
+    stale_xgb_command = ["999999" if value == "1000000" else value for value in xgb_command]
+    result = subprocess.run(
+        stale_xgb_command,
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "training_config.n_estimators" in result.stderr
+
+
+def test_metrics_fields_persist_effective_training_config():
+    fields = metrics_fields(
+        "norm_none",
+        "xgboost",
+        n_estimators=1_000_000,
+        early_stopping_patience=15,
+    )
+    assert fields["training_config"] == {
+        "n_estimators": 1_000_000,
+        "early_stopping_patience": 15,
+    }
+
+
+def test_concurrent_split_creation_only_publishes_complete_archive(tmp_path):
+    rng = np.random.default_rng(42)
+    labels = rng.integers(0, 2, size=(200, 8), dtype=np.int32)
+    split_path = tmp_path / "shared" / "ir_seed_42.npz"
+    train_indices = np.arange(0, 160, dtype=np.int64)
+    val_indices = np.arange(160, 180, dtype=np.int64)
+    test_indices = np.arange(180, 200, dtype=np.int64)
+
+    def write_split(_):
+        _atomic_savez_compressed(
+            split_path,
+            train_indices=train_indices,
+            val_indices=val_indices,
+            test_indices=test_indices,
+            num_samples=np.asarray(len(labels), dtype=np.int64),
+            num_labels=np.asarray(labels.shape[1], dtype=np.int64),
+            random_seed=np.asarray(42, dtype=np.int64),
+            label_digest=np.asarray(label_digest(labels)),
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        list(executor.map(write_split, range(16)))
+
+    split = load_split_artifact(split_path, labels, expected_seed=42)
+    assert sum(len(indices) for indices in split.values()) == len(labels)
+    assert not list(split_path.parent.glob(f".{split_path.name}.*.tmp"))
 
 
 def pytest_approx(value):

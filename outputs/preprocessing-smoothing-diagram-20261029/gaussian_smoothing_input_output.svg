@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="650" viewBox="0 0 1600 650">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#294957"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#173441" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="650" fill="#FAFAF8"/>
+  <text x="800" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#173441">Gaussian Smoothing</text>
+  <text x="800" y="108" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#63727A">Rauschreduktion bei Erhalt der spektralen Peakstruktur</text>
+
+  <rect x="70" y="160" width="500" height="385" rx="22" fill="#FFFFFF" stroke="#B9C5C9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="320" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#173441">Input</text>
+  <text x="320" y="243" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#77858B">Verrauschtes Spektrum</text>
+  <line x1="125" y1="480" x2="520" y2="480" stroke="#7B898F" stroke-width="2"/>
+  <line x1="125" y1="480" x2="125" y2="285" stroke="#7B898F" stroke-width="2"/>
+  <text x="322" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#63727A">Wellenzahl</text>
+  <text x="93" y="385" text-anchor="middle" transform="rotate(-90 93 385)" font-family="Arial, sans-serif" font-size="17" fill="#63727A">Intensität</text>
+  <path d="M125 457 L137 451 L149 460 L161 443 L173 455 L185 448 L197 454 L209 442 L221 449 L233 437 L245 445 L257 419 L269 432 L281 395 L293 410 L305 350 L317 383 L329 319 L341 368 L353 397 L365 381 L377 414 L389 402 L401 428 L413 417 L425 441 L437 430 L449 448 L461 438 L473 454 L485 445 L497 459 L509 450 L520 456" fill="none" stroke="#16839A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <line x1="600" y1="353" x2="705" y2="353" stroke="#294957" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="720" y="230" width="240" height="245" rx="22" fill="#123E50" filter="url(#shadow)"/>
+  <text x="840" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">Gaussian Filter</text>
+  <path d="M755 405 C775 405 786 401 800 385 C816 366 822 311 840 311 C858 311 864 366 880 385 C894 401 905 405 925 405" fill="none" stroke="#A8D9D4" stroke-width="6" stroke-linecap="round"/>
+  <line x1="755" y1="405" x2="925" y2="405" stroke="#D4E6E5" stroke-width="2"/>
+  <text x="840" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#DCEBEA">gewichteter Mittelwert</text>
+
+  <line x1="975" y1="353" x2="1080" y2="353" stroke="#294957" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="1095" y="160" width="435" height="385" rx="22" fill="#FFFFFF" stroke="#B9C5C9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1312" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#173441">Output</text>
+  <text x="1312" y="243" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#77858B">Geglättetes Spektrum</text>
+  <line x1="1145" y1="480" x2="1482" y2="480" stroke="#7B898F" stroke-width="2"/>
+  <line x1="1145" y1="480" x2="1145" y2="285" stroke="#7B898F" stroke-width="2"/>
+  <text x="1313" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#63727A">Wellenzahl</text>
+  <path d="M1145 454 C1185 453 1210 450 1238 445 C1268 440 1288 427 1304 401 C1320 375 1328 326 1343 326 C1358 326 1366 375 1382 401 C1398 427 1418 440 1448 445 C1462 448 1473 451 1482 454" fill="none" stroke="#4D9A6D" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <text x="800" y="605" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#44565F">Lokale Intensitätswerte werden mit einer Gaussian-Kernel-Funktion gewichtet und gemittelt.</text>
+</svg>
