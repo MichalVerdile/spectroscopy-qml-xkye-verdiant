@@ -21,4 +21,4 @@ representation without smoothing, nonlinear transformation or normalization.
 These external-GPU logs are the source for learning-curve shape only. Their
 recorded fit and evaluation times must not be mixed with the Sanjose timing run.
 Hardware-comparable XGBoost times are stored separately under
-`raw_native_xgboost_timing_sanjose` when Slurm job `172523` completes.
+`raw_native_xgboost_timing_sanjose` when Slurm job `172550` completes.
