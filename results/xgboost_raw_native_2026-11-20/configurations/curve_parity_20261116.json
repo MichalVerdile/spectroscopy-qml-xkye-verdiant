@@ -1,0 +1,28 @@
+{
+  "reference_commit": "01e270ee8ad79bb0978f96a709113df3d1f3b017",
+  "models": 37,
+  "stages": [
+    20,
+    40,
+    200,
+    1000,
+    3000,
+    8000,
+    11025
+  ],
+  "splits": {
+    "train": {
+      "rows": 512,
+      "exact_label_parity": true,
+      "old_seconds": 18.70809705508873,
+      "new_seconds": 1.7261242917738855
+    },
+    "val": {
+      "rows": 512,
+      "exact_label_parity": true,
+      "old_seconds": 15.931942710187286,
+      "new_seconds": 1.5867622923105955
+    }
+  },
+  "device": "NVIDIA H100 PCIe"
+}

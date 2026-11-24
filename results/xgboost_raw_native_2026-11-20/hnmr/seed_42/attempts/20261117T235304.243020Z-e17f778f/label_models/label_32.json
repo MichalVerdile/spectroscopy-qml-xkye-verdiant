@@ -1,0 +1,168 @@
+{
+  "label_index": 32,
+  "label_name": "Sulfonic acid",
+  "best_iteration": 40,
+  "best_score": 0.00014324406418754,
+  "fitted_rounds": 56,
+  "device": "cuda:0",
+  "fit_seconds": 81.58517926999775,
+  "model_sha256": "b753a70d2ef16f2e4c515b3ba9cd18c34a173041c556c64fbfaaf67c7af02daa",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.0001548385387015,
+        0.00015366236569967,
+        0.00015238491730487,
+        0.00015112674715471,
+        0.00015152464599954,
+        0.00015195385514923,
+        0.00015245425969332,
+        0.00015282849431397,
+        0.00015333905033833,
+        0.00015384561127142,
+        0.00015266235922366,
+        0.00015295782694568,
+        0.00015215303178919,
+        0.00015251760333673,
+        0.00015142988469269,
+        0.00015070600641557,
+        0.00015126190488675,
+        0.00015152961790244,
+        0.00015195868792719,
+        0.00015185834900442,
+        0.00015087029655823,
+        0.00014933286633819,
+        0.00014938205662692,
+        0.00014995532739345,
+        0.00015046761031878,
+        0.00014945324076004,
+        0.00014864589624005,
+        0.00014741426691213,
+        0.00014786920490399,
+        0.00014840818962192,
+        0.00014679926598554,
+        0.00014727180011005,
+        0.00014770331267158,
+        0.00014634563133013,
+        0.00014680994944684,
+        0.00014557200959295,
+        0.00014546171352451,
+        0.00014460604281501,
+        0.00014513016704768,
+        0.00014435588209516,
+        0.00014324406418754,
+        0.00014383666675763,
+        0.00014430577115263,
+        0.00014470895425558,
+        0.00014509675937924,
+        0.00014529840899769,
+        0.00014582418924661,
+        0.00014631789131888,
+        0.00014670208013887,
+        0.00014688477340629,
+        0.00014731655901614,
+        0.00014602718089397,
+        0.00014648250929708,
+        0.00014696245132237,
+        0.00014746964110053,
+        0.00014729272846894
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "42",
+        "seed": "42",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "56"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[1.2588097E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

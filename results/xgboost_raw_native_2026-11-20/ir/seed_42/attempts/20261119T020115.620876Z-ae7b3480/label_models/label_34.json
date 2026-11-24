@@ -1,0 +1,146 @@
+{
+  "label_index": 34,
+  "label_name": "Thial",
+  "best_iteration": 18,
+  "best_score": 0.00066756252798682,
+  "fitted_rounds": 34,
+  "device": "cuda:0",
+  "fit_seconds": 25.168037540017394,
+  "model_sha256": "3e16a3ea16004dc396ee64a5c272846c9a39480c9da5e708f8a4e62ec4bebb45",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00067383653829677,
+        0.00067373364855105,
+        0.00067413221139174,
+        0.00067482672828931,
+        0.0006746970276775,
+        0.00067704215151848,
+        0.0006783013332787,
+        0.00068000350868669,
+        0.0006806700300283,
+        0.00067688479943793,
+        0.00067184437525654,
+        0.00067229885795609,
+        0.00067405426289006,
+        0.00067188744154328,
+        0.00067275292275475,
+        0.00067283086591762,
+        0.00067039871398551,
+        0.00066999325388568,
+        0.00066756252798682,
+        0.00067006637140155,
+        0.00067259627710373,
+        0.00067511090898155,
+        0.00067493214357853,
+        0.0006755016384099,
+        0.00067452220987676,
+        0.00067331498252384,
+        0.00067444244055257,
+        0.00067428460617661,
+        0.00067590239386897,
+        0.00067386877083164,
+        0.00067536591816826,
+        0.00067456752021959,
+        0.00067291742559791,
+        0.00067071081735838
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "42",
+        "seed": "42",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "34"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[5.979346E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "1800",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

@@ -1,0 +1,194 @@
+DATA_PREPARATION_START cyclic GC deferred until fitting
+
+============================================================
+Loading data for: neg_msms
+============================================================
+Loaded cached XGBoost dataset from /root/runpod-work/cache/shared_msms_neg_len10000_75d92264638ffad7.npz
+Total samples loaded: 794403
+Data loading time: 76.35s
+
+============================================================
+Training XGBoost model for: neg_msms column: msms_negative_40ev
+============================================================
+Input shape: (794403, 10000)
+Target shape: (794403, 37)
+Number of functional groups: 37
+Initial split: Train-full=714962 90%, Test=79441 10%
+Training without K-Fold, matching CNN original mode...
+Timeout (0:02:00)!
+Thread 0x0000721323a8f080 (most recent call first):
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 893 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Train size: 635521, Validation size: 79441
+DATA_PREPARATION_FINISHED cyclic GC restored
+LABEL_START index=0 time=20261120T081533.456802Z
+LABEL_FINISHED index=0 best_iteration=386 device=cuda:0
+LABEL_START index=1 time=20261120T081642.838713Z
+LABEL_FINISHED index=1 best_iteration=1289 device=cuda:0
+LABEL_START index=2 time=20261120T081849.062392Z
+LABEL_FINISHED index=2 best_iteration=4378 device=cuda:0
+LABEL_START index=3 time=20261120T082351.832933Z
+LABEL_FINISHED index=3 best_iteration=1737 device=cuda:0
+LABEL_START index=4 time=20261120T082617.790123Z
+LABEL_FINISHED index=4 best_iteration=3402 device=cuda:0
+LABEL_START index=5 time=20261120T083027.557955Z
+LABEL_FINISHED index=5 best_iteration=3791 device=cuda:0
+LABEL_START index=6 time=20261120T083453.554421Z
+LABEL_FINISHED index=6 best_iteration=1098 device=cuda:0
+LABEL_START index=7 time=20261120T083637.830504Z
+LABEL_FINISHED index=7 best_iteration=9373 device=cuda:0
+LABEL_START index=8 time=20261120T084631.018454Z
+LABEL_FINISHED index=8 best_iteration=13040 device=cuda:0
+LABEL_START index=9 time=20261120T090006.178173Z
+LABEL_FINISHED index=9 best_iteration=11738 device=cuda:0
+LABEL_START index=10 time=20261120T091218.771756Z
+LABEL_FINISHED index=10 best_iteration=180 device=cuda:0
+LABEL_START index=11 time=20261120T091311.480866Z
+LABEL_FINISHED index=11 best_iteration=4061 device=cuda:0
+LABEL_START index=12 time=20261120T091758.966161Z
+LABEL_FINISHED index=12 best_iteration=3016 device=cuda:0
+LABEL_START index=13 time=20261120T092140.787851Z
+LABEL_FINISHED index=13 best_iteration=996 device=cuda:0
+LABEL_START index=14 time=20261120T092322.235644Z
+LABEL_FINISHED index=14 best_iteration=483 device=cuda:0
+LABEL_START index=15 time=20261120T092433.670648Z
+LABEL_FINISHED index=15 best_iteration=5898 device=cuda:0
+LABEL_START index=16 time=20261120T093109.362876Z
+LABEL_FINISHED index=16 best_iteration=12769 device=cuda:0
+LABEL_START index=17 time=20261120T094427.916971Z
+LABEL_FINISHED index=17 best_iteration=8510 device=cuda:0
+LABEL_START index=18 time=20261120T095343.572907Z
+LABEL_FINISHED index=18 best_iteration=1035 device=cuda:0
+LABEL_START index=19 time=20261120T095529.367375Z
+LABEL_FINISHED index=19 best_iteration=1100 device=cuda:0
+LABEL_START index=20 time=20261120T095719.958687Z
+LABEL_FINISHED index=20 best_iteration=1930 device=cuda:0
+LABEL_START index=21 time=20261120T100003.775057Z
+LABEL_FINISHED index=21 best_iteration=1234 device=cuda:0
+LABEL_START index=22 time=20261120T100200.278438Z
+LABEL_FINISHED index=22 best_iteration=539 device=cuda:0
+LABEL_START index=23 time=20261120T100318.962674Z
+LABEL_FINISHED index=23 best_iteration=409 device=cuda:0
+LABEL_START index=24 time=20261120T100429.765213Z
+LABEL_FINISHED index=24 best_iteration=2855 device=cuda:0
+LABEL_START index=25 time=20261120T100805.340698Z
+LABEL_FINISHED index=25 best_iteration=4044 device=cuda:0
+LABEL_START index=26 time=20261120T101253.527280Z
+LABEL_FINISHED index=26 best_iteration=3351 device=cuda:0
+LABEL_START index=27 time=20261120T101657.159732Z
+LABEL_FINISHED index=27 best_iteration=504 device=cuda:0
+LABEL_START index=28 time=20261120T101810.035358Z
+LABEL_FINISHED index=28 best_iteration=6151 device=cuda:0
+LABEL_START index=29 time=20261120T102458.943022Z
+LABEL_FINISHED index=29 best_iteration=2578 device=cuda:0
+LABEL_START index=30 time=20261120T102816.074688Z
+LABEL_FINISHED index=30 best_iteration=1422 device=cuda:0
+LABEL_START index=31 time=20261120T103026.235022Z
+LABEL_FINISHED index=31 best_iteration=2699 device=cuda:0
+LABEL_START index=32 time=20261120T103353.283408Z
+LABEL_FINISHED index=32 best_iteration=80 device=cuda:0
+LABEL_START index=33 time=20261120T103438.881826Z
+LABEL_FINISHED index=33 best_iteration=731 device=cuda:0
+LABEL_START index=34 time=20261120T103607.508658Z
+LABEL_FINISHED index=34 best_iteration=4 device=cuda:0
+LABEL_START index=35 time=20261120T103650.287787Z
+LABEL_FINISHED index=35 best_iteration=754 device=cuda:0
+LABEL_START index=36 time=20261120T103821.132271Z
+LABEL_FINISHED index=36 best_iteration=536 device=cuda:0
+Logging learning curve every 20 boosting step(s)...
+EVAL_START split=train rows=635521 points=653 batches=3
+/root/runpod-work/venv/lib/python3.12/site-packages/xgboost/core.py:774: UserWarning: [10:39:40] WARNING: /workspace/src/common/error_msg.cc:62: Falling back to prediction using DMatrix due to mismatched devices. This might lead to higher memory usage and slower performance. XGBoost is running on: cuda:0, while the input data is on: cpu.
+Potential solutions:
+- Use a data structure that matches the device ordinal in the booster.
+- Set the device for booster before call to inplace_predict.
+
+This warning will only be shown once.
+
+  return func(**kwargs)
+EVAL_PROGRESS split=train batch=1/3 label=6/37 round=2740/3807 elapsed=20.0s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=6820/9389 elapsed=40.1s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=3540/13056 elapsed=60.1s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=8380/13056 elapsed=80.1s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=11560/13056 elapsed=100.2s
+EVAL_PROGRESS split=train batch=1/3 label=10/37 round=4460/11754 elapsed=120.2s
+EVAL_PROGRESS split=train batch=1/3 label=10/37 round=8800/11754 elapsed=140.3s
+EVAL_PROGRESS split=train batch=1/3 label=11/37 round=120/196 elapsed=160.3s
+EVAL_PROGRESS split=train batch=1/3 label=16/37 round=4720/5914 elapsed=180.4s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=6120/12785 elapsed=200.4s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=9880/12785 elapsed=220.5s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=12660/12785 elapsed=240.5s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=7340/8526 elapsed=260.6s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=940/6167 elapsed=280.6s
+EVAL_BATCH_FINISHED split=train batch=1/3 elapsed=297.2s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=1580/4394 elapsed=300.6s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=3240/9389 elapsed=320.6s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=7920/9389 elapsed=340.6s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=5640/13056 elapsed=360.7s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=9600/13056 elapsed=380.7s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=12480/13056 elapsed=400.8s
+EVAL_PROGRESS split=train batch=2/3 label=10/37 round=6580/11754 elapsed=420.9s
+EVAL_PROGRESS split=train batch=2/3 label=10/37 round=10340/11754 elapsed=441.0s
+EVAL_PROGRESS split=train batch=2/3 label=14/37 round=460/1012 elapsed=461.0s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=3800/12785 elapsed=481.0s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=8520/12785 elapsed=501.1s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=11740/12785 elapsed=521.1s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=5720/8526 elapsed=541.1s
+EVAL_PROGRESS split=train batch=2/3 label=26/37 round=2000/4060 elapsed=561.1s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=5960/6167 elapsed=581.2s
+EVAL_BATCH_FINISHED split=train batch=2/3 elapsed=587.5s
+EVAL_PROGRESS split=train batch=3/3 label=6/37 round=1200/3807 elapsed=601.2s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=6260/9389 elapsed=621.3s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=3120/13056 elapsed=641.3s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=8280/13056 elapsed=661.4s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=11280/13056 elapsed=681.4s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=3840/11754 elapsed=701.5s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=8600/11754 elapsed=721.5s
+EVAL_PROGRESS split=train batch=3/3 label=12/37 round=100/4077 elapsed=741.5s
+EVAL_PROGRESS split=train batch=3/3 label=16/37 round=5460/5914 elapsed=761.6s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=7060/12785 elapsed=781.7s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=10500/12785 elapsed=801.7s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=2760/8526 elapsed=821.8s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=8320/8526 elapsed=841.8s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=3480/6167 elapsed=861.9s
+EVAL_BATCH_FINISHED split=train batch=3/3 elapsed=874.2s
+EVAL_FINISHED split=train seconds=874.19
+EVAL_START split=validation rows=79441 points=653 batches=1
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=4260/9389 elapsed=20.1s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=8980/9389 elapsed=40.2s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=6960/13056 elapsed=60.2s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=10540/13056 elapsed=80.3s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=920/11754 elapsed=100.3s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=8000/11754 elapsed=120.4s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=11600/11754 elapsed=140.5s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=2060/12785 elapsed=160.5s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=8180/12785 elapsed=180.6s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=11520/12785 elapsed=200.7s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=5680/8526 elapsed=220.7s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=1820/6167 elapsed=240.7s
+EVAL_BATCH_FINISHED split=validation batch=1/1 elapsed=251.8s
+EVAL_FINISHED split=validation seconds=251.78
+EVAL_START split=test rows=79441 points=0 batches=1
+EVAL_BATCH_FINISHED split=test batch=1/1 elapsed=6.5s
+EVAL_FINISHED split=test seconds=6.47
+
+============================================================
+FINAL RESULTS for neg_msms:
+Train F1 Micro: 0.8424
+Train F1 Macro: 0.4805
+Validation F1 Micro: 0.7908
+Validation F1 Macro: 0.3891
+Test F1 Micro: 0.7914
+Test F1 Macro: 0.3883
+Fit time: 8642.46s
+Test prediction time: 6.49s
+============================================================
+
+Results saved to: /workspace/experiments/xgboost_raw_native/msms_neg/seed_45/attempts/20261120T081311.029682Z-918c8891/artifacts/neg_msms/original/results.pickle
+XGBoost model saved to: /workspace/experiments/xgboost_raw_native/msms_neg/seed_45/attempts/20261120T081311.029682Z-918c8891/artifacts/neg_msms/original/neg_msms_xgboost_model.pickle
+Training logs saved to: /workspace/experiments/xgboost_raw_native/msms_neg/seed_45/attempts/20261120T081311.029682Z-918c8891/artifacts/neg_msms/original/training_logs.csv
+
+Combined training logs saved to: /workspace/experiments/xgboost_raw_native/msms_neg/seed_45/attempts/20261120T081311.029682Z-918c8891/artifacts/training_logs_all_columns.csv

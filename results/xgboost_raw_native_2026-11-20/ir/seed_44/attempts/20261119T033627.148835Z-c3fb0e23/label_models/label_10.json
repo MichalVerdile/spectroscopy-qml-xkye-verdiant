@@ -1,0 +1,170 @@
+{
+  "label_index": 10,
+  "label_name": "Azo compound",
+  "best_iteration": 42,
+  "best_score": 0.00519425387142066,
+  "fitted_rounds": 58,
+  "device": "cuda:0",
+  "fit_seconds": 27.597135996009456,
+  "model_sha256": "56c64c5487f7ee482a6d85f68affd6c2cebd92b6348e8b57f496a95bcd0a2232",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00560885147323183,
+        0.00556952950642391,
+        0.00554773791734338,
+        0.00551094441964544,
+        0.00550755128268167,
+        0.00549973785322902,
+        0.00549476199143349,
+        0.00546295563907893,
+        0.0054626955300478,
+        0.00545043346903968,
+        0.00543674627460967,
+        0.00539896212232776,
+        0.00538205071588232,
+        0.00537150240674506,
+        0.00536170553120225,
+        0.00535622830695825,
+        0.00533876847200413,
+        0.00533291564592324,
+        0.00531891618836018,
+        0.00530014065799887,
+        0.00530542291924584,
+        0.00529758919818685,
+        0.00529320845492033,
+        0.00528890586834134,
+        0.00528147093080325,
+        0.00527957232264338,
+        0.00527280880904402,
+        0.00525715394624702,
+        0.0052597934518584,
+        0.0052540331219858,
+        0.00524529063063624,
+        0.00524481709894335,
+        0.0052418482882607,
+        0.00523712249541667,
+        0.00523440541567191,
+        0.005225473202171,
+        0.00521656681687122,
+        0.00521180242507745,
+        0.00519783750196845,
+        0.00519824561715846,
+        0.00519524477305472,
+        0.00520196864468164,
+        0.00519425387142066,
+        0.00519669438906585,
+        0.00520189418548985,
+        0.0052011062315188,
+        0.00520531320967088,
+        0.0052050009157406,
+        0.00520481663558579,
+        0.00520743955762925,
+        0.00521222914544638,
+        0.00521500407194748,
+        0.00521985801919488,
+        0.00520758278395465,
+        0.00520750987521254,
+        0.00521101408904567,
+        0.00521233678695762,
+        0.00521028004573977
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "44",
+        "seed": "44",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "58"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[6.8290427E-4]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "1800",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

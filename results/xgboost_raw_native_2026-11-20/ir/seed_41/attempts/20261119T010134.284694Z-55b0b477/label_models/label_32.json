@@ -1,0 +1,180 @@
+{
+  "label_index": 32,
+  "label_name": "Sulfonic acid",
+  "best_iteration": 52,
+  "best_score": 0.00013347481435886,
+  "fitted_rounds": 68,
+  "device": "cuda:0",
+  "fit_seconds": 23.491765888000373,
+  "model_sha256": "0a169023ebfe5af963bff8ef9c7576e7f1234f8a815369222fe1a00f4f3ec673",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00015335276202574,
+        0.00015186749389125,
+        0.00015058436546439,
+        0.00015054420334537,
+        0.00014944146263726,
+        0.00014861459146769,
+        0.00014829014685738,
+        0.00014818445101368,
+        0.00014855708997877,
+        0.00014903022349654,
+        0.00014957550002933,
+        0.00014791444154468,
+        0.00014629680810455,
+        0.00014687395264228,
+        0.00014739303792904,
+        0.0001477329811736,
+        0.00014644879950829,
+        0.00014685918210385,
+        0.00014560466252472,
+        0.00014595940505576,
+        0.0001463298286459,
+        0.00014443715087641,
+        0.00014445379822281,
+        0.00014494250470883,
+        0.00014336181018515,
+        0.00014381441795172,
+        0.00014424077552844,
+        0.00014471512710503,
+        0.00014311943568196,
+        0.00014279858045288,
+        0.00014334120050428,
+        0.00014211214403583,
+        0.00014111505456552,
+        0.00014033484661543,
+        0.00013917461663441,
+        0.00013944073186746,
+        0.00013998132060911,
+        0.00014043383720952,
+        0.00014097979564689,
+        0.00013999354038203,
+        0.0001387375064334,
+        0.00013918237601299,
+        0.00013814823881885,
+        0.00013749604985003,
+        0.00013788040051908,
+        0.00013633273310495,
+        0.00013687722524118,
+        0.00013693398096295,
+        0.0001375097710899,
+        0.00013604051233447,
+        0.00013473845802321,
+        0.00013506439549349,
+        0.00013347481435886,
+        0.00013396069923303,
+        0.00013434526205166,
+        0.00013488261380472,
+        0.00013546373990477,
+        0.0001357944895956,
+        0.00013629069562034,
+        0.0001367950163696,
+        0.00013736158105292,
+        0.000137790860766,
+        0.00013829313723167,
+        0.00013886736197828,
+        0.00013764857100322,
+        0.00013817540216157,
+        0.0001386960129674,
+        0.00013917229130195
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "41",
+        "seed": "41",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "68"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[1.2588593E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "1800",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

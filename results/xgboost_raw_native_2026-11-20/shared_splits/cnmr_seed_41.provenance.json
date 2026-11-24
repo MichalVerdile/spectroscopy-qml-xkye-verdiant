@@ -1,0 +1,24 @@
+{
+  "kind": "deterministic_reconstruction",
+  "historical_identity_verified": false,
+  "accepted_by_user": true,
+  "algorithm": "unchanged create_split_artifact, seed and seed+1",
+  "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+  "counts": {
+    "train": 635496,
+    "val": 79450,
+    "test": 79457
+  },
+  "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+  "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+  "index_sha256": {
+    "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+    "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+    "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+  },
+  "canonical_smiles_overlap": {
+    "train_val": 816,
+    "train_test": 805,
+    "val_test": 110
+  }
+}

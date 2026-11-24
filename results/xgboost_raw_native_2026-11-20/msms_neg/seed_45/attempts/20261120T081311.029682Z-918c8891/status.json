@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "hostname": "32ead7baba34",
+  "runner_pid": 770,
+  "modality": "msms_neg",
+  "seed": 45,
+  "started": "20261120T081311.040546Z",
+  "training_pid": 1827999,
+  "heartbeat_unix": 1795172331.1934648,
+  "exit_code": 0,
+  "finished": "20261120T105913.915924Z",
+  "wall_seconds": 9962.875473099004
+}

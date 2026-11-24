@@ -1,0 +1,16 @@
+{
+  "model": "xgboost",
+  "modality": "pos_msms",
+  "seed": 41,
+  "test_f1_micro": 0.7686901251808554,
+  "test_f1_macro": 0.3291107776872146,
+  "split_path": "/workspace/shared_splits/msms_pos_seed_41.npz",
+  "input_dim": 10000,
+  "input_digest": "964c65b9837b0ef25ca496070a8d3a691ad8714160c87c701afcdbf133e199b8",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "training_config": {
+    "n_estimators": 1000000,
+    "early_stopping_patience": 15
+  }
+}

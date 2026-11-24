@@ -1,0 +1,99 @@
+DATA_PREPARATION_START cyclic GC deferred until fitting
+
+============================================================
+Loading data for: c_nmr_spectra
+============================================================
+Loaded cached XGBoost dataset from /root/runpod-work/cache/shared_cnmr_len10000_5cd5660dd464df37.npz
+Total samples loaded: 794403
+Data loading time: 71.26s
+
+============================================================
+Training XGBoost model for: c_nmr_spectra column: c_nmr_spectra
+============================================================
+Input shape: (794403, 10000)
+Target shape: (794403, 37)
+Number of functional groups: 37
+Initial split: Train-full=714946 90%, Test=79457 10%
+Training without K-Fold, matching CNN original mode...
+Train size: 635496, Validation size: 79450
+DATA_PREPARATION_FINISHED cyclic GC restored
+FITS_RESTORED labels=37 original_fit_seconds=10307.12
+Logging learning curve every 20 boosting step(s)...
+EVAL_START split=train rows=635496 points=552 batches=3
+/root/runpod-work/venv/lib/python3.12/site-packages/xgboost/core.py:774: UserWarning: [17:44:18] WARNING: /workspace/src/common/error_msg.cc:62: Falling back to prediction using DMatrix due to mismatched devices. This might lead to higher memory usage and slower performance. XGBoost is running on: cuda:0, while the input data is on: cpu.
+Potential solutions:
+- Use a data structure that matches the device ordinal in the booster.
+- Set the device for booster before call to inplace_predict.
+
+This warning will only be shown once.
+
+  return func(**kwargs)
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=6700/10254 elapsed=20.0s
+EVAL_PROGRESS split=train batch=1/3 label=6/37 round=2420/6470 elapsed=40.0s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=3920/8969 elapsed=60.0s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=1600/8927 elapsed=80.0s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=8180/8927 elapsed=100.1s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=1240/6187 elapsed=120.2s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=4760/11025 elapsed=140.2s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=9540/11025 elapsed=160.2s
+EVAL_PROGRESS split=train batch=1/3 label=27/37 round=2460/4912 elapsed=180.2s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=6960/10539 elapsed=200.3s
+EVAL_PROGRESS split=train batch=1/3 label=30/37 round=3220/4194 elapsed=220.3s
+EVAL_BATCH_FINISHED split=train batch=1/3 elapsed=223.7s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=6500/10254 elapsed=240.3s
+EVAL_PROGRESS split=train batch=2/3 label=6/37 round=1860/6470 elapsed=260.3s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=4880/8969 elapsed=280.4s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=3140/8927 elapsed=300.4s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=8840/8927 elapsed=320.4s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=3340/6187 elapsed=340.4s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=5940/11025 elapsed=360.4s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=10280/11025 elapsed=380.5s
+EVAL_PROGRESS split=train batch=2/3 label=27/37 round=4380/4912 elapsed=400.5s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=7740/10539 elapsed=420.6s
+EVAL_BATCH_FINISHED split=train batch=2/3 elapsed=440.5s
+EVAL_PROGRESS split=train batch=3/3 label=1/37 round=20/262 elapsed=441.8s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=8020/10254 elapsed=461.8s
+EVAL_PROGRESS split=train batch=3/3 label=6/37 round=5000/6470 elapsed=481.8s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=6620/8969 elapsed=501.9s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=5200/8927 elapsed=521.9s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=3300/4088 elapsed=541.9s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=5040/6187 elapsed=561.9s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=7020/11025 elapsed=581.9s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=10840/11025 elapsed=602.0s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=2400/10539 elapsed=622.0s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=8560/10539 elapsed=642.0s
+EVAL_BATCH_FINISHED split=train batch=3/3 elapsed=658.7s
+EVAL_FINISHED split=train seconds=658.72
+EVAL_START split=validation rows=79450 points=552 batches=1
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=7860/10254 elapsed=20.0s
+EVAL_PROGRESS split=validation batch=1/1 label=6/37 round=4780/6470 elapsed=40.1s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=7280/8969 elapsed=60.1s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=6280/8927 elapsed=80.1s
+EVAL_PROGRESS split=validation batch=1/1 label=14/37 round=1020/1122 elapsed=100.1s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=4380/11025 elapsed=120.1s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=9540/11025 elapsed=140.2s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=3300/10539 elapsed=160.2s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=9980/10539 elapsed=180.3s
+EVAL_BATCH_FINISHED split=validation batch=1/1 elapsed=186.0s
+EVAL_FINISHED split=validation seconds=186.03
+EVAL_START split=test rows=79457 points=0 batches=1
+EVAL_BATCH_FINISHED split=test batch=1/1 elapsed=5.0s
+EVAL_FINISHED split=test seconds=5.02
+
+============================================================
+FINAL RESULTS for c_nmr_spectra:
+Train F1 Micro: 0.9182
+Train F1 Macro: 0.6885
+Validation F1 Micro: 0.8488
+Validation F1 Macro: 0.5108
+Test F1 Micro: 0.8494
+Test F1 Macro: 0.5117
+Fit time: 7.64s
+Test prediction time: 5.03s
+============================================================
+
+Results saved to: /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261116T174217.307702Z-c91d0643/artifacts/cnmr/original/results.pickle
+XGBoost model saved to: /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261116T174217.307702Z-c91d0643/artifacts/cnmr/original/cnmr_xgboost_model.pickle
+Training logs saved to: /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261116T174217.307702Z-c91d0643/artifacts/cnmr/original/training_logs.csv
+
+Combined training logs saved to: /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261116T174217.307702Z-c91d0643/artifacts/training_logs_all_columns.csv

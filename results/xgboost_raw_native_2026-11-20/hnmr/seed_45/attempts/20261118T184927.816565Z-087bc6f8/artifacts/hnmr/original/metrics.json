@@ -1,0 +1,16 @@
+{
+  "model": "xgboost",
+  "modality": "hnmr",
+  "seed": 45,
+  "test_f1_micro": 0.8895142494095432,
+  "test_f1_macro": 0.5605819280337414,
+  "split_path": "/workspace/shared_splits/hnmr_seed_45.npz",
+  "input_dim": 10000,
+  "input_digest": "594941699ec7f762832a76c071382ee31cc6a6a2f57f0e3b5d6d068e7d3f2fb8",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "training_config": {
+    "n_estimators": 1000000,
+    "early_stopping_patience": 15
+  }
+}

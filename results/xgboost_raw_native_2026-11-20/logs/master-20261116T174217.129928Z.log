@@ -1,0 +1,557 @@
+{
+  "python": "3.12.3",
+  "torch": "2.8.0+cu128",
+  "torch_cuda_runtime": "12.8",
+  "gpu": "NVIDIA H100 PCIe",
+  "xgboost_device": "cuda:0",
+  "effective_memory_bytes": 250999996416,
+  "cpu_affinity_count": 128,
+  "mount": {
+    "target": "/workspace",
+    "source": "3330fe10-153a-473a-be7c-62ffa89cc3c0",
+    "fstype": "fuse.geesefs",
+    "options": "rw,nosuid,nodev,relatime,user_id=0,group_id=0,default_permissions,allow_other"
+  },
+  "chmod_supported": false,
+  "gpu_smoke": "passed, synthetic only",
+  "packages": {
+    "numpy": "2.4.2",
+    "pandas": "3.0.0",
+    "pyarrow": "23.0.0",
+    "scipy": "1.17.0",
+    "scikit-learn": "1.8.0",
+    "rdkit": "2025.9.4",
+    "xgboost": "3.1.3",
+    "iterative-stratification": "0.1.9"
+  },
+  "nvidia_smi": "Sat Nov 14 16:05:41 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 595.91.07              Driver Version: 595.91.07      CUDA Version: 13.2     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA H100 PCIe               On  |   00000000:D6:00.0 Off |                    0 |\n| N/A   31C    P0             74W /  310W |     547MiB /  81559MiB |      5%      Default |\n|                                         |                        |             Disabled |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            6113      C   ...t/runpod-work/venv/bin/python        538MiB |\n+-----------------------------------------------------------------------------------------+\n"
+}
+/root/runpod-work/repository.bundle is okay
+The bundle contains these 29 refs:
+01e270ee8ad79bb0978f96a709113df3d1f3b017 refs/heads/ablation-further-study
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/heads/dev
+75d6963f68bfdd21a1ca3b07c2a25bbe76d361a9 refs/heads/runpod/xgboost-raw-native
+da9a7a761864110cf8da3e4c8ca5bbcefec607ac refs/remotes/origin/CNN_Validation
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/remotes/origin/HEAD
+04034aed24bf50a387cca8dde4065d099455844f refs/remotes/origin/Paper-ConfigurationRun
+8f69146f8079493baa25471b4f42cbb7f544743f refs/remotes/origin/Paper-refactoring
+3179d0064bf2ec5bd753bebdbceeb3f3c0d0f3ce refs/remotes/origin/QCNN-Experiment
+12b492fdf875ada72d6deb852385400ab8989e1a refs/remotes/origin/QML-Modell
+cd62d7a35db8868557ac3ba36b2bf4bc2dbf9eb7 refs/remotes/origin/TN-encoder
+01e270ee8ad79bb0978f96a709113df3d1f3b017 refs/remotes/origin/ablation-further-study
+7aaaee54813c636acff3f546ce7c8f0893d94be5 refs/remotes/origin/add-normalization-to-nmr-and-msms-spectra
+eb4635d33f08de2d936af3bb38375fd769ccb62e refs/remotes/origin/boosted-ttn
+444e43d6fda8acddfd6b9383d6e08b46b844a045 refs/remotes/origin/cnn-update
+805bb103218b8f611c0acc3ec4630a660aa3176f refs/remotes/origin/cnn-update-2
+3cacb3fa4f14ccfef19f70b6d7b7ff73e69d2b32 refs/remotes/origin/data-exploration
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/remotes/origin/dev
+98a401f1a1f6416f72b23e724c6130e9f44204e6 refs/remotes/origin/distribution-plots
+e188272d80816a451c17ba33bd39141f21dbc534 refs/remotes/origin/hnmr-msms-cleanup
+3ccf7a65c904c8334a6cdb4bb134b315e64f4c3f refs/remotes/origin/main
+b51a1f58d729328e39cc39ad35479b098fdc4454 refs/remotes/origin/mlp-mps-update
+e646e5336eb8b1ca1e01822da8c8a68a9b24cbf5 refs/remotes/origin/multimodal-cnn
+6f202eebb6fcaad07a092dcc1a3e2f4802c9aa42 refs/remotes/origin/preprocessing-ablation
+43e130b70066b0c0691fbb3bb48b24b0ae6c0b69 refs/remotes/origin/refactoring-clean-up
+0d016ddfc9d3ff6ad0ff31ff16521247ce2352f4 refs/remotes/origin/refactoring_bugFix
+c6359f4ecd9ddcf44c6a74e719a4884ae06633ca refs/remotes/origin/research/raw-native-fair-tensor-network-benchmark
+ca8806cb2d08544b5dcb45033f287c23840dd80c refs/remotes/origin/tree_tensor_network
+7ef82c8b004724aef8233f9b7cb530c38948b7f7 refs/remotes/origin/ttn-refactoring
+75d6963f68bfdd21a1ca3b07c2a25bbe76d361a9 HEAD
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
+Fetching reference LFS data; 245 persistent files missing
+fetch: Fetching reference 01e270ee8ad79bb0978f96a709113df3d1f3b017
+Publishing raw data 1/245 aligned_chunk_0.parquet
+Publishing raw data 2/245 aligned_chunk_1.parquet
+Publishing raw data 3/245 aligned_chunk_10.parquet
+Publishing raw data 4/245 aligned_chunk_100.parquet
+Publishing raw data 5/245 aligned_chunk_101.parquet
+Publishing raw data 6/245 aligned_chunk_102.parquet
+Publishing raw data 7/245 aligned_chunk_103.parquet
+Publishing raw data 8/245 aligned_chunk_104.parquet
+Publishing raw data 9/245 aligned_chunk_105.parquet
+Publishing raw data 10/245 aligned_chunk_106.parquet
+Publishing raw data 11/245 aligned_chunk_107.parquet
+Publishing raw data 12/245 aligned_chunk_108.parquet
+Publishing raw data 13/245 aligned_chunk_109.parquet
+Publishing raw data 14/245 aligned_chunk_11.parquet
+Publishing raw data 15/245 aligned_chunk_110.parquet
+Publishing raw data 16/245 aligned_chunk_111.parquet
+Publishing raw data 17/245 aligned_chunk_112.parquet
+Publishing raw data 18/245 aligned_chunk_113.parquet
+Publishing raw data 19/245 aligned_chunk_114.parquet
+Publishing raw data 20/245 aligned_chunk_115.parquet
+Publishing raw data 21/245 aligned_chunk_116.parquet
+Publishing raw data 22/245 aligned_chunk_117.parquet
+Publishing raw data 23/245 aligned_chunk_118.parquet
+Publishing raw data 24/245 aligned_chunk_119.parquet
+Publishing raw data 25/245 aligned_chunk_12.parquet
+Publishing raw data 26/245 aligned_chunk_120.parquet
+Publishing raw data 27/245 aligned_chunk_121.parquet
+Publishing raw data 28/245 aligned_chunk_122.parquet
+Publishing raw data 29/245 aligned_chunk_123.parquet
+Publishing raw data 30/245 aligned_chunk_124.parquet
+Publishing raw data 31/245 aligned_chunk_125.parquet
+Publishing raw data 32/245 aligned_chunk_126.parquet
+Publishing raw data 33/245 aligned_chunk_127.parquet
+Publishing raw data 34/245 aligned_chunk_128.parquet
+Publishing raw data 35/245 aligned_chunk_129.parquet
+Publishing raw data 36/245 aligned_chunk_13.parquet
+Publishing raw data 37/245 aligned_chunk_130.parquet
+Publishing raw data 38/245 aligned_chunk_131.parquet
+Publishing raw data 39/245 aligned_chunk_132.parquet
+Publishing raw data 40/245 aligned_chunk_133.parquet
+Publishing raw data 41/245 aligned_chunk_134.parquet
+Publishing raw data 42/245 aligned_chunk_135.parquet
+Publishing raw data 43/245 aligned_chunk_136.parquet
+Publishing raw data 44/245 aligned_chunk_137.parquet
+Publishing raw data 45/245 aligned_chunk_138.parquet
+Publishing raw data 46/245 aligned_chunk_139.parquet
+Publishing raw data 47/245 aligned_chunk_14.parquet
+Publishing raw data 48/245 aligned_chunk_140.parquet
+Publishing raw data 49/245 aligned_chunk_141.parquet
+Publishing raw data 50/245 aligned_chunk_142.parquet
+Publishing raw data 51/245 aligned_chunk_143.parquet
+Publishing raw data 52/245 aligned_chunk_144.parquet
+Publishing raw data 53/245 aligned_chunk_145.parquet
+Publishing raw data 54/245 aligned_chunk_146.parquet
+Publishing raw data 55/245 aligned_chunk_147.parquet
+Publishing raw data 56/245 aligned_chunk_148.parquet
+Publishing raw data 57/245 aligned_chunk_149.parquet
+Publishing raw data 58/245 aligned_chunk_15.parquet
+Publishing raw data 59/245 aligned_chunk_150.parquet
+Publishing raw data 60/245 aligned_chunk_151.parquet
+Publishing raw data 61/245 aligned_chunk_152.parquet
+Publishing raw data 62/245 aligned_chunk_153.parquet
+Publishing raw data 63/245 aligned_chunk_154.parquet
+Publishing raw data 64/245 aligned_chunk_155.parquet
+Publishing raw data 65/245 aligned_chunk_156.parquet
+Publishing raw data 66/245 aligned_chunk_157.parquet
+Publishing raw data 67/245 aligned_chunk_158.parquet
+Publishing raw data 68/245 aligned_chunk_159.parquet
+Publishing raw data 69/245 aligned_chunk_16.parquet
+Publishing raw data 70/245 aligned_chunk_160.parquet
+Publishing raw data 71/245 aligned_chunk_161.parquet
+Publishing raw data 72/245 aligned_chunk_162.parquet
+Publishing raw data 73/245 aligned_chunk_163.parquet
+Publishing raw data 74/245 aligned_chunk_164.parquet
+Publishing raw data 75/245 aligned_chunk_165.parquet
+Publishing raw data 76/245 aligned_chunk_166.parquet
+Publishing raw data 77/245 aligned_chunk_167.parquet
+Publishing raw data 78/245 aligned_chunk_168.parquet
+Publishing raw data 79/245 aligned_chunk_169.parquet
+Publishing raw data 80/245 aligned_chunk_17.parquet
+Publishing raw data 81/245 aligned_chunk_170.parquet
+Publishing raw data 82/245 aligned_chunk_171.parquet
+Publishing raw data 83/245 aligned_chunk_172.parquet
+Publishing raw data 84/245 aligned_chunk_173.parquet
+Publishing raw data 85/245 aligned_chunk_174.parquet
+Publishing raw data 86/245 aligned_chunk_175.parquet
+Publishing raw data 87/245 aligned_chunk_176.parquet
+Publishing raw data 88/245 aligned_chunk_177.parquet
+Publishing raw data 89/245 aligned_chunk_178.parquet
+Publishing raw data 90/245 aligned_chunk_179.parquet
+Publishing raw data 91/245 aligned_chunk_18.parquet
+Publishing raw data 92/245 aligned_chunk_180.parquet
+Publishing raw data 93/245 aligned_chunk_181.parquet
+Publishing raw data 94/245 aligned_chunk_182.parquet
+Publishing raw data 95/245 aligned_chunk_183.parquet
+Publishing raw data 96/245 aligned_chunk_184.parquet
+Publishing raw data 97/245 aligned_chunk_185.parquet
+Publishing raw data 98/245 aligned_chunk_186.parquet
+Publishing raw data 99/245 aligned_chunk_187.parquet
+Publishing raw data 100/245 aligned_chunk_188.parquet
+Publishing raw data 101/245 aligned_chunk_189.parquet
+Publishing raw data 102/245 aligned_chunk_19.parquet
+Publishing raw data 103/245 aligned_chunk_190.parquet
+Publishing raw data 104/245 aligned_chunk_191.parquet
+Publishing raw data 105/245 aligned_chunk_192.parquet
+Publishing raw data 106/245 aligned_chunk_193.parquet
+Publishing raw data 107/245 aligned_chunk_194.parquet
+Publishing raw data 108/245 aligned_chunk_195.parquet
+Publishing raw data 109/245 aligned_chunk_196.parquet
+Publishing raw data 110/245 aligned_chunk_197.parquet
+Publishing raw data 111/245 aligned_chunk_198.parquet
+Publishing raw data 112/245 aligned_chunk_199.parquet
+Publishing raw data 113/245 aligned_chunk_2.parquet
+Publishing raw data 114/245 aligned_chunk_20.parquet
+Publishing raw data 115/245 aligned_chunk_200.parquet
+Publishing raw data 116/245 aligned_chunk_201.parquet
+Publishing raw data 117/245 aligned_chunk_202.parquet
+Publishing raw data 118/245 aligned_chunk_203.parquet
+Publishing raw data 119/245 aligned_chunk_204.parquet
+Publishing raw data 120/245 aligned_chunk_205.parquet
+Publishing raw data 121/245 aligned_chunk_206.parquet
+Publishing raw data 122/245 aligned_chunk_207.parquet
+Publishing raw data 123/245 aligned_chunk_208.parquet
+Publishing raw data 124/245 aligned_chunk_209.parquet
+Publishing raw data 125/245 aligned_chunk_21.parquet
+Publishing raw data 126/245 aligned_chunk_210.parquet
+Publishing raw data 127/245 aligned_chunk_211.parquet
+Publishing raw data 128/245 aligned_chunk_212.parquet
+Publishing raw data 129/245 aligned_chunk_213.parquet
+Publishing raw data 130/245 aligned_chunk_214.parquet
+Publishing raw data 131/245 aligned_chunk_215.parquet
+Publishing raw data 132/245 aligned_chunk_216.parquet
+Publishing raw data 133/245 aligned_chunk_217.parquet
+Publishing raw data 134/245 aligned_chunk_218.parquet
+Publishing raw data 135/245 aligned_chunk_219.parquet
+Publishing raw data 136/245 aligned_chunk_22.parquet
+Publishing raw data 137/245 aligned_chunk_220.parquet
+Publishing raw data 138/245 aligned_chunk_221.parquet
+Publishing raw data 139/245 aligned_chunk_222.parquet
+Publishing raw data 140/245 aligned_chunk_223.parquet
+Publishing raw data 141/245 aligned_chunk_224.parquet
+Publishing raw data 142/245 aligned_chunk_225.parquet
+Publishing raw data 143/245 aligned_chunk_226.parquet
+Publishing raw data 144/245 aligned_chunk_227.parquet
+Publishing raw data 145/245 aligned_chunk_228.parquet
+Publishing raw data 146/245 aligned_chunk_229.parquet
+Publishing raw data 147/245 aligned_chunk_23.parquet
+Publishing raw data 148/245 aligned_chunk_230.parquet
+Publishing raw data 149/245 aligned_chunk_231.parquet
+Publishing raw data 150/245 aligned_chunk_232.parquet
+Publishing raw data 151/245 aligned_chunk_233.parquet
+Publishing raw data 152/245 aligned_chunk_234.parquet
+Publishing raw data 153/245 aligned_chunk_235.parquet
+Publishing raw data 154/245 aligned_chunk_236.parquet
+Publishing raw data 155/245 aligned_chunk_237.parquet
+Publishing raw data 156/245 aligned_chunk_238.parquet
+Publishing raw data 157/245 aligned_chunk_239.parquet
+Publishing raw data 158/245 aligned_chunk_24.parquet
+Publishing raw data 159/245 aligned_chunk_240.parquet
+Publishing raw data 160/245 aligned_chunk_241.parquet
+Publishing raw data 161/245 aligned_chunk_242.parquet
+Publishing raw data 162/245 aligned_chunk_243.parquet
+Publishing raw data 163/245 aligned_chunk_244.parquet
+Publishing raw data 164/245 aligned_chunk_25.parquet
+Publishing raw data 165/245 aligned_chunk_26.parquet
+Publishing raw data 166/245 aligned_chunk_27.parquet
+Publishing raw data 167/245 aligned_chunk_28.parquet
+Publishing raw data 168/245 aligned_chunk_29.parquet
+Publishing raw data 169/245 aligned_chunk_3.parquet
+Publishing raw data 170/245 aligned_chunk_30.parquet
+Publishing raw data 171/245 aligned_chunk_31.parquet
+Publishing raw data 172/245 aligned_chunk_32.parquet
+Publishing raw data 173/245 aligned_chunk_33.parquet
+Publishing raw data 174/245 aligned_chunk_34.parquet
+Publishing raw data 175/245 aligned_chunk_35.parquet
+Publishing raw data 176/245 aligned_chunk_36.parquet
+Publishing raw data 177/245 aligned_chunk_37.parquet
+Publishing raw data 178/245 aligned_chunk_38.parquet
+Publishing raw data 179/245 aligned_chunk_39.parquet
+Publishing raw data 180/245 aligned_chunk_4.parquet
+Publishing raw data 181/245 aligned_chunk_40.parquet
+Publishing raw data 182/245 aligned_chunk_41.parquet
+Publishing raw data 183/245 aligned_chunk_42.parquet
+Publishing raw data 184/245 aligned_chunk_43.parquet
+Publishing raw data 185/245 aligned_chunk_44.parquet
+Publishing raw data 186/245 aligned_chunk_45.parquet
+Publishing raw data 187/245 aligned_chunk_46.parquet
+Publishing raw data 188/245 aligned_chunk_47.parquet
+Publishing raw data 189/245 aligned_chunk_48.parquet
+Publishing raw data 190/245 aligned_chunk_49.parquet
+Publishing raw data 191/245 aligned_chunk_5.parquet
+Publishing raw data 192/245 aligned_chunk_50.parquet
+Publishing raw data 193/245 aligned_chunk_51.parquet
+Publishing raw data 194/245 aligned_chunk_52.parquet
+Publishing raw data 195/245 aligned_chunk_53.parquet
+Publishing raw data 196/245 aligned_chunk_54.parquet
+Publishing raw data 197/245 aligned_chunk_55.parquet
+Publishing raw data 198/245 aligned_chunk_56.parquet
+Publishing raw data 199/245 aligned_chunk_57.parquet
+Publishing raw data 200/245 aligned_chunk_58.parquet
+Publishing raw data 201/245 aligned_chunk_59.parquet
+Publishing raw data 202/245 aligned_chunk_6.parquet
+Publishing raw data 203/245 aligned_chunk_60.parquet
+Publishing raw data 204/245 aligned_chunk_61.parquet
+Publishing raw data 205/245 aligned_chunk_62.parquet
+Publishing raw data 206/245 aligned_chunk_63.parquet
+Publishing raw data 207/245 aligned_chunk_64.parquet
+Publishing raw data 208/245 aligned_chunk_65.parquet
+Publishing raw data 209/245 aligned_chunk_66.parquet
+Publishing raw data 210/245 aligned_chunk_67.parquet
+Publishing raw data 211/245 aligned_chunk_68.parquet
+Publishing raw data 212/245 aligned_chunk_69.parquet
+Publishing raw data 213/245 aligned_chunk_7.parquet
+Publishing raw data 214/245 aligned_chunk_70.parquet
+Publishing raw data 215/245 aligned_chunk_71.parquet
+Publishing raw data 216/245 aligned_chunk_72.parquet
+Publishing raw data 217/245 aligned_chunk_73.parquet
+Publishing raw data 218/245 aligned_chunk_74.parquet
+Publishing raw data 219/245 aligned_chunk_75.parquet
+Publishing raw data 220/245 aligned_chunk_76.parquet
+Publishing raw data 221/245 aligned_chunk_77.parquet
+Publishing raw data 222/245 aligned_chunk_78.parquet
+Publishing raw data 223/245 aligned_chunk_79.parquet
+Publishing raw data 224/245 aligned_chunk_8.parquet
+Publishing raw data 225/245 aligned_chunk_80.parquet
+Publishing raw data 226/245 aligned_chunk_81.parquet
+Publishing raw data 227/245 aligned_chunk_82.parquet
+Publishing raw data 228/245 aligned_chunk_83.parquet
+Publishing raw data 229/245 aligned_chunk_84.parquet
+Publishing raw data 230/245 aligned_chunk_85.parquet
+Publishing raw data 231/245 aligned_chunk_86.parquet
+Publishing raw data 232/245 aligned_chunk_87.parquet
+Publishing raw data 233/245 aligned_chunk_88.parquet
+Publishing raw data 234/245 aligned_chunk_89.parquet
+Publishing raw data 235/245 aligned_chunk_9.parquet
+Publishing raw data 236/245 aligned_chunk_90.parquet
+Publishing raw data 237/245 aligned_chunk_91.parquet
+Publishing raw data 238/245 aligned_chunk_92.parquet
+Publishing raw data 239/245 aligned_chunk_93.parquet
+Publishing raw data 240/245 aligned_chunk_94.parquet
+Publishing raw data 241/245 aligned_chunk_95.parquet
+Publishing raw data 242/245 aligned_chunk_96.parquet
+Publishing raw data 243/245 aligned_chunk_97.parquet
+Publishing raw data 244/245 aligned_chunk_98.parquet
+Publishing raw data 245/245 aligned_chunk_99.parquet
+AUDIT 1/245 aligned_chunk_0.parquet
+AUDIT 2/245 aligned_chunk_1.parquet
+AUDIT 3/245 aligned_chunk_10.parquet
+AUDIT 4/245 aligned_chunk_100.parquet
+AUDIT 5/245 aligned_chunk_101.parquet
+AUDIT 6/245 aligned_chunk_102.parquet
+AUDIT 7/245 aligned_chunk_103.parquet
+AUDIT 8/245 aligned_chunk_104.parquet
+AUDIT 9/245 aligned_chunk_105.parquet
+AUDIT 10/245 aligned_chunk_106.parquet
+AUDIT 11/245 aligned_chunk_107.parquet
+AUDIT 12/245 aligned_chunk_108.parquet
+AUDIT 13/245 aligned_chunk_109.parquet
+AUDIT 14/245 aligned_chunk_11.parquet
+AUDIT 15/245 aligned_chunk_110.parquet
+AUDIT 16/245 aligned_chunk_111.parquet
+AUDIT 17/245 aligned_chunk_112.parquet
+AUDIT 18/245 aligned_chunk_113.parquet
+AUDIT 19/245 aligned_chunk_114.parquet
+AUDIT 20/245 aligned_chunk_115.parquet
+AUDIT 21/245 aligned_chunk_116.parquet
+AUDIT 22/245 aligned_chunk_117.parquet
+AUDIT 23/245 aligned_chunk_118.parquet
+AUDIT 24/245 aligned_chunk_119.parquet
+AUDIT 25/245 aligned_chunk_12.parquet
+AUDIT 26/245 aligned_chunk_120.parquet
+AUDIT 27/245 aligned_chunk_121.parquet
+AUDIT 28/245 aligned_chunk_122.parquet
+AUDIT 29/245 aligned_chunk_123.parquet
+AUDIT 30/245 aligned_chunk_124.parquet
+AUDIT 31/245 aligned_chunk_125.parquet
+AUDIT 32/245 aligned_chunk_126.parquet
+AUDIT 33/245 aligned_chunk_127.parquet
+AUDIT 34/245 aligned_chunk_128.parquet
+AUDIT 35/245 aligned_chunk_129.parquet
+AUDIT 36/245 aligned_chunk_13.parquet
+AUDIT 37/245 aligned_chunk_130.parquet
+AUDIT 38/245 aligned_chunk_131.parquet
+AUDIT 39/245 aligned_chunk_132.parquet
+AUDIT 40/245 aligned_chunk_133.parquet
+AUDIT 41/245 aligned_chunk_134.parquet
+AUDIT 42/245 aligned_chunk_135.parquet
+AUDIT 43/245 aligned_chunk_136.parquet
+AUDIT 44/245 aligned_chunk_137.parquet
+AUDIT 45/245 aligned_chunk_138.parquet
+AUDIT 46/245 aligned_chunk_139.parquet
+AUDIT 47/245 aligned_chunk_14.parquet
+AUDIT 48/245 aligned_chunk_140.parquet
+AUDIT 49/245 aligned_chunk_141.parquet
+AUDIT 50/245 aligned_chunk_142.parquet
+AUDIT 51/245 aligned_chunk_143.parquet
+AUDIT 52/245 aligned_chunk_144.parquet
+AUDIT 53/245 aligned_chunk_145.parquet
+AUDIT 54/245 aligned_chunk_146.parquet
+AUDIT 55/245 aligned_chunk_147.parquet
+AUDIT 56/245 aligned_chunk_148.parquet
+AUDIT 57/245 aligned_chunk_149.parquet
+AUDIT 58/245 aligned_chunk_15.parquet
+AUDIT 59/245 aligned_chunk_150.parquet
+AUDIT 60/245 aligned_chunk_151.parquet
+AUDIT 61/245 aligned_chunk_152.parquet
+AUDIT 62/245 aligned_chunk_153.parquet
+AUDIT 63/245 aligned_chunk_154.parquet
+AUDIT 64/245 aligned_chunk_155.parquet
+AUDIT 65/245 aligned_chunk_156.parquet
+AUDIT 66/245 aligned_chunk_157.parquet
+AUDIT 67/245 aligned_chunk_158.parquet
+AUDIT 68/245 aligned_chunk_159.parquet
+AUDIT 69/245 aligned_chunk_16.parquet
+AUDIT 70/245 aligned_chunk_160.parquet
+AUDIT 71/245 aligned_chunk_161.parquet
+AUDIT 72/245 aligned_chunk_162.parquet
+AUDIT 73/245 aligned_chunk_163.parquet
+AUDIT 74/245 aligned_chunk_164.parquet
+AUDIT 75/245 aligned_chunk_165.parquet
+AUDIT 76/245 aligned_chunk_166.parquet
+AUDIT 77/245 aligned_chunk_167.parquet
+AUDIT 78/245 aligned_chunk_168.parquet
+AUDIT 79/245 aligned_chunk_169.parquet
+AUDIT 80/245 aligned_chunk_17.parquet
+AUDIT 81/245 aligned_chunk_170.parquet
+AUDIT 82/245 aligned_chunk_171.parquet
+AUDIT 83/245 aligned_chunk_172.parquet
+AUDIT 84/245 aligned_chunk_173.parquet
+AUDIT 85/245 aligned_chunk_174.parquet
+AUDIT 86/245 aligned_chunk_175.parquet
+AUDIT 87/245 aligned_chunk_176.parquet
+AUDIT 88/245 aligned_chunk_177.parquet
+AUDIT 89/245 aligned_chunk_178.parquet
+AUDIT 90/245 aligned_chunk_179.parquet
+AUDIT 91/245 aligned_chunk_18.parquet
+AUDIT 92/245 aligned_chunk_180.parquet
+AUDIT 93/245 aligned_chunk_181.parquet
+AUDIT 94/245 aligned_chunk_182.parquet
+AUDIT 95/245 aligned_chunk_183.parquet
+AUDIT 96/245 aligned_chunk_184.parquet
+AUDIT 97/245 aligned_chunk_185.parquet
+AUDIT 98/245 aligned_chunk_186.parquet
+AUDIT 99/245 aligned_chunk_187.parquet
+AUDIT 100/245 aligned_chunk_188.parquet
+AUDIT 101/245 aligned_chunk_189.parquet
+AUDIT 102/245 aligned_chunk_19.parquet
+AUDIT 103/245 aligned_chunk_190.parquet
+AUDIT 104/245 aligned_chunk_191.parquet
+AUDIT 105/245 aligned_chunk_192.parquet
+AUDIT 106/245 aligned_chunk_193.parquet
+AUDIT 107/245 aligned_chunk_194.parquet
+AUDIT 108/245 aligned_chunk_195.parquet
+AUDIT 109/245 aligned_chunk_196.parquet
+AUDIT 110/245 aligned_chunk_197.parquet
+AUDIT 111/245 aligned_chunk_198.parquet
+AUDIT 112/245 aligned_chunk_199.parquet
+AUDIT 113/245 aligned_chunk_2.parquet
+AUDIT 114/245 aligned_chunk_20.parquet
+AUDIT 115/245 aligned_chunk_200.parquet
+AUDIT 116/245 aligned_chunk_201.parquet
+AUDIT 117/245 aligned_chunk_202.parquet
+AUDIT 118/245 aligned_chunk_203.parquet
+AUDIT 119/245 aligned_chunk_204.parquet
+AUDIT 120/245 aligned_chunk_205.parquet
+AUDIT 121/245 aligned_chunk_206.parquet
+AUDIT 122/245 aligned_chunk_207.parquet
+AUDIT 123/245 aligned_chunk_208.parquet
+AUDIT 124/245 aligned_chunk_209.parquet
+AUDIT 125/245 aligned_chunk_21.parquet
+AUDIT 126/245 aligned_chunk_210.parquet
+AUDIT 127/245 aligned_chunk_211.parquet
+AUDIT 128/245 aligned_chunk_212.parquet
+AUDIT 129/245 aligned_chunk_213.parquet
+AUDIT 130/245 aligned_chunk_214.parquet
+AUDIT 131/245 aligned_chunk_215.parquet
+AUDIT 132/245 aligned_chunk_216.parquet
+AUDIT 133/245 aligned_chunk_217.parquet
+AUDIT 134/245 aligned_chunk_218.parquet
+AUDIT 135/245 aligned_chunk_219.parquet
+AUDIT 136/245 aligned_chunk_22.parquet
+AUDIT 137/245 aligned_chunk_220.parquet
+AUDIT 138/245 aligned_chunk_221.parquet
+AUDIT 139/245 aligned_chunk_222.parquet
+AUDIT 140/245 aligned_chunk_223.parquet
+AUDIT 141/245 aligned_chunk_224.parquet
+AUDIT 142/245 aligned_chunk_225.parquet
+AUDIT 143/245 aligned_chunk_226.parquet
+AUDIT 144/245 aligned_chunk_227.parquet
+AUDIT 145/245 aligned_chunk_228.parquet
+AUDIT 146/245 aligned_chunk_229.parquet
+AUDIT 147/245 aligned_chunk_23.parquet
+AUDIT 148/245 aligned_chunk_230.parquet
+AUDIT 149/245 aligned_chunk_231.parquet
+AUDIT 150/245 aligned_chunk_232.parquet
+AUDIT 151/245 aligned_chunk_233.parquet
+AUDIT 152/245 aligned_chunk_234.parquet
+AUDIT 153/245 aligned_chunk_235.parquet
+AUDIT 154/245 aligned_chunk_236.parquet
+AUDIT 155/245 aligned_chunk_237.parquet
+AUDIT 156/245 aligned_chunk_238.parquet
+AUDIT 157/245 aligned_chunk_239.parquet
+AUDIT 158/245 aligned_chunk_24.parquet
+AUDIT 159/245 aligned_chunk_240.parquet
+AUDIT 160/245 aligned_chunk_241.parquet
+AUDIT 161/245 aligned_chunk_242.parquet
+AUDIT 162/245 aligned_chunk_243.parquet
+AUDIT 163/245 aligned_chunk_244.parquet
+AUDIT 164/245 aligned_chunk_25.parquet
+AUDIT 165/245 aligned_chunk_26.parquet
+AUDIT 166/245 aligned_chunk_27.parquet
+AUDIT 167/245 aligned_chunk_28.parquet
+AUDIT 168/245 aligned_chunk_29.parquet
+AUDIT 169/245 aligned_chunk_3.parquet
+AUDIT 170/245 aligned_chunk_30.parquet
+AUDIT 171/245 aligned_chunk_31.parquet
+AUDIT 172/245 aligned_chunk_32.parquet
+AUDIT 173/245 aligned_chunk_33.parquet
+AUDIT 174/245 aligned_chunk_34.parquet
+AUDIT 175/245 aligned_chunk_35.parquet
+AUDIT 176/245 aligned_chunk_36.parquet
+AUDIT 177/245 aligned_chunk_37.parquet
+AUDIT 178/245 aligned_chunk_38.parquet
+AUDIT 179/245 aligned_chunk_39.parquet
+AUDIT 180/245 aligned_chunk_4.parquet
+AUDIT 181/245 aligned_chunk_40.parquet
+AUDIT 182/245 aligned_chunk_41.parquet
+AUDIT 183/245 aligned_chunk_42.parquet
+AUDIT 184/245 aligned_chunk_43.parquet
+AUDIT 185/245 aligned_chunk_44.parquet
+AUDIT 186/245 aligned_chunk_45.parquet
+AUDIT 187/245 aligned_chunk_46.parquet
+AUDIT 188/245 aligned_chunk_47.parquet
+AUDIT 189/245 aligned_chunk_48.parquet
+AUDIT 190/245 aligned_chunk_49.parquet
+AUDIT 191/245 aligned_chunk_5.parquet
+AUDIT 192/245 aligned_chunk_50.parquet
+AUDIT 193/245 aligned_chunk_51.parquet
+AUDIT 194/245 aligned_chunk_52.parquet
+AUDIT 195/245 aligned_chunk_53.parquet
+AUDIT 196/245 aligned_chunk_54.parquet
+AUDIT 197/245 aligned_chunk_55.parquet
+AUDIT 198/245 aligned_chunk_56.parquet
+AUDIT 199/245 aligned_chunk_57.parquet
+AUDIT 200/245 aligned_chunk_58.parquet
+AUDIT 201/245 aligned_chunk_59.parquet
+AUDIT 202/245 aligned_chunk_6.parquet
+AUDIT 203/245 aligned_chunk_60.parquet
+AUDIT 204/245 aligned_chunk_61.parquet
+AUDIT 205/245 aligned_chunk_62.parquet
+AUDIT 206/245 aligned_chunk_63.parquet
+AUDIT 207/245 aligned_chunk_64.parquet
+AUDIT 208/245 aligned_chunk_65.parquet
+AUDIT 209/245 aligned_chunk_66.parquet
+AUDIT 210/245 aligned_chunk_67.parquet
+AUDIT 211/245 aligned_chunk_68.parquet
+AUDIT 212/245 aligned_chunk_69.parquet
+AUDIT 213/245 aligned_chunk_7.parquet
+AUDIT 214/245 aligned_chunk_70.parquet
+AUDIT 215/245 aligned_chunk_71.parquet
+AUDIT 216/245 aligned_chunk_72.parquet
+AUDIT 217/245 aligned_chunk_73.parquet
+AUDIT 218/245 aligned_chunk_74.parquet
+AUDIT 219/245 aligned_chunk_75.parquet
+AUDIT 220/245 aligned_chunk_76.parquet
+AUDIT 221/245 aligned_chunk_77.parquet
+AUDIT 222/245 aligned_chunk_78.parquet
+AUDIT 223/245 aligned_chunk_79.parquet
+AUDIT 224/245 aligned_chunk_8.parquet
+AUDIT 225/245 aligned_chunk_80.parquet
+AUDIT 226/245 aligned_chunk_81.parquet
+AUDIT 227/245 aligned_chunk_82.parquet
+AUDIT 228/245 aligned_chunk_83.parquet
+AUDIT 229/245 aligned_chunk_84.parquet
+AUDIT 230/245 aligned_chunk_85.parquet
+AUDIT 231/245 aligned_chunk_86.parquet
+AUDIT 232/245 aligned_chunk_87.parquet
+AUDIT 233/245 aligned_chunk_88.parquet
+AUDIT 234/245 aligned_chunk_89.parquet
+AUDIT 235/245 aligned_chunk_9.parquet
+AUDIT 236/245 aligned_chunk_90.parquet
+AUDIT 237/245 aligned_chunk_91.parquet
+AUDIT 238/245 aligned_chunk_92.parquet
+AUDIT 239/245 aligned_chunk_93.parquet
+AUDIT 240/245 aligned_chunk_94.parquet
+AUDIT 241/245 aligned_chunk_95.parquet
+AUDIT 242/245 aligned_chunk_96.parquet
+AUDIT 243/245 aligned_chunk_97.parquet
+AUDIT 244/245 aligned_chunk_98.parquet
+AUDIT 245/245 aligned_chunk_99.parquet
+PREPARATION_PASSED
+EXPERIMENT_START cnmr seed=41 /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261114T163401.021526Z-7334f9bc
+EXPERIMENT_FAILED cnmr seed=41: Trainer exited with status -15
+Stopped after a failed experiment; inspect preserved attempt and resume safely

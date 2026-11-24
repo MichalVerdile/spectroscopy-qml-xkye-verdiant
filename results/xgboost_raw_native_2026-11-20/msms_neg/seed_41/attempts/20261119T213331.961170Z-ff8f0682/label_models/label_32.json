@@ -1,0 +1,142 @@
+{
+  "label_index": 32,
+  "label_name": "Sulfonic acid",
+  "best_iteration": 14,
+  "best_score": 0.00015360335204364,
+  "fitted_rounds": 30,
+  "device": "cuda:0",
+  "fit_seconds": 42.10973458501394,
+  "model_sha256": "9d9f474d8c212caadb00bdefdec23a9db664eefb3a2a6abb3f2795361e84b85a",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00015452279562952,
+        0.00015414243167114,
+        0.00015402305217363,
+        0.00015388240321767,
+        0.00015361952829405,
+        0.00015389974772854,
+        0.00015438630328763,
+        0.00015428658773916,
+        0.00015418970445135,
+        0.00015408456087883,
+        0.00015398840883568,
+        0.00015389024906058,
+        0.00015379840221512,
+        0.00015368308324514,
+        0.00015360335204364,
+        0.00015383551417762,
+        0.00015375699037347,
+        0.00015369590593653,
+        0.00015402782302202,
+        0.00015398141006248,
+        0.00015418935687648,
+        0.00015414071611976,
+        0.00015403173121219,
+        0.00015442881828591,
+        0.00015436756602571,
+        0.00015431240740121,
+        0.0001546201154034,
+        0.00015455369789323,
+        0.00015448375281013,
+        0.00015487454170068
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "41",
+        "seed": "41",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "30"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[1.2588593E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

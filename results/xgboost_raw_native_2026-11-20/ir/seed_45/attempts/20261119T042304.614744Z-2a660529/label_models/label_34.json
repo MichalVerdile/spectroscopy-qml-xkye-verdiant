@@ -1,0 +1,148 @@
+{
+  "label_index": 34,
+  "label_name": "Thial",
+  "best_iteration": 20,
+  "best_score": 0.00064550533396601,
+  "fitted_rounds": 36,
+  "device": "cuda:0",
+  "fit_seconds": 27.507520273997216,
+  "model_sha256": "6b04e094fb718df0e6de0662daf88245cee897eb43b2d003631535d3f8f4d171",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00066678746362674,
+        0.00066598528054484,
+        0.00066066856580971,
+        0.00066235975093699,
+        0.00066275354468856,
+        0.00066322576048763,
+        0.00065922120645431,
+        0.0006595809517331,
+        0.00064756723862638,
+        0.00064855162140426,
+        0.00064840950060151,
+        0.00064575991447696,
+        0.00064835192818121,
+        0.00064925004689949,
+        0.00065022219542507,
+        0.00064642771908666,
+        0.00064782333159685,
+        0.00064877462960463,
+        0.00065025964756094,
+        0.00064852205620864,
+        0.00064550533396601,
+        0.0006468143219421,
+        0.00064663837170939,
+        0.0006469340115614,
+        0.0006463808219838,
+        0.00064813027834185,
+        0.00065082911950996,
+        0.00065143746783933,
+        0.00065269153797205,
+        0.00065320900076395,
+        0.00065036899519971,
+        0.00065123424073032,
+        0.0006526160725071,
+        0.00065188081426203,
+        0.00065188672470461,
+        0.00065018566534185
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "45",
+        "seed": "45",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "36"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[5.979346E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "1800",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

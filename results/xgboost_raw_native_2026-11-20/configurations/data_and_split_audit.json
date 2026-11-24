@@ -1,0 +1,1678 @@
+{
+  "file_rows": [
+    {
+      "name": "aligned_chunk_0.parquet",
+      "rows": 3235
+    },
+    {
+      "name": "aligned_chunk_1.parquet",
+      "rows": 3273
+    },
+    {
+      "name": "aligned_chunk_10.parquet",
+      "rows": 3244
+    },
+    {
+      "name": "aligned_chunk_100.parquet",
+      "rows": 3216
+    },
+    {
+      "name": "aligned_chunk_101.parquet",
+      "rows": 3215
+    },
+    {
+      "name": "aligned_chunk_102.parquet",
+      "rows": 3253
+    },
+    {
+      "name": "aligned_chunk_103.parquet",
+      "rows": 3275
+    },
+    {
+      "name": "aligned_chunk_104.parquet",
+      "rows": 3244
+    },
+    {
+      "name": "aligned_chunk_105.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_106.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_107.parquet",
+      "rows": 3261
+    },
+    {
+      "name": "aligned_chunk_108.parquet",
+      "rows": 3227
+    },
+    {
+      "name": "aligned_chunk_109.parquet",
+      "rows": 3252
+    },
+    {
+      "name": "aligned_chunk_11.parquet",
+      "rows": 3270
+    },
+    {
+      "name": "aligned_chunk_110.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_111.parquet",
+      "rows": 3210
+    },
+    {
+      "name": "aligned_chunk_112.parquet",
+      "rows": 3253
+    },
+    {
+      "name": "aligned_chunk_113.parquet",
+      "rows": 3259
+    },
+    {
+      "name": "aligned_chunk_114.parquet",
+      "rows": 3261
+    },
+    {
+      "name": "aligned_chunk_115.parquet",
+      "rows": 3240
+    },
+    {
+      "name": "aligned_chunk_116.parquet",
+      "rows": 3202
+    },
+    {
+      "name": "aligned_chunk_117.parquet",
+      "rows": 3221
+    },
+    {
+      "name": "aligned_chunk_118.parquet",
+      "rows": 3239
+    },
+    {
+      "name": "aligned_chunk_119.parquet",
+      "rows": 3295
+    },
+    {
+      "name": "aligned_chunk_12.parquet",
+      "rows": 3249
+    },
+    {
+      "name": "aligned_chunk_120.parquet",
+      "rows": 3217
+    },
+    {
+      "name": "aligned_chunk_121.parquet",
+      "rows": 3276
+    },
+    {
+      "name": "aligned_chunk_122.parquet",
+      "rows": 3273
+    },
+    {
+      "name": "aligned_chunk_123.parquet",
+      "rows": 3232
+    },
+    {
+      "name": "aligned_chunk_124.parquet",
+      "rows": 3231
+    },
+    {
+      "name": "aligned_chunk_125.parquet",
+      "rows": 3262
+    },
+    {
+      "name": "aligned_chunk_126.parquet",
+      "rows": 3286
+    },
+    {
+      "name": "aligned_chunk_127.parquet",
+      "rows": 3273
+    },
+    {
+      "name": "aligned_chunk_128.parquet",
+      "rows": 3251
+    },
+    {
+      "name": "aligned_chunk_129.parquet",
+      "rows": 3214
+    },
+    {
+      "name": "aligned_chunk_13.parquet",
+      "rows": 3243
+    },
+    {
+      "name": "aligned_chunk_130.parquet",
+      "rows": 3238
+    },
+    {
+      "name": "aligned_chunk_131.parquet",
+      "rows": 3179
+    },
+    {
+      "name": "aligned_chunk_132.parquet",
+      "rows": 3227
+    },
+    {
+      "name": "aligned_chunk_133.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_134.parquet",
+      "rows": 3232
+    },
+    {
+      "name": "aligned_chunk_135.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_136.parquet",
+      "rows": 3205
+    },
+    {
+      "name": "aligned_chunk_137.parquet",
+      "rows": 3223
+    },
+    {
+      "name": "aligned_chunk_138.parquet",
+      "rows": 3242
+    },
+    {
+      "name": "aligned_chunk_139.parquet",
+      "rows": 3256
+    },
+    {
+      "name": "aligned_chunk_14.parquet",
+      "rows": 3239
+    },
+    {
+      "name": "aligned_chunk_140.parquet",
+      "rows": 3168
+    },
+    {
+      "name": "aligned_chunk_141.parquet",
+      "rows": 3218
+    },
+    {
+      "name": "aligned_chunk_142.parquet",
+      "rows": 3264
+    },
+    {
+      "name": "aligned_chunk_143.parquet",
+      "rows": 3274
+    },
+    {
+      "name": "aligned_chunk_144.parquet",
+      "rows": 3268
+    },
+    {
+      "name": "aligned_chunk_145.parquet",
+      "rows": 3268
+    },
+    {
+      "name": "aligned_chunk_146.parquet",
+      "rows": 3309
+    },
+    {
+      "name": "aligned_chunk_147.parquet",
+      "rows": 3281
+    },
+    {
+      "name": "aligned_chunk_148.parquet",
+      "rows": 3231
+    },
+    {
+      "name": "aligned_chunk_149.parquet",
+      "rows": 3227
+    },
+    {
+      "name": "aligned_chunk_15.parquet",
+      "rows": 3204
+    },
+    {
+      "name": "aligned_chunk_150.parquet",
+      "rows": 3208
+    },
+    {
+      "name": "aligned_chunk_151.parquet",
+      "rows": 3284
+    },
+    {
+      "name": "aligned_chunk_152.parquet",
+      "rows": 3194
+    },
+    {
+      "name": "aligned_chunk_153.parquet",
+      "rows": 3260
+    },
+    {
+      "name": "aligned_chunk_154.parquet",
+      "rows": 3234
+    },
+    {
+      "name": "aligned_chunk_155.parquet",
+      "rows": 3187
+    },
+    {
+      "name": "aligned_chunk_156.parquet",
+      "rows": 3233
+    },
+    {
+      "name": "aligned_chunk_157.parquet",
+      "rows": 3332
+    },
+    {
+      "name": "aligned_chunk_158.parquet",
+      "rows": 3288
+    },
+    {
+      "name": "aligned_chunk_159.parquet",
+      "rows": 3233
+    },
+    {
+      "name": "aligned_chunk_16.parquet",
+      "rows": 3276
+    },
+    {
+      "name": "aligned_chunk_160.parquet",
+      "rows": 3271
+    },
+    {
+      "name": "aligned_chunk_161.parquet",
+      "rows": 3286
+    },
+    {
+      "name": "aligned_chunk_162.parquet",
+      "rows": 3260
+    },
+    {
+      "name": "aligned_chunk_163.parquet",
+      "rows": 3245
+    },
+    {
+      "name": "aligned_chunk_164.parquet",
+      "rows": 3278
+    },
+    {
+      "name": "aligned_chunk_165.parquet",
+      "rows": 3296
+    },
+    {
+      "name": "aligned_chunk_166.parquet",
+      "rows": 3244
+    },
+    {
+      "name": "aligned_chunk_167.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_168.parquet",
+      "rows": 3239
+    },
+    {
+      "name": "aligned_chunk_169.parquet",
+      "rows": 3207
+    },
+    {
+      "name": "aligned_chunk_17.parquet",
+      "rows": 3378
+    },
+    {
+      "name": "aligned_chunk_170.parquet",
+      "rows": 3280
+    },
+    {
+      "name": "aligned_chunk_171.parquet",
+      "rows": 3237
+    },
+    {
+      "name": "aligned_chunk_172.parquet",
+      "rows": 3334
+    },
+    {
+      "name": "aligned_chunk_173.parquet",
+      "rows": 3233
+    },
+    {
+      "name": "aligned_chunk_174.parquet",
+      "rows": 3265
+    },
+    {
+      "name": "aligned_chunk_175.parquet",
+      "rows": 3249
+    },
+    {
+      "name": "aligned_chunk_176.parquet",
+      "rows": 3254
+    },
+    {
+      "name": "aligned_chunk_177.parquet",
+      "rows": 3231
+    },
+    {
+      "name": "aligned_chunk_178.parquet",
+      "rows": 3182
+    },
+    {
+      "name": "aligned_chunk_179.parquet",
+      "rows": 3201
+    },
+    {
+      "name": "aligned_chunk_18.parquet",
+      "rows": 3281
+    },
+    {
+      "name": "aligned_chunk_180.parquet",
+      "rows": 3266
+    },
+    {
+      "name": "aligned_chunk_181.parquet",
+      "rows": 3209
+    },
+    {
+      "name": "aligned_chunk_182.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_183.parquet",
+      "rows": 3220
+    },
+    {
+      "name": "aligned_chunk_184.parquet",
+      "rows": 3268
+    },
+    {
+      "name": "aligned_chunk_185.parquet",
+      "rows": 3233
+    },
+    {
+      "name": "aligned_chunk_186.parquet",
+      "rows": 3294
+    },
+    {
+      "name": "aligned_chunk_187.parquet",
+      "rows": 3283
+    },
+    {
+      "name": "aligned_chunk_188.parquet",
+      "rows": 3169
+    },
+    {
+      "name": "aligned_chunk_189.parquet",
+      "rows": 3228
+    },
+    {
+      "name": "aligned_chunk_19.parquet",
+      "rows": 3262
+    },
+    {
+      "name": "aligned_chunk_190.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_191.parquet",
+      "rows": 3272
+    },
+    {
+      "name": "aligned_chunk_192.parquet",
+      "rows": 3218
+    },
+    {
+      "name": "aligned_chunk_193.parquet",
+      "rows": 3242
+    },
+    {
+      "name": "aligned_chunk_194.parquet",
+      "rows": 3251
+    },
+    {
+      "name": "aligned_chunk_195.parquet",
+      "rows": 3218
+    },
+    {
+      "name": "aligned_chunk_196.parquet",
+      "rows": 3201
+    },
+    {
+      "name": "aligned_chunk_197.parquet",
+      "rows": 3237
+    },
+    {
+      "name": "aligned_chunk_198.parquet",
+      "rows": 3214
+    },
+    {
+      "name": "aligned_chunk_199.parquet",
+      "rows": 3290
+    },
+    {
+      "name": "aligned_chunk_2.parquet",
+      "rows": 3129
+    },
+    {
+      "name": "aligned_chunk_20.parquet",
+      "rows": 3254
+    },
+    {
+      "name": "aligned_chunk_200.parquet",
+      "rows": 3235
+    },
+    {
+      "name": "aligned_chunk_201.parquet",
+      "rows": 3208
+    },
+    {
+      "name": "aligned_chunk_202.parquet",
+      "rows": 3243
+    },
+    {
+      "name": "aligned_chunk_203.parquet",
+      "rows": 3231
+    },
+    {
+      "name": "aligned_chunk_204.parquet",
+      "rows": 3243
+    },
+    {
+      "name": "aligned_chunk_205.parquet",
+      "rows": 3254
+    },
+    {
+      "name": "aligned_chunk_206.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_207.parquet",
+      "rows": 3163
+    },
+    {
+      "name": "aligned_chunk_208.parquet",
+      "rows": 3287
+    },
+    {
+      "name": "aligned_chunk_209.parquet",
+      "rows": 3203
+    },
+    {
+      "name": "aligned_chunk_21.parquet",
+      "rows": 3241
+    },
+    {
+      "name": "aligned_chunk_210.parquet",
+      "rows": 3242
+    },
+    {
+      "name": "aligned_chunk_211.parquet",
+      "rows": 3294
+    },
+    {
+      "name": "aligned_chunk_212.parquet",
+      "rows": 3234
+    },
+    {
+      "name": "aligned_chunk_213.parquet",
+      "rows": 3268
+    },
+    {
+      "name": "aligned_chunk_214.parquet",
+      "rows": 3238
+    },
+    {
+      "name": "aligned_chunk_215.parquet",
+      "rows": 3270
+    },
+    {
+      "name": "aligned_chunk_216.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_217.parquet",
+      "rows": 3221
+    },
+    {
+      "name": "aligned_chunk_218.parquet",
+      "rows": 3258
+    },
+    {
+      "name": "aligned_chunk_219.parquet",
+      "rows": 3230
+    },
+    {
+      "name": "aligned_chunk_22.parquet",
+      "rows": 3240
+    },
+    {
+      "name": "aligned_chunk_220.parquet",
+      "rows": 3215
+    },
+    {
+      "name": "aligned_chunk_221.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_222.parquet",
+      "rows": 3241
+    },
+    {
+      "name": "aligned_chunk_223.parquet",
+      "rows": 3231
+    },
+    {
+      "name": "aligned_chunk_224.parquet",
+      "rows": 3260
+    },
+    {
+      "name": "aligned_chunk_225.parquet",
+      "rows": 3282
+    },
+    {
+      "name": "aligned_chunk_226.parquet",
+      "rows": 3263
+    },
+    {
+      "name": "aligned_chunk_227.parquet",
+      "rows": 3210
+    },
+    {
+      "name": "aligned_chunk_228.parquet",
+      "rows": 3200
+    },
+    {
+      "name": "aligned_chunk_229.parquet",
+      "rows": 3235
+    },
+    {
+      "name": "aligned_chunk_23.parquet",
+      "rows": 3296
+    },
+    {
+      "name": "aligned_chunk_230.parquet",
+      "rows": 3252
+    },
+    {
+      "name": "aligned_chunk_231.parquet",
+      "rows": 3225
+    },
+    {
+      "name": "aligned_chunk_232.parquet",
+      "rows": 3272
+    },
+    {
+      "name": "aligned_chunk_233.parquet",
+      "rows": 3212
+    },
+    {
+      "name": "aligned_chunk_234.parquet",
+      "rows": 3243
+    },
+    {
+      "name": "aligned_chunk_235.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_236.parquet",
+      "rows": 3177
+    },
+    {
+      "name": "aligned_chunk_237.parquet",
+      "rows": 3243
+    },
+    {
+      "name": "aligned_chunk_238.parquet",
+      "rows": 3201
+    },
+    {
+      "name": "aligned_chunk_239.parquet",
+      "rows": 3265
+    },
+    {
+      "name": "aligned_chunk_24.parquet",
+      "rows": 3195
+    },
+    {
+      "name": "aligned_chunk_240.parquet",
+      "rows": 3278
+    },
+    {
+      "name": "aligned_chunk_241.parquet",
+      "rows": 3223
+    },
+    {
+      "name": "aligned_chunk_242.parquet",
+      "rows": 3262
+    },
+    {
+      "name": "aligned_chunk_243.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_244.parquet",
+      "rows": 3201
+    },
+    {
+      "name": "aligned_chunk_25.parquet",
+      "rows": 3260
+    },
+    {
+      "name": "aligned_chunk_26.parquet",
+      "rows": 3245
+    },
+    {
+      "name": "aligned_chunk_27.parquet",
+      "rows": 3241
+    },
+    {
+      "name": "aligned_chunk_28.parquet",
+      "rows": 3329
+    },
+    {
+      "name": "aligned_chunk_29.parquet",
+      "rows": 3290
+    },
+    {
+      "name": "aligned_chunk_3.parquet",
+      "rows": 3226
+    },
+    {
+      "name": "aligned_chunk_30.parquet",
+      "rows": 3275
+    },
+    {
+      "name": "aligned_chunk_31.parquet",
+      "rows": 3228
+    },
+    {
+      "name": "aligned_chunk_32.parquet",
+      "rows": 3284
+    },
+    {
+      "name": "aligned_chunk_33.parquet",
+      "rows": 3296
+    },
+    {
+      "name": "aligned_chunk_34.parquet",
+      "rows": 3267
+    },
+    {
+      "name": "aligned_chunk_35.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_36.parquet",
+      "rows": 3216
+    },
+    {
+      "name": "aligned_chunk_37.parquet",
+      "rows": 3225
+    },
+    {
+      "name": "aligned_chunk_38.parquet",
+      "rows": 3260
+    },
+    {
+      "name": "aligned_chunk_39.parquet",
+      "rows": 3192
+    },
+    {
+      "name": "aligned_chunk_4.parquet",
+      "rows": 3280
+    },
+    {
+      "name": "aligned_chunk_40.parquet",
+      "rows": 3316
+    },
+    {
+      "name": "aligned_chunk_41.parquet",
+      "rows": 3211
+    },
+    {
+      "name": "aligned_chunk_42.parquet",
+      "rows": 3174
+    },
+    {
+      "name": "aligned_chunk_43.parquet",
+      "rows": 3146
+    },
+    {
+      "name": "aligned_chunk_44.parquet",
+      "rows": 3166
+    },
+    {
+      "name": "aligned_chunk_45.parquet",
+      "rows": 3269
+    },
+    {
+      "name": "aligned_chunk_46.parquet",
+      "rows": 3261
+    },
+    {
+      "name": "aligned_chunk_47.parquet",
+      "rows": 3249
+    },
+    {
+      "name": "aligned_chunk_48.parquet",
+      "rows": 3177
+    },
+    {
+      "name": "aligned_chunk_49.parquet",
+      "rows": 3278
+    },
+    {
+      "name": "aligned_chunk_5.parquet",
+      "rows": 3292
+    },
+    {
+      "name": "aligned_chunk_50.parquet",
+      "rows": 3194
+    },
+    {
+      "name": "aligned_chunk_51.parquet",
+      "rows": 3253
+    },
+    {
+      "name": "aligned_chunk_52.parquet",
+      "rows": 3284
+    },
+    {
+      "name": "aligned_chunk_53.parquet",
+      "rows": 3214
+    },
+    {
+      "name": "aligned_chunk_54.parquet",
+      "rows": 3237
+    },
+    {
+      "name": "aligned_chunk_55.parquet",
+      "rows": 3217
+    },
+    {
+      "name": "aligned_chunk_56.parquet",
+      "rows": 3205
+    },
+    {
+      "name": "aligned_chunk_57.parquet",
+      "rows": 3203
+    },
+    {
+      "name": "aligned_chunk_58.parquet",
+      "rows": 3200
+    },
+    {
+      "name": "aligned_chunk_59.parquet",
+      "rows": 3344
+    },
+    {
+      "name": "aligned_chunk_6.parquet",
+      "rows": 3233
+    },
+    {
+      "name": "aligned_chunk_60.parquet",
+      "rows": 3207
+    },
+    {
+      "name": "aligned_chunk_61.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_62.parquet",
+      "rows": 3224
+    },
+    {
+      "name": "aligned_chunk_63.parquet",
+      "rows": 3143
+    },
+    {
+      "name": "aligned_chunk_64.parquet",
+      "rows": 3229
+    },
+    {
+      "name": "aligned_chunk_65.parquet",
+      "rows": 3263
+    },
+    {
+      "name": "aligned_chunk_66.parquet",
+      "rows": 3200
+    },
+    {
+      "name": "aligned_chunk_67.parquet",
+      "rows": 3297
+    },
+    {
+      "name": "aligned_chunk_68.parquet",
+      "rows": 3189
+    },
+    {
+      "name": "aligned_chunk_69.parquet",
+      "rows": 3218
+    },
+    {
+      "name": "aligned_chunk_7.parquet",
+      "rows": 3211
+    },
+    {
+      "name": "aligned_chunk_70.parquet",
+      "rows": 3239
+    },
+    {
+      "name": "aligned_chunk_71.parquet",
+      "rows": 3246
+    },
+    {
+      "name": "aligned_chunk_72.parquet",
+      "rows": 3213
+    },
+    {
+      "name": "aligned_chunk_73.parquet",
+      "rows": 3239
+    },
+    {
+      "name": "aligned_chunk_74.parquet",
+      "rows": 3202
+    },
+    {
+      "name": "aligned_chunk_75.parquet",
+      "rows": 3222
+    },
+    {
+      "name": "aligned_chunk_76.parquet",
+      "rows": 3188
+    },
+    {
+      "name": "aligned_chunk_77.parquet",
+      "rows": 3276
+    },
+    {
+      "name": "aligned_chunk_78.parquet",
+      "rows": 3244
+    },
+    {
+      "name": "aligned_chunk_79.parquet",
+      "rows": 3210
+    },
+    {
+      "name": "aligned_chunk_8.parquet",
+      "rows": 3225
+    },
+    {
+      "name": "aligned_chunk_80.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_81.parquet",
+      "rows": 3267
+    },
+    {
+      "name": "aligned_chunk_82.parquet",
+      "rows": 3171
+    },
+    {
+      "name": "aligned_chunk_83.parquet",
+      "rows": 3327
+    },
+    {
+      "name": "aligned_chunk_84.parquet",
+      "rows": 3186
+    },
+    {
+      "name": "aligned_chunk_85.parquet",
+      "rows": 3293
+    },
+    {
+      "name": "aligned_chunk_86.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_87.parquet",
+      "rows": 3259
+    },
+    {
+      "name": "aligned_chunk_88.parquet",
+      "rows": 3259
+    },
+    {
+      "name": "aligned_chunk_89.parquet",
+      "rows": 3236
+    },
+    {
+      "name": "aligned_chunk_9.parquet",
+      "rows": 3222
+    },
+    {
+      "name": "aligned_chunk_90.parquet",
+      "rows": 3290
+    },
+    {
+      "name": "aligned_chunk_91.parquet",
+      "rows": 3263
+    },
+    {
+      "name": "aligned_chunk_92.parquet",
+      "rows": 3242
+    },
+    {
+      "name": "aligned_chunk_93.parquet",
+      "rows": 3270
+    },
+    {
+      "name": "aligned_chunk_94.parquet",
+      "rows": 3225
+    },
+    {
+      "name": "aligned_chunk_95.parquet",
+      "rows": 3255
+    },
+    {
+      "name": "aligned_chunk_96.parquet",
+      "rows": 3240
+    },
+    {
+      "name": "aligned_chunk_97.parquet",
+      "rows": 3245
+    },
+    {
+      "name": "aligned_chunk_98.parquet",
+      "rows": 3255
+    },
+    {
+      "name": "aligned_chunk_99.parquet",
+      "rows": 3266
+    }
+  ],
+  "modalities": {
+    "cnmr": {
+      "native_lengths": {
+        "10000": 794403
+      },
+      "nonfinite_values": 0,
+      "excluded_rows": 0,
+      "samples": 794403,
+      "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+      "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+      "splits": {
+        "41": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+          "counts": {
+            "train": 635496,
+            "val": 79450,
+            "test": 79457
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+            "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+            "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 816,
+            "train_test": 805,
+            "val_test": 110
+          }
+        },
+        "42": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0e515da6fafb319a93b6284ba0d91dac9f20096ad52f08c9a23c41efcf50d3ae",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "42f8464ca962062119fb5e907dbc3a0ffecfec656bb5114adc892124d3fe32eb",
+            "val": "226e9785110e6cb1060e0adbf752d6d8dec862b3522c94e775bd173630dd8a12",
+            "test": "899f1b7ccb17986c387ead917793bbdce857acbb07d3389c2c068197fb53f353"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 805,
+            "train_test": 858,
+            "val_test": 77
+          }
+        },
+        "43": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "5a5c1ad88bf0e914a842f463d7b8f3b076038e1f75031e19e9412e0f3ab9be07",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "7afc0da9ef04e255df6f321041b6deec2ca90c26fc9ac0fb9aa7b6fb0b938bca",
+            "val": "00b18dc29257aa50bc21ad7d830274af31eba8c6e7fda01b31991af030d7275c",
+            "test": "b01cacf07f54ef52b7b330173170a1da5d647e7f558f37a6f93cebd1830c2a69"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 791,
+            "train_test": 776,
+            "val_test": 127
+          }
+        },
+        "44": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "1820ea6b2b1369a3c9f3defd3358a0f72783828b5d989836c0022b198853f26c",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "dc641310f6f37328124a4a12526e6001858a0f119d08e6752dcfff71f87b4ad3",
+            "val": "7ff5e3d54fd191082085dc873cc201d69f189ec275abdf7a2c5220e851717732",
+            "test": "4c423cb54f58978929e4d012f667f45c0d0bbf81168d5506553c1cb270b36771"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 825,
+            "train_test": 828,
+            "val_test": 102
+          }
+        },
+        "45": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+            "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+            "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 812,
+            "train_test": 858,
+            "val_test": 104
+          }
+        }
+      }
+    },
+    "hnmr": {
+      "native_lengths": {
+        "10000": 794403
+      },
+      "nonfinite_values": 0,
+      "excluded_rows": 0,
+      "samples": 794403,
+      "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+      "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+      "splits": {
+        "41": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+          "counts": {
+            "train": 635496,
+            "val": 79450,
+            "test": 79457
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+            "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+            "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 816,
+            "train_test": 805,
+            "val_test": 110
+          }
+        },
+        "42": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0e515da6fafb319a93b6284ba0d91dac9f20096ad52f08c9a23c41efcf50d3ae",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "42f8464ca962062119fb5e907dbc3a0ffecfec656bb5114adc892124d3fe32eb",
+            "val": "226e9785110e6cb1060e0adbf752d6d8dec862b3522c94e775bd173630dd8a12",
+            "test": "899f1b7ccb17986c387ead917793bbdce857acbb07d3389c2c068197fb53f353"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 805,
+            "train_test": 858,
+            "val_test": 77
+          }
+        },
+        "43": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "5a5c1ad88bf0e914a842f463d7b8f3b076038e1f75031e19e9412e0f3ab9be07",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "7afc0da9ef04e255df6f321041b6deec2ca90c26fc9ac0fb9aa7b6fb0b938bca",
+            "val": "00b18dc29257aa50bc21ad7d830274af31eba8c6e7fda01b31991af030d7275c",
+            "test": "b01cacf07f54ef52b7b330173170a1da5d647e7f558f37a6f93cebd1830c2a69"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 791,
+            "train_test": 776,
+            "val_test": 127
+          }
+        },
+        "44": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "1820ea6b2b1369a3c9f3defd3358a0f72783828b5d989836c0022b198853f26c",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "dc641310f6f37328124a4a12526e6001858a0f119d08e6752dcfff71f87b4ad3",
+            "val": "7ff5e3d54fd191082085dc873cc201d69f189ec275abdf7a2c5220e851717732",
+            "test": "4c423cb54f58978929e4d012f667f45c0d0bbf81168d5506553c1cb270b36771"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 825,
+            "train_test": 828,
+            "val_test": 102
+          }
+        },
+        "45": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+            "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+            "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 812,
+            "train_test": 858,
+            "val_test": 104
+          }
+        }
+      }
+    },
+    "ir": {
+      "native_lengths": {
+        "1800": 794403
+      },
+      "nonfinite_values": 0,
+      "excluded_rows": 0,
+      "samples": 794403,
+      "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+      "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+      "splits": {
+        "41": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+          "counts": {
+            "train": 635496,
+            "val": 79450,
+            "test": 79457
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+            "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+            "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 816,
+            "train_test": 805,
+            "val_test": 110
+          }
+        },
+        "42": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "sha256": "0e515da6fafb319a93b6284ba0d91dac9f20096ad52f08c9a23c41efcf50d3ae",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "42f8464ca962062119fb5e907dbc3a0ffecfec656bb5114adc892124d3fe32eb",
+            "val": "226e9785110e6cb1060e0adbf752d6d8dec862b3522c94e775bd173630dd8a12",
+            "test": "899f1b7ccb17986c387ead917793bbdce857acbb07d3389c2c068197fb53f353"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 805,
+            "train_test": 858,
+            "val_test": 77
+          }
+        },
+        "43": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_43.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "5a5c1ad88bf0e914a842f463d7b8f3b076038e1f75031e19e9412e0f3ab9be07",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "7afc0da9ef04e255df6f321041b6deec2ca90c26fc9ac0fb9aa7b6fb0b938bca",
+            "val": "00b18dc29257aa50bc21ad7d830274af31eba8c6e7fda01b31991af030d7275c",
+            "test": "b01cacf07f54ef52b7b330173170a1da5d647e7f558f37a6f93cebd1830c2a69"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 791,
+            "train_test": 776,
+            "val_test": 127
+          }
+        },
+        "44": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_44.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "1820ea6b2b1369a3c9f3defd3358a0f72783828b5d989836c0022b198853f26c",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "dc641310f6f37328124a4a12526e6001858a0f119d08e6752dcfff71f87b4ad3",
+            "val": "7ff5e3d54fd191082085dc873cc201d69f189ec275abdf7a2c5220e851717732",
+            "test": "4c423cb54f58978929e4d012f667f45c0d0bbf81168d5506553c1cb270b36771"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 825,
+            "train_test": 828,
+            "val_test": 102
+          }
+        },
+        "45": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_45.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+            "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+            "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 812,
+            "train_test": 858,
+            "val_test": 104
+          }
+        }
+      }
+    },
+    "msms_pos": {
+      "native_lengths": {
+        "10000": 794403
+      },
+      "nonfinite_values": 0,
+      "excluded_rows": 0,
+      "samples": 794403,
+      "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+      "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+      "splits": {
+        "41": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_41.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+          "counts": {
+            "train": 635496,
+            "val": 79450,
+            "test": 79457
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+            "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+            "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 816,
+            "train_test": 805,
+            "val_test": 110
+          }
+        },
+        "42": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_42.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "0e515da6fafb319a93b6284ba0d91dac9f20096ad52f08c9a23c41efcf50d3ae",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "42f8464ca962062119fb5e907dbc3a0ffecfec656bb5114adc892124d3fe32eb",
+            "val": "226e9785110e6cb1060e0adbf752d6d8dec862b3522c94e775bd173630dd8a12",
+            "test": "899f1b7ccb17986c387ead917793bbdce857acbb07d3389c2c068197fb53f353"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 805,
+            "train_test": 858,
+            "val_test": 77
+          }
+        },
+        "43": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_43.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "5a5c1ad88bf0e914a842f463d7b8f3b076038e1f75031e19e9412e0f3ab9be07",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "7afc0da9ef04e255df6f321041b6deec2ca90c26fc9ac0fb9aa7b6fb0b938bca",
+            "val": "00b18dc29257aa50bc21ad7d830274af31eba8c6e7fda01b31991af030d7275c",
+            "test": "b01cacf07f54ef52b7b330173170a1da5d647e7f558f37a6f93cebd1830c2a69"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 791,
+            "train_test": 776,
+            "val_test": 127
+          }
+        },
+        "44": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_44.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "1820ea6b2b1369a3c9f3defd3358a0f72783828b5d989836c0022b198853f26c",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "dc641310f6f37328124a4a12526e6001858a0f119d08e6752dcfff71f87b4ad3",
+            "val": "7ff5e3d54fd191082085dc873cc201d69f189ec275abdf7a2c5220e851717732",
+            "test": "4c423cb54f58978929e4d012f667f45c0d0bbf81168d5506553c1cb270b36771"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 825,
+            "train_test": 828,
+            "val_test": 102
+          }
+        },
+        "45": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_45.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+            "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+            "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 812,
+            "train_test": 858,
+            "val_test": 104
+          }
+        }
+      }
+    },
+    "msms_neg": {
+      "native_lengths": {
+        "10000": 794403
+      },
+      "nonfinite_values": 0,
+      "excluded_rows": 0,
+      "samples": 794403,
+      "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+      "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+      "splits": {
+        "41": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_41.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "0d734e0420327ca5e43661798729d3e9283e05f5eb78e6f2926722377d2e2271",
+          "counts": {
+            "train": 635496,
+            "val": 79450,
+            "test": 79457
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "8e95204596c25b0da4d038337edbb25a3f2542138308824e567e2ece55b33761",
+            "val": "982f53b04b1e8b5b3e1581ee2f3d37231c37d38392d67fdf09e3eed340cc86d7",
+            "test": "87b024789bdce550ec9c85a79c6db0f4d37e870fa27fac3466c5586a34a35c32"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 816,
+            "train_test": 805,
+            "val_test": 110
+          }
+        },
+        "42": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_42.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "0e515da6fafb319a93b6284ba0d91dac9f20096ad52f08c9a23c41efcf50d3ae",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "42f8464ca962062119fb5e907dbc3a0ffecfec656bb5114adc892124d3fe32eb",
+            "val": "226e9785110e6cb1060e0adbf752d6d8dec862b3522c94e775bd173630dd8a12",
+            "test": "899f1b7ccb17986c387ead917793bbdce857acbb07d3389c2c068197fb53f353"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 805,
+            "train_test": 858,
+            "val_test": 77
+          }
+        },
+        "43": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_43.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "5a5c1ad88bf0e914a842f463d7b8f3b076038e1f75031e19e9412e0f3ab9be07",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "7afc0da9ef04e255df6f321041b6deec2ca90c26fc9ac0fb9aa7b6fb0b938bca",
+            "val": "00b18dc29257aa50bc21ad7d830274af31eba8c6e7fda01b31991af030d7275c",
+            "test": "b01cacf07f54ef52b7b330173170a1da5d647e7f558f37a6f93cebd1830c2a69"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 791,
+            "train_test": 776,
+            "val_test": 127
+          }
+        },
+        "44": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_44.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "1820ea6b2b1369a3c9f3defd3358a0f72783828b5d989836c0022b198853f26c",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "dc641310f6f37328124a4a12526e6001858a0f119d08e6752dcfff71f87b4ad3",
+            "val": "7ff5e3d54fd191082085dc873cc201d69f189ec275abdf7a2c5220e851717732",
+            "test": "4c423cb54f58978929e4d012f667f45c0d0bbf81168d5506553c1cb270b36771"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 825,
+            "train_test": 828,
+            "val_test": 102
+          }
+        },
+        "45": {
+          "kind": "deterministic_reconstruction",
+          "historical_identity_verified": false,
+          "accepted_by_user": true,
+          "algorithm": "unchanged create_split_artifact, seed and seed+1",
+          "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_45.npz",
+          "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+          "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+          "counts": {
+            "train": 635521,
+            "val": 79441,
+            "test": 79441
+          },
+          "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+          "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+          "index_sha256": {
+            "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+            "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+            "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+          },
+          "canonical_smiles_overlap": {
+            "train_val": 812,
+            "train_test": 858,
+            "val_test": 104
+          }
+        }
+      }
+    }
+  },
+  "grouped_by_molecule": false,
+  "notes": [
+    "Original split artifacts were not available in Git. Reconstructed artifacts are not proof of historical identity.",
+    "MS/MS uses int(m/z * 10), clipped to 0..9999; last peak in each bin overwrites earlier peaks.",
+    "none retains native width, uses float32 and replaces non-finite values with zero."
+  ]
+}

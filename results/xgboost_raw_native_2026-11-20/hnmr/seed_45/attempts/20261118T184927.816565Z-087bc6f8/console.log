@@ -1,0 +1,295 @@
+DATA_PREPARATION_START cyclic GC deferred until fitting
+
+============================================================
+Loading data for: h_nmr_spectra
+============================================================
+Loaded cached XGBoost dataset from /root/runpod-work/cache/shared_hnmr_len10000_40d66613724d2476.npz
+Total samples loaded: 794403
+Data loading time: 82.15s
+
+============================================================
+Training XGBoost model for: h_nmr_spectra column: h_nmr_spectra
+============================================================
+Input shape: (794403, 10000)
+Target shape: (794403, 37)
+Number of functional groups: 37
+Initial split: Train-full=714962 90%, Test=79441 10%
+Training without K-Fold, matching CNN original mode...
+Train size: 635521, Validation size: 79441
+DATA_PREPARATION_FINISHED cyclic GC restored
+LABEL_START index=0 time=20261118T185127.378746Z
+LABEL_FINISHED index=0 best_iteration=266 device=cuda:0
+LABEL_START index=1 time=20261118T185309.477285Z
+LABEL_FINISHED index=1 best_iteration=692 device=cuda:0
+LABEL_START index=2 time=20261118T185527.312070Z
+LABEL_FINISHED index=2 best_iteration=19011 device=cuda:0
+LABEL_START index=3 time=20261118T192004.748153Z
+LABEL_FINISHED index=3 best_iteration=2761 device=cuda:0
+LABEL_START index=4 time=20261118T192439.704947Z
+LABEL_FINISHED index=4 best_iteration=2081 device=cuda:0
+LABEL_START index=5 time=20261118T192845.277237Z
+LABEL_FINISHED index=5 best_iteration=10286 device=cuda:0
+LABEL_START index=6 time=20261118T194251.222262Z
+LABEL_FINISHED index=6 best_iteration=3350 device=cuda:0
+LABEL_START index=7 time=20261118T194824.730069Z
+LABEL_FINISHED index=7 best_iteration=22445 device=cuda:0
+LABEL_START index=8 time=20261118T201752.211273Z
+LABEL_FINISHED index=8 best_iteration=22988 device=cuda:0
+LABEL_START index=9 time=20261118T204744.358036Z
+LABEL_FINISHED index=9 best_iteration=10678 device=cuda:0
+LABEL_START index=10 time=20261118T210241.980089Z
+LABEL_FINISHED index=10 best_iteration=247 device=cuda:0
+LABEL_START index=11 time=20261118T210418.045574Z
+LABEL_FINISHED index=11 best_iteration=3371 device=cuda:0
+LABEL_START index=12 time=20261118T210944.114325Z
+LABEL_FINISHED index=12 best_iteration=6633 device=cuda:0
+LABEL_START index=13 time=20261118T211904.141143Z
+LABEL_FINISHED index=13 best_iteration=2419 device=cuda:0
+LABEL_START index=14 time=20261118T212319.194385Z
+LABEL_FINISHED index=14 best_iteration=851 device=cuda:0
+LABEL_START index=15 time=20261118T212546.345804Z
+LABEL_FINISHED index=15 best_iteration=8998 device=cuda:0
+LABEL_START index=16 time=20261118T213834.708660Z
+LABEL_FINISHED index=16 best_iteration=18041 device=cuda:0
+LABEL_START index=17 time=20261118T220301.904612Z
+LABEL_FINISHED index=17 best_iteration=19466 device=cuda:0
+LABEL_START index=18 time=20261118T222846.534764Z
+LABEL_FINISHED index=18 best_iteration=2048 device=cuda:0
+LABEL_START index=19 time=20261118T223234.290947Z
+LABEL_FINISHED index=19 best_iteration=1696 device=cuda:0
+LABEL_START index=20 time=20261118T223559.428596Z
+LABEL_FINISHED index=20 best_iteration=2854 device=cuda:0
+LABEL_START index=21 time=20261118T224044.272526Z
+LABEL_FINISHED index=21 best_iteration=1595 device=cuda:0
+LABEL_START index=22 time=20261118T224403.148114Z
+LABEL_FINISHED index=22 best_iteration=433 device=cuda:0
+LABEL_START index=23 time=20261118T224550.394006Z
+LABEL_FINISHED index=23 best_iteration=359 device=cuda:0
+LABEL_START index=24 time=20261118T224730.950521Z
+LABEL_FINISHED index=24 best_iteration=8574 device=cuda:0
+LABEL_START index=25 time=20261118T225923.619922Z
+LABEL_FINISHED index=25 best_iteration=5571 device=cuda:0
+LABEL_START index=26 time=20261118T230726.772289Z
+LABEL_FINISHED index=26 best_iteration=7353 device=cuda:0
+LABEL_START index=27 time=20261118T231750.755743Z
+LABEL_FINISHED index=27 best_iteration=309 device=cuda:0
+LABEL_START index=28 time=20261118T231931.052228Z
+LABEL_FINISHED index=28 best_iteration=13141 device=cuda:0
+LABEL_START index=29 time=20261118T233659.888727Z
+LABEL_FINISHED index=29 best_iteration=6316 device=cuda:0
+LABEL_START index=30 time=20261118T234614.506735Z
+LABEL_FINISHED index=30 best_iteration=1188 device=cuda:0
+LABEL_START index=31 time=20261118T234901.484962Z
+LABEL_FINISHED index=31 best_iteration=3490 device=cuda:0
+LABEL_START index=32 time=20261118T235449.156541Z
+LABEL_FINISHED index=32 best_iteration=20 device=cuda:0
+LABEL_START index=33 time=20261118T235609.512394Z
+LABEL_FINISHED index=33 best_iteration=1094 device=cuda:0
+LABEL_START index=34 time=20261118T235856.717384Z
+LABEL_FINISHED index=34 best_iteration=6 device=cuda:0
+LABEL_START index=35 time=20261119T000008.409023Z
+LABEL_FINISHED index=35 best_iteration=1655 device=cuda:0
+LABEL_START index=36 time=20261119T000327.659110Z
+LABEL_FINISHED index=36 best_iteration=566 device=cuda:0
+Logging learning curve every 20 boosting step(s)...
+EVAL_START split=train rows=635521 points=1151 batches=3
+/root/runpod-work/venv/lib/python3.12/site-packages/xgboost/core.py:774: UserWarning: [00:05:32] WARNING: /workspace/src/common/error_msg.cc:62: Falling back to prediction using DMatrix due to mismatched devices. This might lead to higher memory usage and slower performance. XGBoost is running on: cuda:0, while the input data is on: cpu.
+Potential solutions:
+- Use a data structure that matches the device ordinal in the booster.
+- Set the device for booster before call to inplace_predict.
+
+This warning will only be shown once.
+
+  return func(**kwargs)
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=6500/19027 elapsed=20.0s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=10120/19027 elapsed=40.1s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=12980/19027 elapsed=60.2s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=15280/19027 elapsed=80.2s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=17280/19027 elapsed=100.3s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=19012/19027 elapsed=120.4s
+EVAL_PROGRESS split=train batch=1/3 label=6/37 round=7600/10302 elapsed=140.4s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=4760/22461 elapsed=160.5s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=9300/22461 elapsed=180.5s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=12440/22461 elapsed=200.6s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=14940/22461 elapsed=220.6s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=17160/22461 elapsed=240.7s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=19340/22461 elapsed=260.7s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=21500/22461 elapsed=280.8s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=5380/23004 elapsed=300.8s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=9580/23004 elapsed=320.8s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=12540/23004 elapsed=340.8s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=14920/23004 elapsed=360.9s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=17040/23004 elapsed=381.0s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=19060/23004 elapsed=401.2s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=20880/23004 elapsed=421.4s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=22660/23004 elapsed=441.5s
+EVAL_PROGRESS split=train batch=1/3 label=10/37 round=6880/10694 elapsed=461.6s
+EVAL_PROGRESS split=train batch=1/3 label=13/37 round=3800/6649 elapsed=481.6s
+EVAL_PROGRESS split=train batch=1/3 label=16/37 round=5240/9014 elapsed=501.7s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=4020/18057 elapsed=521.7s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=9000/18057 elapsed=541.7s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=12340/18057 elapsed=561.7s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=15040/18057 elapsed=581.8s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=17940/18057 elapsed=602.0s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=7100/19482 elapsed=622.0s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=10720/19482 elapsed=642.1s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=13400/19482 elapsed=662.2s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=15600/19482 elapsed=682.2s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=17520/19482 elapsed=702.2s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=19260/19482 elapsed=722.2s
+EVAL_PROGRESS split=train batch=1/3 label=25/37 round=6480/8590 elapsed=742.2s
+EVAL_PROGRESS split=train batch=1/3 label=27/37 round=1940/7369 elapsed=762.2s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=4060/13157 elapsed=782.3s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=9040/13157 elapsed=802.3s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=12320/13157 elapsed=822.5s
+EVAL_BATCH_FINISHED split=train batch=1/3 elapsed=839.2s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=1320/19027 elapsed=842.5s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=7520/19027 elapsed=862.5s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=11020/19027 elapsed=882.5s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=13700/19027 elapsed=902.6s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=15820/19027 elapsed=922.7s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=17700/19027 elapsed=942.7s
+EVAL_PROGRESS split=train batch=2/3 label=6/37 round=1860/10302 elapsed=962.8s
+EVAL_PROGRESS split=train batch=2/3 label=6/37 round=8940/10302 elapsed=982.8s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=6220/22461 elapsed=1002.9s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=10140/22461 elapsed=1022.9s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=13000/22461 elapsed=1043.0s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=15420/22461 elapsed=1063.1s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=17700/22461 elapsed=1083.1s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=19960/22461 elapsed=1103.2s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=22260/22461 elapsed=1123.2s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=7120/23004 elapsed=1143.3s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=10700/23004 elapsed=1163.3s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=13360/23004 elapsed=1183.3s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=15600/23004 elapsed=1203.5s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=17620/23004 elapsed=1223.5s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=19580/23004 elapsed=1243.7s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=21320/23004 elapsed=1263.9s
+EVAL_PROGRESS split=train batch=2/3 label=10/37 round=1640/10694 elapsed=1284.0s
+EVAL_PROGRESS split=train batch=2/3 label=10/37 round=8720/10694 elapsed=1304.0s
+EVAL_PROGRESS split=train batch=2/3 label=13/37 round=5740/6649 elapsed=1324.0s
+EVAL_PROGRESS split=train batch=2/3 label=16/37 round=6940/9014 elapsed=1344.1s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=6000/18057 elapsed=1364.1s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=10180/18057 elapsed=1384.2s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=13340/18057 elapsed=1404.2s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=16160/18057 elapsed=1424.4s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=4120/19482 elapsed=1444.4s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=8880/19482 elapsed=1464.5s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=11720/19482 elapsed=1484.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=14180/19482 elapsed=1504.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=16260/19482 elapsed=1524.7s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=18120/19482 elapsed=1544.8s
+EVAL_PROGRESS split=train batch=2/3 label=25/37 round=700/8590 elapsed=1564.8s
+EVAL_PROGRESS split=train batch=2/3 label=25/37 round=8180/8590 elapsed=1584.9s
+EVAL_PROGRESS split=train batch=2/3 label=27/37 round=5040/7369 elapsed=1604.9s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=6180/13157 elapsed=1624.9s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=10120/13157 elapsed=1645.3s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=13100/13157 elapsed=1665.3s
+EVAL_BATCH_FINISHED split=train batch=2/3 elapsed=1676.3s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=4140/19027 elapsed=1685.3s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=8920/19027 elapsed=1705.3s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=12000/19027 elapsed=1725.4s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=14440/19027 elapsed=1745.5s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=16500/19027 elapsed=1765.5s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=18340/19027 elapsed=1785.6s
+EVAL_PROGRESS split=train batch=3/3 label=6/37 round=4940/10302 elapsed=1805.7s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=2020/22461 elapsed=1825.7s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=7980/22461 elapsed=1845.7s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=11480/22461 elapsed=1865.8s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=14140/22461 elapsed=1885.9s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=16440/22461 elapsed=1906.0s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=18540/22461 elapsed=1926.1s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=20500/22461 elapsed=1946.2s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=1480/23004 elapsed=1966.2s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=7940/23004 elapsed=1986.3s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=11280/23004 elapsed=2006.4s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=13900/23004 elapsed=2026.5s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=16080/23004 elapsed=2046.6s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=18060/23004 elapsed=2066.8s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=19960/23004 elapsed=2086.9s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=21700/23004 elapsed=2107.0s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=3000/10694 elapsed=2127.0s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=9240/10694 elapsed=2147.1s
+EVAL_PROGRESS split=train batch=3/3 label=13/37 round=6480/6649 elapsed=2167.1s
+EVAL_PROGRESS split=train batch=3/3 label=16/37 round=7920/9014 elapsed=2187.2s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=6840/18057 elapsed=2207.2s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=10780/18057 elapsed=2227.3s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=14040/18057 elapsed=2247.4s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=16920/18057 elapsed=2267.4s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=5580/19482 elapsed=2287.4s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=9620/19482 elapsed=2307.5s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=12480/19482 elapsed=2327.5s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=14800/19482 elapsed=2347.6s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=16780/19482 elapsed=2367.8s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=18460/19482 elapsed=2387.8s
+EVAL_PROGRESS split=train batch=3/3 label=25/37 round=3300/8590 elapsed=2407.9s
+EVAL_PROGRESS split=train batch=3/3 label=26/37 round=2260/5587 elapsed=2427.9s
+EVAL_PROGRESS split=train batch=3/3 label=27/37 round=6140/7369 elapsed=2447.9s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=6920/13157 elapsed=2467.9s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=10780/13157 elapsed=2488.0s
+EVAL_PROGRESS split=train batch=3/3 label=30/37 round=3300/6332 elapsed=2508.1s
+EVAL_BATCH_FINISHED split=train batch=3/3 elapsed=2515.1s
+EVAL_FINISHED split=train seconds=2515.11
+EVAL_START split=validation rows=79441 points=1151 batches=1
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=7340/19027 elapsed=20.0s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=10960/19027 elapsed=40.0s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=13660/19027 elapsed=60.1s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=15860/19027 elapsed=80.1s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=17840/19027 elapsed=100.3s
+EVAL_PROGRESS split=validation batch=1/1 label=6/37 round=4720/10302 elapsed=120.3s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=3860/22461 elapsed=140.3s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=9120/22461 elapsed=160.4s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=12420/22461 elapsed=180.5s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=15080/22461 elapsed=200.5s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=17260/22461 elapsed=220.7s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=19160/22461 elapsed=240.8s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=20960/22461 elapsed=260.8s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=2200/23004 elapsed=280.8s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=8020/23004 elapsed=300.8s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=11400/23004 elapsed=320.9s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=14040/23004 elapsed=341.0s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=16220/23004 elapsed=361.0s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=18160/23004 elapsed=381.1s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=19880/23004 elapsed=401.2s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=21500/23004 elapsed=421.3s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=22960/23004 elapsed=441.5s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=9000/10694 elapsed=461.5s
+EVAL_PROGRESS split=validation batch=1/1 label=16/37 round=2820/9014 elapsed=481.6s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=3320/18057 elapsed=501.6s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=8880/18057 elapsed=521.7s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=12280/18057 elapsed=541.7s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=14940/18057 elapsed=561.8s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=17340/18057 elapsed=581.9s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=5900/19482 elapsed=601.9s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=9960/19482 elapsed=622.0s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=12760/19482 elapsed=642.1s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=15100/19482 elapsed=662.2s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=17100/19482 elapsed=682.3s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=18880/19482 elapsed=702.5s
+EVAL_PROGRESS split=validation batch=1/1 label=25/37 round=7680/8590 elapsed=722.5s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=4740/13157 elapsed=742.5s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=10500/13157 elapsed=762.6s
+EVAL_PROGRESS split=validation batch=1/1 label=37/37 round=320/582 elapsed=782.6s
+EVAL_BATCH_FINISHED split=validation batch=1/1 elapsed=782.7s
+EVAL_FINISHED split=validation seconds=782.66
+EVAL_START split=test rows=79441 points=0 batches=1
+EVAL_BATCH_FINISHED split=test batch=1/1 elapsed=9.3s
+EVAL_FINISHED split=test seconds=9.35
+
+============================================================
+FINAL RESULTS for h_nmr_spectra:
+Train F1 Micro: 0.9764
+Train F1 Macro: 0.7633
+Validation F1 Micro: 0.8890
+Validation F1 Macro: 0.5572
+Test F1 Micro: 0.8895
+Test F1 Macro: 0.5606
+Fit time: 18840.00s
+Test prediction time: 9.35s
+============================================================
+
+Results saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_45/attempts/20261118T184927.816565Z-087bc6f8/artifacts/hnmr/original/results.pickle
+XGBoost model saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_45/attempts/20261118T184927.816565Z-087bc6f8/artifacts/hnmr/original/hnmr_xgboost_model.pickle
+Training logs saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_45/attempts/20261118T184927.816565Z-087bc6f8/artifacts/hnmr/original/training_logs.csv
+
+Combined training logs saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_45/attempts/20261118T184927.816565Z-087bc6f8/artifacts/training_logs_all_columns.csv
