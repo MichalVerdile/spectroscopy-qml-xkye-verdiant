@@ -1,0 +1,16 @@
+{
+  "model": "xgboost",
+  "modality": "ir",
+  "seed": 43,
+  "test_f1_micro": 0.863473404351221,
+  "test_f1_macro": 0.5602050816980482,
+  "split_path": "/workspace/shared_splits/ir_seed_43.npz",
+  "input_dim": 1800,
+  "input_digest": "9d0a4f10316a3a193fd6998755972122fcfa450ca33b490de97a2c2e7440301e",
+  "preprocessing": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "preprocessing_effective": "resample=linear,smooth=none,repr=intensity,norm=none",
+  "training_config": {
+    "n_estimators": 1000000,
+    "early_stopping_patience": 15
+  }
+}
