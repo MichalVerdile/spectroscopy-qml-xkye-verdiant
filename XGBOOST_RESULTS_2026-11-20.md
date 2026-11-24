@@ -47,3 +47,5 @@ The archived CNMR seed 41 wall time covers recovery, while training_seconds reco
 The runpod directory contains the source used for the experiments. The six tar.gz archives contain all 1,233 exported experiment, configuration, diagnostic and log files, with their repository-relative paths preserved. Extract each archive at the repository root using tar -xzf ARCHIVE.tar.gz. The CSV retains the full original summary columns, including split hashes and per-label best iterations.
 
 Models, UBJ checkpoints and binary prediction results are retained on the RunPod global volume under /workspace/experiments/xgboost_raw_native. Their paths and sizes are listed in persistent_artifacts.json inside the support archive. The pod was stopped after the exports were secured.
+
+The complete RunPod artifact archive was added on 24 November 2026. Models, checkpoints, predictions, generated splits and caches are available under [results/xgboost_raw_native_2026-11-20](results/xgboost_raw_native_2026-11-20). See the [LFS archive instructions](results/xgboost_raw_native_2026-11-20/LFS_ARCHIVE_README.md) for downloads and reconstruction of the two large cache files.

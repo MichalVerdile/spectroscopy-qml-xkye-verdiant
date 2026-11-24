@@ -1,0 +1,23 @@
+{
+  "verified_remote_lfs_objects": 993,
+  "source_files": 2290,
+  "source_bytes": 40090509215,
+  "unique_lfs_bytes": 39288529630,
+  "chunked_files": 2,
+  "download_samples": [
+    {
+      "path": "results/xgboost_raw_native_2026-11-20/msms_pos/seed_43/attempts/20261119T115917.912666Z-29df8821/label_models/label_32.ubj",
+      "sha256": "07b0645e446c17a5e62195ede856a62e075c64ad2c82cbefa2e5a2592fc9c41f",
+      "bytes": 13782,
+      "download_verified": true
+    },
+    {
+      "path": "results/xgboost_raw_native_2026-11-20/ir/seed_44/attempts/20261119T033627.148835Z-c3fb0e23/artifacts/ir/original/ir_xgboost_model.pickle",
+      "sha256": "75104c9bcd13b711609b83743abfa095aab8728c848c3bd7a4e0cea2f45fe710",
+      "bytes": 260937880,
+      "download_verified": true
+    }
+  ],
+  "verified_at_unix": 1795554969.6022346,
+  "artifact_commit": "2f8ee59ce72e5dcad5f4280e6e027e8488cb07f3"
+}
