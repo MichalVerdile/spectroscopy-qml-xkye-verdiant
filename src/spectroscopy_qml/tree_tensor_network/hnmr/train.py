@@ -565,7 +565,12 @@ def main() -> None:
                 "split_path": str(split_path),
                 "input_dim": args.input_dim,
                 "input_digest": array_digest(X),
-                **metrics_fields(args.preprocessing, "ttn"),
+                **metrics_fields(
+                    args.preprocessing,
+                    "ttn",
+                    max_epochs=args.epochs,
+                    early_stopping_patience=args.early_stopping_patience,
+                ),
             },
             indent=2,
         )

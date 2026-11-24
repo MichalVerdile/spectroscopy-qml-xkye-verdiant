@@ -1,0 +1,121 @@
+collection,modality,model,complete,common_points,last_native_step,seed
+main,13C-NMR,CNN,True,30.0,30.0,
+main,13C-NMR,MPS,True,169.0,169.0,
+main,13C-NMR,TTN,True,50.0,50.0,
+main,13C-NMR,XGBoost,True,296.0,5920.0,
+main,1H-NMR,CNN,True,34.0,34.0,
+main,1H-NMR,MPS,True,203.0,203.0,
+main,1H-NMR,TTN,True,49.0,49.0,
+main,1H-NMR,XGBoost,True,626.0,12520.0,
+main,IR,CNN,True,39.0,39.0,
+main,IR,MPS,True,157.0,157.0,
+main,IR,TTN,True,53.0,53.0,
+main,IR,XGBoost,True,305.0,6100.0,
+main,MS/MS (-),CNN,True,34.0,34.0,
+main,MS/MS (-),MPS,True,138.0,138.0,
+main,MS/MS (-),TTN,True,46.0,46.0,
+main,MS/MS (-),XGBoost,True,232.0,4640.0,
+main,MS/MS (+),CNN,True,38.0,38.0,
+main,MS/MS (+),MPS,True,177.0,177.0,
+main,MS/MS (+),TTN,True,46.0,46.0,
+main,MS/MS (+),XGBoost,True,339.0,6780.0,
+appendix,13C-NMR,CNN,True,,32.0,41.0
+appendix,13C-NMR,MPS,True,,229.0,41.0
+appendix,13C-NMR,TTN,True,,66.0,41.0
+appendix,13C-NMR,XGBoost,True,,7183.0,41.0
+appendix,1H-NMR,CNN,True,,38.0,41.0
+appendix,1H-NMR,MPS,True,,345.0,41.0
+appendix,1H-NMR,TTN,True,,58.0,41.0
+appendix,1H-NMR,XGBoost,True,,12844.0,41.0
+appendix,IR,CNN,True,,41.0,41.0
+appendix,IR,MPS,True,,157.0,41.0
+appendix,IR,TTN,True,,55.0,41.0
+appendix,IR,XGBoost,True,,6823.0,41.0
+appendix,MS/MS (-),CNN,True,,40.0,41.0
+appendix,MS/MS (-),MPS,True,,160.0,41.0
+appendix,MS/MS (-),TTN,True,,56.0,41.0
+appendix,MS/MS (-),XGBoost,True,,5223.0,41.0
+appendix,MS/MS (+),CNN,True,,46.0,41.0
+appendix,MS/MS (+),MPS,True,,181.0,41.0
+appendix,MS/MS (+),TTN,True,,68.0,41.0
+appendix,MS/MS (+),XGBoost,True,,8102.0,41.0
+appendix,13C-NMR,CNN,True,,30.0,42.0
+appendix,13C-NMR,MPS,True,,234.0,42.0
+appendix,13C-NMR,TTN,True,,82.0,42.0
+appendix,13C-NMR,XGBoost,True,,6094.0,42.0
+appendix,1H-NMR,CNN,True,,45.0,42.0
+appendix,1H-NMR,MPS,True,,442.0,42.0
+appendix,1H-NMR,TTN,True,,89.0,42.0
+appendix,1H-NMR,XGBoost,True,,12533.0,42.0
+appendix,IR,CNN,True,,39.0,42.0
+appendix,IR,MPS,True,,209.0,42.0
+appendix,IR,TTN,True,,53.0,42.0
+appendix,IR,XGBoost,True,,7924.0,42.0
+appendix,MS/MS (-),CNN,True,,34.0,42.0
+appendix,MS/MS (-),MPS,True,,138.0,42.0
+appendix,MS/MS (-),TTN,True,,54.0,42.0
+appendix,MS/MS (-),XGBoost,True,,4916.0,42.0
+appendix,MS/MS (+),CNN,True,,43.0,42.0
+appendix,MS/MS (+),MPS,True,,219.0,42.0
+appendix,MS/MS (+),TTN,True,,53.0,42.0
+appendix,MS/MS (+),XGBoost,True,,6801.0,42.0
+appendix,13C-NMR,CNN,True,,37.0,43.0
+appendix,13C-NMR,MPS,True,,220.0,43.0
+appendix,13C-NMR,TTN,True,,56.0,43.0
+appendix,13C-NMR,XGBoost,True,,6637.0,43.0
+appendix,1H-NMR,CNN,True,,45.0,43.0
+appendix,1H-NMR,MPS,True,,299.0,43.0
+appendix,1H-NMR,TTN,True,,70.0,43.0
+appendix,1H-NMR,XGBoost,True,,14043.0,43.0
+appendix,IR,CNN,True,,44.0,43.0
+appendix,IR,MPS,True,,188.0,43.0
+appendix,IR,TTN,True,,60.0,43.0
+appendix,IR,XGBoost,True,,7389.0,43.0
+appendix,MS/MS (-),CNN,True,,35.0,43.0
+appendix,MS/MS (-),MPS,True,,186.0,43.0
+appendix,MS/MS (-),TTN,True,,46.0,43.0
+appendix,MS/MS (-),XGBoost,True,,6504.0,43.0
+appendix,MS/MS (+),CNN,True,,41.0,43.0
+appendix,MS/MS (+),MPS,True,,177.0,43.0
+appendix,MS/MS (+),TTN,True,,47.0,43.0
+appendix,MS/MS (+),XGBoost,True,,6789.0,43.0
+appendix,13C-NMR,CNN,True,,32.0,44.0
+appendix,13C-NMR,MPS,True,,202.0,44.0
+appendix,13C-NMR,TTN,True,,50.0,44.0
+appendix,13C-NMR,XGBoost,True,,5935.0,44.0
+appendix,1H-NMR,CNN,True,,34.0,44.0
+appendix,1H-NMR,MPS,True,,203.0,44.0
+appendix,1H-NMR,TTN,True,,49.0,44.0
+appendix,1H-NMR,XGBoost,True,,15235.0,44.0
+appendix,IR,CNN,True,,39.0,44.0
+appendix,IR,MPS,True,,195.0,44.0
+appendix,IR,TTN,True,,62.0,44.0
+appendix,IR,XGBoost,True,,6109.0,44.0
+appendix,MS/MS (-),CNN,True,,37.0,44.0
+appendix,MS/MS (-),MPS,True,,193.0,44.0
+appendix,MS/MS (-),TTN,True,,51.0,44.0
+appendix,MS/MS (-),XGBoost,True,,6618.0,44.0
+appendix,MS/MS (+),CNN,True,,38.0,44.0
+appendix,MS/MS (+),MPS,True,,195.0,44.0
+appendix,MS/MS (+),TTN,True,,46.0,44.0
+appendix,MS/MS (+),XGBoost,True,,7142.0,44.0
+appendix,13C-NMR,CNN,True,,34.0,45.0
+appendix,13C-NMR,MPS,True,,169.0,45.0
+appendix,13C-NMR,TTN,True,,54.0,45.0
+appendix,13C-NMR,XGBoost,True,,7220.0,45.0
+appendix,1H-NMR,CNN,True,,37.0,45.0
+appendix,1H-NMR,MPS,True,,290.0,45.0
+appendix,1H-NMR,TTN,True,,70.0,45.0
+appendix,1H-NMR,XGBoost,True,,13326.0,45.0
+appendix,IR,CNN,True,,40.0,45.0
+appendix,IR,MPS,True,,186.0,45.0
+appendix,IR,TTN,True,,89.0,45.0
+appendix,IR,XGBoost,True,,7047.0,45.0
+appendix,MS/MS (-),CNN,True,,39.0,45.0
+appendix,MS/MS (-),MPS,True,,155.0,45.0
+appendix,MS/MS (-),TTN,True,,64.0,45.0
+appendix,MS/MS (-),XGBoost,True,,4659.0,45.0
+appendix,MS/MS (+),CNN,True,,42.0,45.0
+appendix,MS/MS (+),MPS,True,,190.0,45.0
+appendix,MS/MS (+),TTN,True,,49.0,45.0
+appendix,MS/MS (+),XGBoost,True,,8555.0,45.0

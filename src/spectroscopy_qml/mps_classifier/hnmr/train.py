@@ -1109,7 +1109,12 @@ def train_model(
                 "split_path": str(split_path) if split_path is not None else None,
                 "input_dim": DATA_CONFIG.target_length,
                 "input_digest": array_digest(X),
-                **metrics_fields(DATA_CONFIG.preprocessing, "mps"),
+                **metrics_fields(
+                    DATA_CONFIG.preprocessing,
+                    "mps",
+                    max_epochs=TRAINING_CONFIG.num_epochs,
+                    early_stopping_patience=TRAINING_CONFIG.patience,
+                ),
             },
             indent=2,
         )
