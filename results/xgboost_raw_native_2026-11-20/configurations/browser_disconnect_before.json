@@ -1,0 +1,7 @@
+{
+  "time": "20261114T163715.650787Z",
+  "pid": 16249,
+  "start_ticks": "223126138",
+  "attempt": "/workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261114T163401.021526Z-7334f9bc",
+  "last_log": "Loading file 67/245: aligned_chunk_158.parquet... [3288 samples]"
+}

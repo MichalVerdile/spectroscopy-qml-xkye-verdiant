@@ -1,0 +1,36 @@
+{
+  "BUILTIN_PREFETCH_PRESENT": true,
+  "CUDA_VERSION": [
+    12,
+    8
+  ],
+  "DEBUG": false,
+  "GCC_VERSION": [
+    10,
+    3,
+    1
+  ],
+  "GLIBC_VERSION": [
+    2,
+    28
+  ],
+  "MM_PREFETCH_PRESENT": true,
+  "NCCL_VERSION": [
+    2,
+    27,
+    7
+  ],
+  "THRUST_VERSION": [
+    2,
+    7,
+    0
+  ],
+  "USE_CUDA": true,
+  "USE_DLOPEN_NCCL": true,
+  "USE_FEDERATED": true,
+  "USE_NCCL": true,
+  "USE_NVCOMP": false,
+  "USE_OPENMP": true,
+  "USE_RMM": false,
+  "libxgboost": "/root/runpod-work/venv/lib/python3.12/site-packages/xgboost/lib/libxgboost.so"
+}

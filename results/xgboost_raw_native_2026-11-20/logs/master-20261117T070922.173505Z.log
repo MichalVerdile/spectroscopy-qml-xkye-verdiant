@@ -1,0 +1,6 @@
+REUSING_COMPLETED_PREFLIGHT on this unchanged pod; runner revalidates source, audit, manifest and split hashes
+SKIP_VERIFIED cnmr seed=41
+EXPERIMENT_START cnmr seed=42 /workspace/experiments/xgboost_raw_native/cnmr/seed_42/attempts/20261116T180145.546621Z-cc40a7d0
+EXPERIMENT_COMPLETED cnmr seed=42
+EXPERIMENT_START cnmr seed=43 /workspace/experiments/xgboost_raw_native/cnmr/seed_43/attempts/20261116T211528.904476Z-d1aeea60
+cp: cannot stat '/workspace/experiments/xgboost_raw_native/logs/master.log': Transport endpoint is not connected

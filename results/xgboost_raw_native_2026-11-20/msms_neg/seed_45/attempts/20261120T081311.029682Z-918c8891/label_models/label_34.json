@@ -1,0 +1,132 @@
+{
+  "label_index": 34,
+  "label_name": "Thial",
+  "best_iteration": 4,
+  "best_score": 0.00067145707408165,
+  "fitted_rounds": 20,
+  "device": "cuda:0",
+  "fit_seconds": 42.776743508991785,
+  "model_sha256": "d7fe05de9f91f3cf8bc0914cf7dccc0ff39a5a7855c932ea0c09714abbb65a6f",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00067293617026022,
+        0.00067155210517707,
+        0.00067305127604651,
+        0.00067233333638172,
+        0.00067145707408165,
+        0.0006729511069464,
+        0.00067405330140808,
+        0.00067559585348296,
+        0.00067563582074737,
+        0.00067730207740102,
+        0.00067879180392842,
+        0.00067891119790494,
+        0.00067987315006809,
+        0.00068158622223958,
+        0.00068328005690214,
+        0.00068435574739716,
+        0.00068479917021131,
+        0.00068522680934746,
+        0.00068702637737479,
+        0.00068910543866244
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "45",
+        "seed": "45",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "20"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[5.979346E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

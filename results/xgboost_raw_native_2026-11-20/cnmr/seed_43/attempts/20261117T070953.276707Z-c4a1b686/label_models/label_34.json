@@ -1,0 +1,169 @@
+{
+  "label_index": 34,
+  "label_name": "Thial",
+  "best_iteration": 41,
+  "best_score": 0.00065607020225802,
+  "fitted_rounds": 57,
+  "device": "cuda:0",
+  "fit_seconds": 67.15163023299829,
+  "model_sha256": "7b7519cc6c949cadb714b3caa0901c0532db86912ce559fbc238f73a498638b6",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00067123900265258,
+        0.0006730516967383,
+        0.00067471812392029,
+        0.00066997636925211,
+        0.00067036607970625,
+        0.00067259983847421,
+        0.00067419218720735,
+        0.00067487166389482,
+        0.00067336037214162,
+        0.00066863023894506,
+        0.00067038643218568,
+        0.000668747904709,
+        0.00066675206999017,
+        0.00066701869840503,
+        0.00066489283427073,
+        0.00066560076905642,
+        0.00066490824794048,
+        0.00066651579841459,
+        0.00066393737145347,
+        0.00066356911744752,
+        0.0006633968021976,
+        0.00066432582061954,
+        0.00066558826129037,
+        0.00066382022141828,
+        0.00066394746066049,
+        0.00066218681606173,
+        0.0006616521019068,
+        0.00065998125833799,
+        0.00066178110198181,
+        0.00065855587351952,
+        0.00065991454454044,
+        0.00066021972866721,
+        0.00066110014571753,
+        0.00065920320010914,
+        0.00065846861001483,
+        0.00066043684322167,
+        0.0006594036297929,
+        0.00065984147296006,
+        0.00065963057902014,
+        0.00065792861313061,
+        0.00065731236158124,
+        0.00065607020225802,
+        0.00065707527665244,
+        0.00065715963473442,
+        0.00065677587782681,
+        0.0006573991676036,
+        0.00065725379653032,
+        0.00065607552949113,
+        0.00065850939211298,
+        0.00065820350230851,
+        0.00065932321085467,
+        0.00066080553405271,
+        0.00066352430195278,
+        0.00066487874913047,
+        0.00066557825015916,
+        0.00066638820341921,
+        0.00066852728829529
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "43",
+        "seed": "43",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "57"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[5.979346E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "status": "completed",
+  "hostname": "32ead7baba34",
+  "runner_pid": 152434,
+  "modality": "cnmr",
+  "seed": 41,
+  "started": "20261116T174217.328466Z",
+  "training_pid": 152441,
+  "heartbeat_unix": 1794851939.4734159,
+  "exit_code": 0,
+  "finished": "20261116T175900.852077Z",
+  "wall_seconds": 1003.5237076748163,
+  "validation_retry": {
+    "previous_error": "invalid literal for int() with base 10: '20.0'",
+    "verified_at": "20261116T180141.281962Z",
+    "commit": "2ef11f2265247d0ffce1fe2cf453f577a9a0fc1a"
+  }
+}

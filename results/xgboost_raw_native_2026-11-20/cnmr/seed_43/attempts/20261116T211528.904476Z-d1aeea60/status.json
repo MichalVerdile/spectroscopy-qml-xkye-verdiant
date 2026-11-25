@@ -1,0 +1,10 @@
+{
+  "status": "running",
+  "hostname": "32ead7baba34",
+  "runner_pid": 224258,
+  "modality": "cnmr",
+  "seed": 43,
+  "started": "20261116T211528.916083Z",
+  "training_pid": 305218,
+  "heartbeat_unix": 1794873316.0801687
+}

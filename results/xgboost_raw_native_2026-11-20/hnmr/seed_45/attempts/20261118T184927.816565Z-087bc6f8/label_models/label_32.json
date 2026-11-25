@@ -1,0 +1,148 @@
+{
+  "label_index": 32,
+  "label_name": "Sulfonic acid",
+  "best_iteration": 20,
+  "best_score": 0.00014553976285373,
+  "fitted_rounds": 36,
+  "device": "cuda:0",
+  "fit_seconds": 80.3532428109902,
+  "model_sha256": "d1e447150080d8bcc24a78061030cd5377fe8527570ba0eeec1d5dd2ce78cebf",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00015267701304677,
+        0.00015138804217745,
+        0.0001517854700794,
+        0.00015022723408749,
+        0.00014894229144391,
+        0.00014919633559293,
+        0.00014697050649709,
+        0.00014742458470765,
+        0.00014794424657245,
+        0.00014839372887737,
+        0.00014711517918715,
+        0.00014758150508307,
+        0.00014742226490214,
+        0.00014776721285529,
+        0.0001481765256738,
+        0.00014632553076605,
+        0.00014674211583082,
+        0.00014560436706017,
+        0.00014604841535709,
+        0.00014652198659032,
+        0.00014553976285373,
+        0.00014610154611104,
+        0.00014649292473181,
+        0.00014696773862871,
+        0.00014722810079468,
+        0.00014731690196728,
+        0.00014583647909616,
+        0.00014590599351309,
+        0.00014642898284061,
+        0.00014684241120252,
+        0.00014603438799734,
+        0.00014650688118956,
+        0.00014561968441723,
+        0.00014608397389336,
+        0.0001465880158952,
+        0.00014659972588119
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "45",
+        "seed": "45",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "36"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[1.2588097E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

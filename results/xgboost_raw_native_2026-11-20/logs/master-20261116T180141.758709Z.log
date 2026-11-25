@@ -1,0 +1,4 @@
+REUSING_COMPLETED_PREFLIGHT on this unchanged pod; runner revalidates source, audit, manifest and split hashes
+EXPERIMENT_START cnmr seed=41 /workspace/experiments/xgboost_raw_native/cnmr/seed_41/attempts/20261116T174217.307702Z-c91d0643
+EXPERIMENT_FAILED cnmr seed=41: invalid literal for int() with base 10: '20.0'
+Stopped after a failed experiment; inspect preserved attempt and resume safely

@@ -1,0 +1,15 @@
+{
+  "prepared": "20261114T163400.034782Z",
+  "reference_commit": "01e270ee8ad79bb0978f96a709113df3d1f3b017",
+  "sources": {
+    "benchmark/xgb/scripts/run_xgb_baseline.py": "8d2890e2cd18cab48e1d248d978ecf4e88a596c8a6965377082344f375a9839e",
+    "src/spectroscopy_qml/benchmarking/preprocessing.py": "1837d9880776fe9ba7a196e98b79258b1f63657cdc6fd693c2d96f0e177e5ea2",
+    "src/spectroscopy_qml/benchmarking/splits.py": "6cea67031842fd2c04942e6370a1a21e67112a5e2868c57024c9195ef9d8e2cd",
+    "scripts/create_multilabel_split.py": "5f2462471b3841dc6c39edc1121306a6c7ef0e1514d5318cd5ee9fefee5a6947",
+    "scripts/validate_benchmark_result.py": "3f8c22066a7ee2f838ede21e27c7ecc7952f0e5bc67678f78b008208cee98e9a"
+  },
+  "dataset_manifest_sha256": "c35f1e3c44bf90f036ea56f62edfdaaf7a6a1a6479057f5e84e14249efc1e401",
+  "backup": "/workspace/repository-backup/20261114T160541.682822Z-75d6963",
+  "accept_reconstructed_splits": true,
+  "audit_sha256": "5b9a1a7ba5490984ba55c7b728e2b40ad865359724fb50bede05dd2d1e543a15"
+}

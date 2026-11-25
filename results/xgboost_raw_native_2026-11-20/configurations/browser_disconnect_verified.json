@@ -1,0 +1,9 @@
+{
+  "time": "20261114T163908.234210Z",
+  "pid": 16249,
+  "same_process": true,
+  "progress_advanced": true,
+  "before_log": "Loading file 67/245: aligned_chunk_158.parquet... [3288 samples]",
+  "after_log": "Loading file 81/245: aligned_chunk_170.parquet... [3280 samples]",
+  "browser_tab_closed_and_reopened": true
+}

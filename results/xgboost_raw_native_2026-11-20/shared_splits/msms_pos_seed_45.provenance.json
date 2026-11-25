@@ -1,0 +1,26 @@
+{
+  "kind": "deterministic_reconstruction",
+  "historical_identity_verified": false,
+  "accepted_by_user": true,
+  "algorithm": "unchanged create_split_artifact, seed and seed+1",
+  "reused_deterministic_labels_from": "/workspace/shared_splits/cnmr_seed_45.npz",
+  "reuse_validation": "The unchanged load_split_artifact must validate every ordered target label and the seed before training.",
+  "sha256": "d5b743fb748cb059fd1f51afecfb80741de8291845f94ac36c8e007ebed4c68e",
+  "counts": {
+    "train": 635521,
+    "val": 79441,
+    "test": 79441
+  },
+  "label_digest": "3ecc3b5310074e276550b944d54d542fd40e7d64637b4dab6eeff11faebe4d67",
+  "sample_order_sha256": "60f39311866cb9adf529de6820286f0cc8741110428b19f0f2e9ddf24a6cf26f",
+  "index_sha256": {
+    "train": "f61fe9790b3ce98078a9943fe3239bd23ffa951edbab0cf60deb1a3230c6e1bc",
+    "val": "45d77e2cec5c6f168d45567329402e7311a5bb5b3854efcc7b3fa096eed6f0c4",
+    "test": "a0688b77402a4ba5fa40ed1356b95b14480b2338428788d38be5afd245f5e041"
+  },
+  "canonical_smiles_overlap": {
+    "train_val": 812,
+    "train_test": 858,
+    "val_test": 104
+  }
+}

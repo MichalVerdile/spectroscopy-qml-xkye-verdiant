@@ -1,0 +1,88 @@
+{
+  "python": "3.12.3",
+  "torch": "2.8.0+cu128",
+  "torch_cuda_runtime": "12.8",
+  "gpu": "NVIDIA H100 PCIe",
+  "xgboost_device": "cuda:0",
+  "effective_memory_bytes": 250999996416,
+  "cpu_affinity_count": 128,
+  "mount": {
+    "target": "/workspace",
+    "source": "3330fe10-153a-473a-be7c-62ffa89cc3c0",
+    "fstype": "fuse.geesefs",
+    "options": "rw,nosuid,nodev,relatime,user_id=0,group_id=0,default_permissions,allow_other"
+  },
+  "chmod_supported": false,
+  "gpu_smoke": "passed, synthetic only",
+  "packages": {
+    "numpy": "2.4.2",
+    "pandas": "3.0.0",
+    "pyarrow": "23.0.0",
+    "scipy": "1.17.0",
+    "scikit-learn": "1.8.0",
+    "rdkit": "2025.9.4",
+    "xgboost": "3.1.3",
+    "iterative-stratification": "0.1.9"
+  },
+  "nvidia_smi": "Sat Nov 14 16:03:01 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 595.91.07              Driver Version: 595.91.07      CUDA Version: 13.2     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA H100 PCIe               On  |   00000000:D6:00.0 Off |                    0 |\n| N/A   29C    P0             71W /  310W |     547MiB /  81559MiB |      4%      Default |\n|                                         |                        |             Disabled |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            4941      C   ...t/runpod-work/venv/bin/python        538MiB |\n+-----------------------------------------------------------------------------------------+\n"
+}
+/root/runpod-work/repository.bundle is okay
+The bundle contains these 29 refs:
+01e270ee8ad79bb0978f96a709113df3d1f3b017 refs/heads/ablation-further-study
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/heads/dev
+e9698861c0a81bcd183471d3fdf9481612ea8163 refs/heads/runpod/xgboost-raw-native
+da9a7a761864110cf8da3e4c8ca5bbcefec607ac refs/remotes/origin/CNN_Validation
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/remotes/origin/HEAD
+04034aed24bf50a387cca8dde4065d099455844f refs/remotes/origin/Paper-ConfigurationRun
+8f69146f8079493baa25471b4f42cbb7f544743f refs/remotes/origin/Paper-refactoring
+3179d0064bf2ec5bd753bebdbceeb3f3c0d0f3ce refs/remotes/origin/QCNN-Experiment
+12b492fdf875ada72d6deb852385400ab8989e1a refs/remotes/origin/QML-Modell
+cd62d7a35db8868557ac3ba36b2bf4bc2dbf9eb7 refs/remotes/origin/TN-encoder
+01e270ee8ad79bb0978f96a709113df3d1f3b017 refs/remotes/origin/ablation-further-study
+7aaaee54813c636acff3f546ce7c8f0893d94be5 refs/remotes/origin/add-normalization-to-nmr-and-msms-spectra
+eb4635d33f08de2d936af3bb38375fd769ccb62e refs/remotes/origin/boosted-ttn
+444e43d6fda8acddfd6b9383d6e08b46b844a045 refs/remotes/origin/cnn-update
+805bb103218b8f611c0acc3ec4630a660aa3176f refs/remotes/origin/cnn-update-2
+3cacb3fa4f14ccfef19f70b6d7b7ff73e69d2b32 refs/remotes/origin/data-exploration
+841b34374e6c95c07fb1c7780466c4b0b109ffab refs/remotes/origin/dev
+98a401f1a1f6416f72b23e724c6130e9f44204e6 refs/remotes/origin/distribution-plots
+e188272d80816a451c17ba33bd39141f21dbc534 refs/remotes/origin/hnmr-msms-cleanup
+3ccf7a65c904c8334a6cdb4bb134b315e64f4c3f refs/remotes/origin/main
+b51a1f58d729328e39cc39ad35479b098fdc4454 refs/remotes/origin/mlp-mps-update
+e646e5336eb8b1ca1e01822da8c8a68a9b24cbf5 refs/remotes/origin/multimodal-cnn
+6f202eebb6fcaad07a092dcc1a3e2f4802c9aa42 refs/remotes/origin/preprocessing-ablation
+43e130b70066b0c0691fbb3bb48b24b0ae6c0b69 refs/remotes/origin/refactoring-clean-up
+0d016ddfc9d3ff6ad0ff31ff16521247ce2352f4 refs/remotes/origin/refactoring_bugFix
+c6359f4ecd9ddcf44c6a74e719a4884ae06633ca refs/remotes/origin/research/raw-native-fair-tensor-network-benchmark
+ca8806cb2d08544b5dcb45033f287c23840dd80c refs/remotes/origin/tree_tensor_network
+7ef82c8b004724aef8233f9b7cb530c38948b7f7 refs/remotes/origin/ttn-refactoring
+e9698861c0a81bcd183471d3fdf9481612ea8163 HEAD
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
+Downloading benchmark/cnn/models/cnmr/k_fold/cnmr_model.keras (768 MB)
+Downloading benchmark/cnn/models/cnmr/k_fold/results.pickle (470 MB)
+
+Exiting because of "interrupt" signal.
+Traceback (most recent call last):
+  File "/root/spectroscopy-qml/runpod/prepare.py", line 274, in <module>
+    main()
+  File "/root/spectroscopy-qml/runpod/prepare.py", line 262, in main
+    backup_dir = backup(args.repo, args.root, args.local)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/spectroscopy-qml/runpod/prepare.py", line 241, in backup
+    subprocess.run(["git", "-C", str(repo), "archive", "--format=tar.gz", "-o", str(archive), "HEAD"], check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/usr/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2053, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 2011, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

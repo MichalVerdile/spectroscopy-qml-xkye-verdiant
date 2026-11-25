@@ -1,0 +1,137 @@
+{
+  "label_index": 32,
+  "label_name": "Sulfonic acid",
+  "best_iteration": 9,
+  "best_score": 0.00015408297502548,
+  "fitted_rounds": 25,
+  "device": "cuda:0",
+  "fit_seconds": 69.95862778788432,
+  "model_sha256": "89aa21b8b07c16a4d20874801dbd8c2e4843ca41cfde511af66cb2a5957a725c",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00015487304067349,
+        0.00015537455136788,
+        0.00015589191181186,
+        0.00015453133074091,
+        0.00015497859444799,
+        0.00015531481717181,
+        0.00015584048756972,
+        0.00015564719601132,
+        0.00015522652977704,
+        0.00015408297502548,
+        0.00015461540916141,
+        0.00015501797866745,
+        0.00015547711365018,
+        0.00015521585640977,
+        0.0001556726914015,
+        0.00015604085837019,
+        0.00015652818142722,
+        0.00015695042765366,
+        0.00015739132005451,
+        0.00015723453484812,
+        0.00015712341030089,
+        0.0001576071384936,
+        0.00015810690300196,
+        0.00015860795163227,
+        0.00015910316471373
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "41",
+        "seed": "41",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "25"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[1.2588593E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "10000",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

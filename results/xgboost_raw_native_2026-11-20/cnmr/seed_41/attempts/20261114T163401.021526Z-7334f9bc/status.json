@@ -1,0 +1,14 @@
+{
+  "status": "failed",
+  "hostname": "32ead7baba34",
+  "runner_pid": 16240,
+  "modality": "cnmr",
+  "seed": 41,
+  "started": "20261114T163401.030951Z",
+  "training_pid": 16249,
+  "heartbeat_unix": 1794850123.0255673,
+  "exit_code": -15,
+  "finished": "20261116T172855.889194Z",
+  "wall_seconds": 176094.85833143024,
+  "error": "Trainer exited with status -15"
+}

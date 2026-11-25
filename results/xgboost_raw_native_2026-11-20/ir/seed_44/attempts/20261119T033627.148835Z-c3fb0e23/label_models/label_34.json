@@ -1,0 +1,151 @@
+{
+  "label_index": 34,
+  "label_name": "Thial",
+  "best_iteration": 23,
+  "best_score": 0.00064669140589686,
+  "fitted_rounds": 39,
+  "device": "cuda:0",
+  "fit_seconds": 25.565080747997854,
+  "model_sha256": "9396b9344496d7221761d8530ae865833119e663e8c79a8d6651aff91ee8d285",
+  "evals_result": {
+    "validation_0": {
+      "logloss": [
+        0.00066782749436678,
+        0.00066981655279301,
+        0.00066958512348006,
+        0.00066224903857125,
+        0.00066183013110428,
+        0.00066092278924732,
+        0.00065821767879223,
+        0.00065574718670833,
+        0.00065562034175834,
+        0.00065422693386702,
+        0.00065516156471563,
+        0.00065479894534213,
+        0.00065580821519173,
+        0.00065506839136707,
+        0.0006565517619103,
+        0.00065826184689794,
+        0.00065264335661652,
+        0.00065214832293485,
+        0.00065155228402378,
+        0.00064893728739817,
+        0.00065051447706015,
+        0.0006487035646045,
+        0.00064796923331296,
+        0.00064669140589686,
+        0.00064819388550519,
+        0.00064851910810038,
+        0.00064980867500445,
+        0.00065105986358242,
+        0.00065337894053684,
+        0.00065169338868978,
+        0.00065220472085325,
+        0.00065375201270415,
+        0.00065335791660215,
+        0.00065369617817376,
+        0.00065428518413632,
+        0.00065270987179588,
+        0.00065262831042797,
+        0.00065537720240117,
+        0.00065743874948712
+      ]
+    }
+  },
+  "xgboost_config": {
+    "learner": {
+      "generic_param": {
+        "device": "cuda:0",
+        "fail_on_invalid_gpu_id": "0",
+        "n_jobs": "16",
+        "nthread": "16",
+        "random_state": "44",
+        "seed": "44",
+        "seed_per_iteration": "0",
+        "validate_parameters": "1"
+      },
+      "gradient_booster": {
+        "gbtree_model_param": {
+          "num_parallel_tree": "1",
+          "num_trees": "39"
+        },
+        "gbtree_train_param": {
+          "process_type": "default",
+          "tree_method": "hist",
+          "updater": "grow_gpu_hist",
+          "updater_seq": "grow_gpu_hist"
+        },
+        "name": "gbtree",
+        "specified_updater": false,
+        "tree_train_param": {
+          "alpha": "0",
+          "cache_opt": "1",
+          "colsample_bylevel": "1",
+          "colsample_bynode": "1",
+          "colsample_bytree": "0.800000012",
+          "eta": "0.0500000007",
+          "gamma": "0",
+          "grow_policy": "depthwise",
+          "interaction_constraints": "",
+          "lambda": "1",
+          "learning_rate": "0.0500000007",
+          "max_bin": "256",
+          "max_cat_threshold": "64",
+          "max_cat_to_onehot": "4",
+          "max_delta_step": "0",
+          "max_depth": "6",
+          "max_leaves": "0",
+          "min_child_weight": "1",
+          "min_split_loss": "0",
+          "monotone_constraints": "()",
+          "refresh_leaf": "1",
+          "reg_alpha": "0",
+          "reg_lambda": "1",
+          "sampling_method": "uniform",
+          "sketch_ratio": "2",
+          "sparse_threshold": "0.20000000000000001",
+          "subsample": "0.800000012"
+        },
+        "updater": [
+          {
+            "hist_train_param": {
+              "debug_synchronize": "0",
+              "extmem_single_page": "0",
+              "max_cached_hist_node": "18446744073709551615"
+            },
+            "name": "grow_gpu_hist"
+          }
+        ]
+      },
+      "learner_model_param": {
+        "base_score": "[5.979346E-5]",
+        "boost_from_average": "1",
+        "num_class": "0",
+        "num_feature": "1800",
+        "num_target": "1"
+      },
+      "learner_train_param": {
+        "booster": "gbtree",
+        "disable_default_eval_metric": "0",
+        "multi_strategy": "one_output_per_tree",
+        "objective": "binary:logistic"
+      },
+      "metrics": [
+        {
+          "name": "logloss"
+        }
+      ],
+      "objective": {
+        "name": "binary:logistic",
+        "reg_loss_param": {
+          "scale_pos_weight": "1"
+        }
+      }
+    },
+    "version": [
+      3,
+      1,
+      3
+    ]
+  }
+}

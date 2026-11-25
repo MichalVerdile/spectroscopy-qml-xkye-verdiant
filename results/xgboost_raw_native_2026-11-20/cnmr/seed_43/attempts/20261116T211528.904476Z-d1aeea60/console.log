@@ -1,0 +1,87 @@
+DATA_PREPARATION_START cyclic GC deferred until fitting
+
+============================================================
+Loading data for: c_nmr_spectra
+============================================================
+Loaded cached XGBoost dataset from /root/runpod-work/cache/shared_cnmr_len10000_5cd5660dd464df37.npz
+Total samples loaded: 794403
+Data loading time: 96.58s
+
+============================================================
+Training XGBoost model for: c_nmr_spectra column: c_nmr_spectra
+============================================================
+Timeout (0:02:00)!
+Thread 0x000075dc91ca1080 (most recent call first):
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/_core/shape_base.py", line 465 in stack
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 538 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Input shape: (794403, 10000)
+Target shape: (794403, 37)
+Number of functional groups: 37
+Initial split: Train-full=714962 90%, Test=79441 10%
+Training without K-Fold, matching CNN original mode...
+Train size: 635521, Validation size: 79441
+DATA_PREPARATION_FINISHED cyclic GC restored
+LABEL_START index=0 time=20261116T211855.200216Z
+LABEL_FINISHED index=0 best_iteration=283 device=cuda:0
+LABEL_START index=1 time=20261116T212025.893206Z
+LABEL_FINISHED index=1 best_iteration=561 device=cuda:0
+LABEL_START index=2 time=20261116T212222.304874Z
+LABEL_FINISHED index=2 best_iteration=10283 device=cuda:0
+LABEL_START index=3 time=20261116T213528.839091Z
+LABEL_FINISHED index=3 best_iteration=725 device=cuda:0
+LABEL_START index=4 time=20261116T213728.799107Z
+LABEL_FINISHED index=4 best_iteration=357 device=cuda:0
+LABEL_START index=5 time=20261116T213904.530049Z
+LABEL_FINISHED index=5 best_iteration=7676 device=cuda:0
+LABEL_START index=6 time=20261116T214904.393106Z
+LABEL_FINISHED index=6 best_iteration=1583 device=cuda:0
+LABEL_START index=7 time=20261116T215201.255438Z
+LABEL_FINISHED index=7 best_iteration=9483 device=cuda:0
+LABEL_START index=8 time=20261116T220403.770691Z
+LABEL_FINISHED index=8 best_iteration=11770 device=cuda:0
+LABEL_START index=9 time=20261116T221847.128357Z
+LABEL_FINISHED index=9 best_iteration=3936 device=cuda:0
+LABEL_START index=10 time=20261116T222436.788435Z
+LABEL_FINISHED index=10 best_iteration=410 device=cuda:0
+LABEL_START index=11 time=20261116T222616.431103Z
+LABEL_FINISHED index=11 best_iteration=1862 device=cuda:0
+LABEL_START index=12 time=20261116T222934.541122Z
+LABEL_FINISHED index=12 best_iteration=3915 device=cuda:0
+LABEL_START index=13 time=20261116T223512.843888Z
+LABEL_FINISHED index=13 best_iteration=1651 device=cuda:0
+LABEL_START index=14 time=20261116T223821.169107Z
+LABEL_FINISHED index=14 best_iteration=477 device=cuda:0
+LABEL_START index=15 time=20261116T224003.472991Z
+LABEL_FINISHED index=15 best_iteration=4076 device=cuda:0
+LABEL_START index=16 time=20261116T224554.482590Z
+LABEL_FINISHED index=16 best_iteration=7065 device=cuda:0
+LABEL_START index=17 time=20261116T225521.603714Z
+LABEL_FINISHED index=17 best_iteration=10858 device=cuda:0
+LABEL_START index=18 time=20261116T230922.094701Z
+LABEL_FINISHED index=18 best_iteration=1479 device=cuda:0
+LABEL_START index=19 time=20261116T231215.985250Z
+LABEL_FINISHED index=19 best_iteration=1514 device=cuda:0
+LABEL_START index=20 time=20261116T231511.228593Z
+LABEL_FINISHED index=20 best_iteration=1344 device=cuda:0
+LABEL_START index=21 time=20261116T231758.089721Z
+LABEL_FINISHED index=21 best_iteration=959 device=cuda:0
+LABEL_START index=22 time=20261116T232018.016344Z
+LABEL_FINISHED index=22 best_iteration=365 device=cuda:0
+LABEL_START index=23 time=20261116T232153.991552Z
+LABEL_FINISHED index=23 best_iteration=272 device=cuda:0
+LABEL_START index=24 time=20261116T232324.085513Z
+LABEL_FINISHED index=24 best_iteration=1360 device=cuda:0
+LABEL_START index=25 time=20261116T232604.890554Z
+LABEL_FINISHED index=25 best_iteration=4681 device=cuda:0
+LABEL_START index=26 time=20261116T233247.217087Z
+LABEL_FINISHED index=26 best_iteration=3015 device=cuda:0
+LABEL_START index=27 time=20261116T233731.904707Z
+LABEL_FINISHED index=27 best_iteration=161 device=cuda:0
+LABEL_START index=28 time=20261116T233850.938613Z
+LABEL_FINISHED index=28 best_iteration=9148 device=cuda:0
+LABEL_START index=29 time=20261116T235028.325642Z

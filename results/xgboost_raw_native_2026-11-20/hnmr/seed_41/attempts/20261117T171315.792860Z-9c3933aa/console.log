@@ -1,0 +1,658 @@
+DATA_PREPARATION_START cyclic GC deferred until fitting
+
+============================================================
+Loading data for: h_nmr_spectra
+============================================================
+Shared preprocessing: resample=linear,smooth=none,repr=intensity,norm=none
+Found 245 parquet files
+Loading file 1/245: aligned_chunk_0.parquet... [3235 samples]
+Loading file 2/245: aligned_chunk_1.parquet... [3273 samples]
+Loading file 3/245: aligned_chunk_10.parquet... [3244 samples]
+Loading file 4/245: aligned_chunk_100.parquet... [3216 samples]
+Loading file 5/245: aligned_chunk_101.parquet... [3215 samples]
+Loading file 6/245: aligned_chunk_102.parquet... [3253 samples]
+Loading file 7/245: aligned_chunk_103.parquet... [3275 samples]
+Loading file 8/245: aligned_chunk_104.parquet... [3244 samples]
+Loading file 9/245: aligned_chunk_105.parquet... [3258 samples]
+Loading file 10/245: aligned_chunk_106.parquet... [3258 samples]
+Loading file 11/245: aligned_chunk_107.parquet... [3261 samples]
+Loading file 12/245: aligned_chunk_108.parquet... [3227 samples]
+Loading file 13/245: aligned_chunk_109.parquet... [3252 samples]
+Loading file 14/245: aligned_chunk_11.parquet... [3270 samples]
+Loading file 15/245: aligned_chunk_110.parquet... [3258 samples]
+Loading file 16/245: aligned_chunk_111.parquet... [3210 samples]
+Loading file 17/245: aligned_chunk_112.parquet... [3253 samples]
+Loading file 18/245: aligned_chunk_113.parquet... [3259 samples]
+Loading file 19/245: aligned_chunk_114.parquet... [3261 samples]
+Loading file 20/245: aligned_chunk_115.parquet... [3240 samples]
+Loading file 21/245: aligned_chunk_116.parquet... [3202 samples]
+Loading file 22/245: aligned_chunk_117.parquet... [3221 samples]
+Loading file 23/245: aligned_chunk_118.parquet... [3239 samples]
+Loading file 24/245: aligned_chunk_119.parquet... [3295 samples]
+Loading file 25/245: aligned_chunk_12.parquet... [3249 samples]
+Loading file 26/245: aligned_chunk_120.parquet... [3217 samples]
+Loading file 27/245: aligned_chunk_121.parquet... [3276 samples]
+Loading file 28/245: aligned_chunk_122.parquet... [3273 samples]
+Loading file 29/245: aligned_chunk_123.parquet... [3232 samples]
+Loading file 30/245: aligned_chunk_124.parquet... [3231 samples]
+Loading file 31/245: aligned_chunk_125.parquet... [3262 samples]
+Loading file 32/245: aligned_chunk_126.parquet... [3286 samples]
+Loading file 33/245: aligned_chunk_127.parquet... [3273 samples]
+Loading file 34/245: aligned_chunk_128.parquet... [3251 samples]
+Loading file 35/245: aligned_chunk_129.parquet... [3214 samples]
+Loading file 36/245: aligned_chunk_13.parquet... [3243 samples]
+Loading file 37/245: aligned_chunk_130.parquet... [3238 samples]
+Loading file 38/245: aligned_chunk_131.parquet... [3179 samples]
+Loading file 39/245: aligned_chunk_132.parquet... [3227 samples]
+Loading file 40/245: aligned_chunk_133.parquet... [3258 samples]
+Loading file 41/245: aligned_chunk_134.parquet... [3232 samples]
+Loading file 42/245: aligned_chunk_135.parquet... [3258 samples]
+Loading file 43/245: aligned_chunk_136.parquet... [3205 samples]
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 81 in match_group
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 105 in get_functional_groups
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 373 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Loading file 44/245: aligned_chunk_137.parquet... [3223 samples]
+Loading file 45/245: aligned_chunk_138.parquet... [3242 samples]
+Loading file 46/245: aligned_chunk_139.parquet... [3256 samples]
+Loading file 47/245: aligned_chunk_14.parquet... [3239 samples]
+Loading file 48/245: aligned_chunk_140.parquet... [3168 samples]
+Loading file 49/245: aligned_chunk_141.parquet... [3218 samples]
+Loading file 50/245: aligned_chunk_142.parquet... [3264 samples]
+Loading file 51/245: aligned_chunk_143.parquet... [3274 samples]
+Loading file 52/245: aligned_chunk_144.parquet... [3268 samples]
+Loading file 53/245: aligned_chunk_145.parquet... [3268 samples]
+Loading file 54/245: aligned_chunk_146.parquet... [3309 samples]
+Loading file 55/245: aligned_chunk_147.parquet... [3281 samples]
+Loading file 56/245: aligned_chunk_148.parquet... [3231 samples]
+Loading file 57/245: aligned_chunk_149.parquet... [3227 samples]
+Loading file 58/245: aligned_chunk_15.parquet... [3204 samples]
+Loading file 59/245: aligned_chunk_150.parquet... [3208 samples]
+Loading file 60/245: aligned_chunk_151.parquet... [3284 samples]
+Loading file 61/245: aligned_chunk_152.parquet... [3194 samples]
+Loading file 62/245: aligned_chunk_153.parquet... [3260 samples]
+Loading file 63/245: aligned_chunk_154.parquet... [3234 samples]
+Loading file 64/245: aligned_chunk_155.parquet... [3187 samples]
+Loading file 65/245: aligned_chunk_156.parquet... [3233 samples]
+Loading file 66/245: aligned_chunk_157.parquet... [3332 samples]
+Loading file 67/245: aligned_chunk_158.parquet... [3288 samples]
+Loading file 68/245: aligned_chunk_159.parquet... [3233 samples]
+Loading file 69/245: aligned_chunk_16.parquet... [3276 samples]
+Loading file 70/245: aligned_chunk_160.parquet... [3271 samples]
+Loading file 71/245: aligned_chunk_161.parquet... [3286 samples]
+Loading file 72/245: aligned_chunk_162.parquet... [3260 samples]
+Loading file 73/245: aligned_chunk_163.parquet... [3245 samples]
+Loading file 74/245: aligned_chunk_164.parquet... [3278 samples]
+Loading file 75/245: aligned_chunk_165.parquet... [3296 samples]
+Loading file 76/245: aligned_chunk_166.parquet... [3244 samples]
+Loading file 77/245: aligned_chunk_167.parquet... [3246 samples]
+Loading file 78/245: aligned_chunk_168.parquet... [3239 samples]
+Loading file 79/245: aligned_chunk_169.parquet... [3207 samples]
+Loading file 80/245: aligned_chunk_17.parquet... [3378 samples]
+Loading file 81/245: aligned_chunk_170.parquet... [3280 samples]
+Loading file 82/245: aligned_chunk_171.parquet... [3237 samples]
+Loading file 83/245: aligned_chunk_172.parquet... [3334 samples]
+Loading file 84/245: aligned_chunk_173.parquet... [3233 samples]
+Loading file 85/245: aligned_chunk_174.parquet... [3265 samples]
+Loading file 86/245: aligned_chunk_175.parquet... [3249 samples]
+Loading file 87/245: aligned_chunk_176.parquet... [3254 samples]
+Loading file 88/245: aligned_chunk_177.parquet... [3231 samples]
+Loading file 89/245: aligned_chunk_178.parquet... [3182 samples]
+Loading file 90/245: aligned_chunk_179.parquet... [3201 samples]
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 81 in match_group
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 103 in get_functional_groups
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 373 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Loading file 91/245: aligned_chunk_18.parquet... [3281 samples]
+Loading file 92/245: aligned_chunk_180.parquet... [3266 samples]
+Loading file 93/245: aligned_chunk_181.parquet... [3209 samples]
+Loading file 94/245: aligned_chunk_182.parquet... [3236 samples]
+Loading file 95/245: aligned_chunk_183.parquet... [3220 samples]
+Loading file 96/245: aligned_chunk_184.parquet... [3268 samples]
+Loading file 97/245: aligned_chunk_185.parquet... [3233 samples]
+Loading file 98/245: aligned_chunk_186.parquet... [3294 samples]
+Loading file 99/245: aligned_chunk_187.parquet... [3283 samples]
+Loading file 100/245: aligned_chunk_188.parquet... [3169 samples]
+Loading file 101/245: aligned_chunk_189.parquet... [3228 samples]
+Loading file 102/245: aligned_chunk_19.parquet... [3262 samples]
+Loading file 103/245: aligned_chunk_190.parquet... [3246 samples]
+Loading file 104/245: aligned_chunk_191.parquet... [3272 samples]
+Loading file 105/245: aligned_chunk_192.parquet... [3218 samples]
+Loading file 106/245: aligned_chunk_193.parquet... [3242 samples]
+Loading file 107/245: aligned_chunk_194.parquet... [3251 samples]
+Loading file 108/245: aligned_chunk_195.parquet... [3218 samples]
+Loading file 109/245: aligned_chunk_196.parquet... [3201 samples]
+Loading file 110/245: aligned_chunk_197.parquet... [3237 samples]
+Loading file 111/245: aligned_chunk_198.parquet... [3214 samples]
+Loading file 112/245: aligned_chunk_199.parquet... [3290 samples]
+Loading file 113/245: aligned_chunk_2.parquet... [3129 samples]
+Loading file 114/245: aligned_chunk_20.parquet... [3254 samples]
+Loading file 115/245: aligned_chunk_200.parquet... [3235 samples]
+Loading file 116/245: aligned_chunk_201.parquet... [3208 samples]
+Loading file 117/245: aligned_chunk_202.parquet... [3243 samples]
+Loading file 118/245: aligned_chunk_203.parquet... [3231 samples]
+Loading file 119/245: aligned_chunk_204.parquet... [3243 samples]
+Loading file 120/245: aligned_chunk_205.parquet... [3254 samples]
+Loading file 121/245: aligned_chunk_206.parquet... [3236 samples]
+Loading file 122/245: aligned_chunk_207.parquet... [3163 samples]
+Loading file 123/245: aligned_chunk_208.parquet... [3287 samples]
+Loading file 124/245: aligned_chunk_209.parquet... [3203 samples]
+Loading file 125/245: aligned_chunk_21.parquet... [3241 samples]
+Loading file 126/245: aligned_chunk_210.parquet... [3242 samples]
+Loading file 127/245: aligned_chunk_211.parquet... [3294 samples]
+Loading file 128/245: aligned_chunk_212.parquet... [3234 samples]
+Loading file 129/245: aligned_chunk_213.parquet... [3268 samples]
+Loading file 130/245: aligned_chunk_214.parquet... [3238 samples]
+Loading file 131/245: aligned_chunk_215.parquet... [3270 samples]
+Loading file 132/245: aligned_chunk_216.parquet... [3246 samples]
+Loading file 133/245: aligned_chunk_217.parquet... [3221 samples]
+Loading file 134/245: aligned_chunk_218.parquet... [3258 samples]
+Loading file 135/245: aligned_chunk_219.parquet... [3230 samples]
+Loading file 136/245: aligned_chunk_22.parquet... [3240 samples]
+Loading file 137/245: aligned_chunk_220.parquet... [3215 samples]
+Loading file 138/245: aligned_chunk_221.parquet... [3236 samples]
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_type_check_impl.py", line 469 in nan_to_num
+  File "/root/spectroscopy-qml/src/spectroscopy_qml/benchmarking/preprocessing.py", line 648 in preprocess_spectra
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 379 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Loading file 139/245: aligned_chunk_222.parquet... [3241 samples]
+Loading file 140/245: aligned_chunk_223.parquet... [3231 samples]
+Loading file 141/245: aligned_chunk_224.parquet... [3260 samples]
+Loading file 142/245: aligned_chunk_225.parquet... [3282 samples]
+Loading file 143/245: aligned_chunk_226.parquet... [3263 samples]
+Loading file 144/245: aligned_chunk_227.parquet... [3210 samples]
+Loading file 145/245: aligned_chunk_228.parquet... [3200 samples]
+Loading file 146/245: aligned_chunk_229.parquet... [3235 samples]
+Loading file 147/245: aligned_chunk_23.parquet... [3296 samples]
+Loading file 148/245: aligned_chunk_230.parquet... [3252 samples]
+Loading file 149/245: aligned_chunk_231.parquet... [3225 samples]
+Loading file 150/245: aligned_chunk_232.parquet... [3272 samples]
+Loading file 151/245: aligned_chunk_233.parquet... [3212 samples]
+Loading file 152/245: aligned_chunk_234.parquet... [3243 samples]
+Loading file 153/245: aligned_chunk_235.parquet... [3246 samples]
+Loading file 154/245: aligned_chunk_236.parquet... [3177 samples]
+Loading file 155/245: aligned_chunk_237.parquet... [3243 samples]
+Loading file 156/245: aligned_chunk_238.parquet... [3201 samples]
+Loading file 157/245: aligned_chunk_239.parquet... [3265 samples]
+Loading file 158/245: aligned_chunk_24.parquet... [3195 samples]
+Loading file 159/245: aligned_chunk_240.parquet... [3278 samples]
+Loading file 160/245: aligned_chunk_241.parquet... [3223 samples]
+Loading file 161/245: aligned_chunk_242.parquet... [3262 samples]
+Loading file 162/245: aligned_chunk_243.parquet... [3236 samples]
+Loading file 163/245: aligned_chunk_244.parquet... [3201 samples]
+Loading file 164/245: aligned_chunk_25.parquet... [3260 samples]
+Loading file 165/245: aligned_chunk_26.parquet... [3245 samples]
+Loading file 166/245: aligned_chunk_27.parquet... [3241 samples]
+Loading file 167/245: aligned_chunk_28.parquet... [3329 samples]
+Loading file 168/245: aligned_chunk_29.parquet... [3290 samples]
+Loading file 169/245: aligned_chunk_3.parquet... [3226 samples]
+Loading file 170/245: aligned_chunk_30.parquet... [3275 samples]
+Loading file 171/245: aligned_chunk_31.parquet... [3228 samples]
+Loading file 172/245: aligned_chunk_32.parquet... [3284 samples]
+Loading file 173/245: aligned_chunk_33.parquet... [3296 samples]
+Loading file 174/245: aligned_chunk_34.parquet... [3267 samples]
+Loading file 175/245: aligned_chunk_35.parquet... [3246 samples]
+Loading file 176/245: aligned_chunk_36.parquet... [3216 samples]
+Loading file 177/245: aligned_chunk_37.parquet... [3225 samples]
+Loading file 178/245: aligned_chunk_38.parquet... [3260 samples]
+Loading file 179/245: aligned_chunk_39.parquet... [3192 samples]
+Loading file 180/245: aligned_chunk_4.parquet... [3280 samples]
+Loading file 181/245: aligned_chunk_40.parquet... [3316 samples]
+Loading file 182/245: aligned_chunk_41.parquet... [3211 samples]
+Loading file 183/245: aligned_chunk_42.parquet... [3174 samples]
+Loading file 184/245: aligned_chunk_43.parquet... [3146 samples]
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 85 in match_group
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 95 in get_functional_groups
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 373 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Loading file 185/245: aligned_chunk_44.parquet... [3166 samples]
+Loading file 186/245: aligned_chunk_45.parquet... [3269 samples]
+Loading file 187/245: aligned_chunk_46.parquet... [3261 samples]
+Loading file 188/245: aligned_chunk_47.parquet... [3249 samples]
+Loading file 189/245: aligned_chunk_48.parquet... [3177 samples]
+Loading file 190/245: aligned_chunk_49.parquet... [3278 samples]
+Loading file 191/245: aligned_chunk_5.parquet... [3292 samples]
+Loading file 192/245: aligned_chunk_50.parquet... [3194 samples]
+Loading file 193/245: aligned_chunk_51.parquet... [3253 samples]
+Loading file 194/245: aligned_chunk_52.parquet... [3284 samples]
+Loading file 195/245: aligned_chunk_53.parquet... [3214 samples]
+Loading file 196/245: aligned_chunk_54.parquet... [3237 samples]
+Loading file 197/245: aligned_chunk_55.parquet... [3217 samples]
+Loading file 198/245: aligned_chunk_56.parquet... [3205 samples]
+Loading file 199/245: aligned_chunk_57.parquet... [3203 samples]
+Loading file 200/245: aligned_chunk_58.parquet... [3200 samples]
+Loading file 201/245: aligned_chunk_59.parquet... [3344 samples]
+Loading file 202/245: aligned_chunk_6.parquet... [3233 samples]
+Loading file 203/245: aligned_chunk_60.parquet... [3207 samples]
+Loading file 204/245: aligned_chunk_61.parquet... [3246 samples]
+Loading file 205/245: aligned_chunk_62.parquet... [3224 samples]
+Loading file 206/245: aligned_chunk_63.parquet... [3143 samples]
+Loading file 207/245: aligned_chunk_64.parquet... [3229 samples]
+Loading file 208/245: aligned_chunk_65.parquet... [3263 samples]
+Loading file 209/245: aligned_chunk_66.parquet... [3200 samples]
+Loading file 210/245: aligned_chunk_67.parquet... [3297 samples]
+Loading file 211/245: aligned_chunk_68.parquet... [3189 samples]
+Loading file 212/245: aligned_chunk_69.parquet... [3218 samples]
+Loading file 213/245: aligned_chunk_7.parquet... [3211 samples]
+Loading file 214/245: aligned_chunk_70.parquet... [3239 samples]
+Loading file 215/245: aligned_chunk_71.parquet... [3246 samples]
+Loading file 216/245: aligned_chunk_72.parquet... [3213 samples]
+Loading file 217/245: aligned_chunk_73.parquet... [3239 samples]
+Loading file 218/245: aligned_chunk_74.parquet... [3202 samples]
+Loading file 219/245: aligned_chunk_75.parquet... [3222 samples]
+Loading file 220/245: aligned_chunk_76.parquet... [3188 samples]
+Loading file 221/245: aligned_chunk_77.parquet... [3276 samples]
+Loading file 222/245: aligned_chunk_78.parquet... [3244 samples]
+Loading file 223/245: aligned_chunk_79.parquet... [3210 samples]
+Loading file 224/245: aligned_chunk_8.parquet... [3225 samples]
+Loading file 225/245: aligned_chunk_80.parquet... [3236 samples]
+Loading file 226/245: aligned_chunk_81.parquet... [3267 samples]
+Loading file 227/245: aligned_chunk_82.parquet... [3171 samples]
+Loading file 228/245: aligned_chunk_83.parquet... [3327 samples]
+Loading file 229/245: aligned_chunk_84.parquet... [3186 samples]
+Loading file 230/245: aligned_chunk_85.parquet... [3293 samples]
+Loading file 231/245: aligned_chunk_86.parquet... Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/pyarrow/parquet/core.py", line 1427 in __init__
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/pyarrow/parquet/core.py", line 1858 in read_table
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 260 in read
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/pandas/io/parquet.py", line 671 in read_parquet
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 367 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+[3236 samples]
+Loading file 232/245: aligned_chunk_87.parquet... [3259 samples]
+Loading file 233/245: aligned_chunk_88.parquet... [3259 samples]
+Loading file 234/245: aligned_chunk_89.parquet... [3236 samples]
+Loading file 235/245: aligned_chunk_9.parquet... [3222 samples]
+Loading file 236/245: aligned_chunk_90.parquet... [3290 samples]
+Loading file 237/245: aligned_chunk_91.parquet... [3263 samples]
+Loading file 238/245: aligned_chunk_92.parquet... [3242 samples]
+Loading file 239/245: aligned_chunk_93.parquet... [3270 samples]
+Loading file 240/245: aligned_chunk_94.parquet... [3225 samples]
+Loading file 241/245: aligned_chunk_95.parquet... [3255 samples]
+Loading file 242/245: aligned_chunk_96.parquet... [3240 samples]
+Loading file 243/245: aligned_chunk_97.parquet... [3245 samples]
+Loading file 244/245: aligned_chunk_98.parquet... [3255 samples]
+Loading file 245/245: aligned_chunk_99.parquet... [3266 samples]
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/usr/lib/python3.12/zipfile/__init__.py", line 1230 in write
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_format_impl.py", line 777 in write_array
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 786 in _savez
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 753 in savez_compressed
+  File "/root/spectroscopy-qml/src/spectroscopy_qml/benchmarking/preprocessing.py", line 378 in save_preprocessing_cache
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 74 in observed_cache_write
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 399 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/usr/lib/python3.12/zipfile/__init__.py", line 1230 in write
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_format_impl.py", line 777 in write_array
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 786 in _savez
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/numpy/lib/_npyio_impl.py", line 753 in savez_compressed
+  File "/root/spectroscopy-qml/src/spectroscopy_qml/benchmarking/preprocessing.py", line 378 in save_preprocessing_cache
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 74 in observed_cache_write
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 399 in load_data_for_column
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 521 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+CACHE_PERSISTED /workspace/data/cache/shared_hnmr_len10000_40d66613724d2476.npz
+Saved XGBoost dataset cache to /root/runpod-work/cache/shared_hnmr_len10000_40d66613724d2476.npz
+Total samples loaded: 794403
+Data loading time: 943.67s
+
+============================================================
+Training XGBoost model for: h_nmr_spectra column: h_nmr_spectra
+============================================================
+Timeout (0:02:00)!
+Thread 0x00007eb467ad8080 (most recent call first):
+  File "/root/spectroscopy-qml/benchmark/xgb/scripts/run_xgb_baseline.py", line 538 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 788 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1443 in invoke
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1082 in main
+  File "/root/runpod-work/venv/lib/python3.12/site-packages/click/core.py", line 1161 in __call__
+  File "/root/spectroscopy-qml/runpod/observe_training.py", line 153 in <module>
+Input shape: (794403, 10000)
+Target shape: (794403, 37)
+Number of functional groups: 37
+Initial split: Train-full=714946 90%, Test=79457 10%
+Training without K-Fold, matching CNN original mode...
+Train size: 635496, Validation size: 79450
+DATA_PREPARATION_FINISHED cyclic GC restored
+LABEL_START index=0 time=20261117T172940.822894Z
+LABEL_FINISHED index=0 best_iteration=331 device=cuda:0
+LABEL_START index=1 time=20261117T173122.846391Z
+LABEL_FINISHED index=1 best_iteration=532 device=cuda:0
+LABEL_START index=2 time=20261117T173322.238226Z
+LABEL_FINISHED index=2 best_iteration=17992 device=cuda:0
+LABEL_START index=3 time=20261117T175633.772772Z
+LABEL_FINISHED index=3 best_iteration=2669 device=cuda:0
+LABEL_START index=4 time=20261117T180103.403163Z
+LABEL_FINISHED index=4 best_iteration=1473 device=cuda:0
+LABEL_START index=5 time=20261117T180415.085272Z
+LABEL_FINISHED index=5 best_iteration=9821 device=cuda:0
+LABEL_START index=6 time=20261117T181726.328647Z
+LABEL_FINISHED index=6 best_iteration=3147 device=cuda:0
+LABEL_START index=7 time=20261117T182236.377412Z
+LABEL_FINISHED index=7 best_iteration=21910 device=cuda:0
+LABEL_START index=8 time=20261117T185055.778712Z
+LABEL_FINISHED index=8 best_iteration=24131 device=cuda:0
+LABEL_START index=9 time=20261117T192235.492692Z
+LABEL_FINISHED index=9 best_iteration=9903 device=cuda:0
+LABEL_START index=10 time=20261117T193627.830556Z
+LABEL_FINISHED index=10 best_iteration=446 device=cuda:0
+LABEL_START index=11 time=20261117T193824.026121Z
+LABEL_FINISHED index=11 best_iteration=3644 device=cuda:0
+LABEL_START index=12 time=20261117T194412.302995Z
+LABEL_FINISHED index=12 best_iteration=8648 device=cuda:0
+LABEL_START index=13 time=20261117T195553.060962Z
+LABEL_FINISHED index=13 best_iteration=2290 device=cuda:0
+LABEL_START index=14 time=20261117T200001.529073Z
+LABEL_FINISHED index=14 best_iteration=746 device=cuda:0
+LABEL_START index=15 time=20261117T200219.269402Z
+LABEL_FINISHED index=15 best_iteration=9702 device=cuda:0
+LABEL_START index=16 time=20261117T201612.161807Z
+LABEL_FINISHED index=16 best_iteration=20107 device=cuda:0
+LABEL_START index=17 time=20261117T204305.984329Z
+LABEL_FINISHED index=17 best_iteration=21823 device=cuda:0
+LABEL_START index=18 time=20261117T211102.291532Z
+LABEL_FINISHED index=18 best_iteration=2230 device=cuda:0
+LABEL_START index=19 time=20261117T211500.324337Z
+LABEL_FINISHED index=19 best_iteration=1596 device=cuda:0
+LABEL_START index=20 time=20261117T211814.653784Z
+LABEL_FINISHED index=20 best_iteration=2957 device=cuda:0
+LABEL_START index=21 time=20261117T212305.135360Z
+LABEL_FINISHED index=21 best_iteration=1441 device=cuda:0
+LABEL_START index=22 time=20261117T212608.484719Z
+LABEL_FINISHED index=22 best_iteration=308 device=cuda:0
+LABEL_START index=23 time=20261117T212746.763678Z
+LABEL_FINISHED index=23 best_iteration=334 device=cuda:0
+LABEL_START index=24 time=20261117T212928.098050Z
+LABEL_FINISHED index=24 best_iteration=9419 device=cuda:0
+LABEL_START index=25 time=20261117T214214.175548Z
+LABEL_FINISHED index=25 best_iteration=6621 device=cuda:0
+LABEL_START index=26 time=20261117T215208.519146Z
+LABEL_FINISHED index=26 best_iteration=6312 device=cuda:0
+LABEL_START index=27 time=20261117T220111.532111Z
+LABEL_FINISHED index=27 best_iteration=266 device=cuda:0
+LABEL_START index=28 time=20261117T220247.658153Z
+LABEL_FINISHED index=28 best_iteration=14385 device=cuda:0
+LABEL_START index=29 time=20261117T222132.946976Z
+LABEL_FINISHED index=29 best_iteration=6030 device=cuda:0
+LABEL_START index=30 time=20261117T223020.716391Z
+LABEL_FINISHED index=30 best_iteration=1390 device=cuda:0
+LABEL_START index=31 time=20261117T223320.246862Z
+LABEL_FINISHED index=31 best_iteration=3110 device=cuda:0
+LABEL_START index=32 time=20261117T223831.370472Z
+LABEL_FINISHED index=32 best_iteration=0 device=cuda:0
+LABEL_START index=33 time=20261117T223942.508320Z
+LABEL_FINISHED index=33 best_iteration=1355 device=cuda:0
+LABEL_START index=34 time=20261117T224240.821389Z
+LABEL_FINISHED index=34 best_iteration=107 device=cuda:0
+LABEL_START index=35 time=20261117T224400.480247Z
+LABEL_FINISHED index=35 best_iteration=2061 device=cuda:0
+LABEL_START index=36 time=20261117T224749.348435Z
+LABEL_FINISHED index=36 best_iteration=610 device=cuda:0
+Logging learning curve every 20 boosting step(s)...
+EVAL_START split=train rows=635496 points=1208 batches=3
+/root/runpod-work/venv/lib/python3.12/site-packages/xgboost/core.py:774: UserWarning: [22:49:54] WARNING: /workspace/src/common/error_msg.cc:62: Falling back to prediction using DMatrix due to mismatched devices. This might lead to higher memory usage and slower performance. XGBoost is running on: cuda:0, while the input data is on: cpu.
+Potential solutions:
+- Use a data structure that matches the device ordinal in the booster.
+- Set the device for booster before call to inplace_predict.
+
+This warning will only be shown once.
+
+  return func(**kwargs)
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=6380/18008 elapsed=20.1s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=10220/18008 elapsed=40.1s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=13040/18008 elapsed=60.2s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=15320/18008 elapsed=80.2s
+EVAL_PROGRESS split=train batch=1/3 label=3/37 round=17280/18008 elapsed=100.4s
+EVAL_PROGRESS split=train batch=1/3 label=6/37 round=4700/9837 elapsed=120.4s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=960/21926 elapsed=140.4s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=7240/21926 elapsed=160.5s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=10700/21926 elapsed=180.6s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=13400/21926 elapsed=200.7s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=15660/21926 elapsed=220.7s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=17680/21926 elapsed=240.8s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=19660/21926 elapsed=260.9s
+EVAL_PROGRESS split=train batch=1/3 label=8/37 round=21560/21926 elapsed=281.0s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=6400/24147 elapsed=301.0s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=10060/24147 elapsed=321.1s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=12740/24147 elapsed=341.2s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=15000/24147 elapsed=361.3s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=16960/24147 elapsed=381.4s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=18760/24147 elapsed=401.5s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=20400/24147 elapsed=421.7s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=21860/24147 elapsed=441.8s
+EVAL_PROGRESS split=train batch=1/3 label=9/37 round=23460/24147 elapsed=461.9s
+EVAL_PROGRESS split=train batch=1/3 label=10/37 round=5160/9919 elapsed=481.9s
+EVAL_PROGRESS split=train batch=1/3 label=13/37 round=1880/8664 elapsed=502.0s
+EVAL_PROGRESS split=train batch=1/3 label=13/37 round=7480/8664 elapsed=522.0s
+EVAL_PROGRESS split=train batch=1/3 label=16/37 round=6400/9718 elapsed=542.1s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=4780/20123 elapsed=562.2s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=9320/20123 elapsed=582.2s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=12600/20123 elapsed=602.2s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=15180/20123 elapsed=622.2s
+EVAL_PROGRESS split=train batch=1/3 label=17/37 round=17680/20123 elapsed=642.4s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=4520/21839 elapsed=662.4s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=8940/21839 elapsed=682.5s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=11880/21839 elapsed=702.7s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=14200/21839 elapsed=722.7s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=16160/21839 elapsed=742.7s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=17880/21839 elapsed=762.8s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=19500/21839 elapsed=782.9s
+EVAL_PROGRESS split=train batch=1/3 label=18/37 round=20980/21839 elapsed=803.0s
+EVAL_PROGRESS split=train batch=1/3 label=25/37 round=2900/9435 elapsed=823.0s
+EVAL_PROGRESS split=train batch=1/3 label=25/37 round=8620/9435 elapsed=843.0s
+EVAL_PROGRESS split=train batch=1/3 label=27/37 round=2480/6328 elapsed=863.0s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=5240/14401 elapsed=883.1s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=9480/14401 elapsed=903.1s
+EVAL_PROGRESS split=train batch=1/3 label=29/37 round=12500/14401 elapsed=923.2s
+EVAL_PROGRESS split=train batch=1/3 label=30/37 round=4160/6046 elapsed=943.2s
+EVAL_BATCH_FINISHED split=train batch=1/3 elapsed=949.0s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=5720/18008 elapsed=963.2s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=9700/18008 elapsed=983.3s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=12440/18008 elapsed=1003.3s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=14700/18008 elapsed=1023.5s
+EVAL_PROGRESS split=train batch=2/3 label=3/37 round=16640/18008 elapsed=1043.7s
+EVAL_PROGRESS split=train batch=2/3 label=6/37 round=1200/9837 elapsed=1063.7s
+EVAL_PROGRESS split=train batch=2/3 label=6/37 round=8780/9837 elapsed=1083.7s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=6300/21926 elapsed=1103.8s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=10120/21926 elapsed=1123.8s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=12940/21926 elapsed=1143.9s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=15300/21926 elapsed=1163.9s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=17460/21926 elapsed=1184.0s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=19420/21926 elapsed=1204.2s
+EVAL_PROGRESS split=train batch=2/3 label=8/37 round=21420/21926 elapsed=1224.2s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=6000/24147 elapsed=1244.3s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=9880/24147 elapsed=1264.3s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=12680/24147 elapsed=1284.4s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=14940/24147 elapsed=1304.5s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=16900/24147 elapsed=1324.6s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=18640/24147 elapsed=1344.7s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=20220/24147 elapsed=1364.9s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=21820/24147 elapsed=1385.0s
+EVAL_PROGRESS split=train batch=2/3 label=9/37 round=23580/24147 elapsed=1405.0s
+EVAL_PROGRESS split=train batch=2/3 label=10/37 round=6180/9919 elapsed=1425.0s
+EVAL_PROGRESS split=train batch=2/3 label=13/37 round=3480/8664 elapsed=1445.1s
+EVAL_PROGRESS split=train batch=2/3 label=13/37 round=8620/8664 elapsed=1465.1s
+EVAL_PROGRESS split=train batch=2/3 label=16/37 round=7640/9718 elapsed=1485.2s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=5720/20123 elapsed=1505.2s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=9520/20123 elapsed=1525.2s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=12620/20123 elapsed=1545.3s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=15440/20123 elapsed=1565.5s
+EVAL_PROGRESS split=train batch=2/3 label=17/37 round=18020/20123 elapsed=1585.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=2960/21839 elapsed=1605.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=8160/21839 elapsed=1625.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=11300/21839 elapsed=1645.6s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=13700/21839 elapsed=1665.7s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=15740/21839 elapsed=1685.8s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=17520/21839 elapsed=1705.9s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=19180/21839 elapsed=1726.1s
+EVAL_PROGRESS split=train batch=2/3 label=18/37 round=20720/21839 elapsed=1746.1s
+EVAL_PROGRESS split=train batch=2/3 label=25/37 round=1340/9435 elapsed=1766.2s
+EVAL_PROGRESS split=train batch=2/3 label=25/37 round=8180/9435 elapsed=1786.2s
+EVAL_PROGRESS split=train batch=2/3 label=27/37 round=1500/6328 elapsed=1806.2s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=4920/14401 elapsed=1826.2s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=9280/14401 elapsed=1846.2s
+EVAL_PROGRESS split=train batch=2/3 label=29/37 round=12320/14401 elapsed=1866.3s
+EVAL_PROGRESS split=train batch=2/3 label=30/37 round=3500/6046 elapsed=1886.3s
+EVAL_BATCH_FINISHED split=train batch=2/3 elapsed=1892.6s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=5460/18008 elapsed=1906.3s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=9500/18008 elapsed=1926.4s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=12360/18008 elapsed=1946.5s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=14640/18008 elapsed=1966.5s
+EVAL_PROGRESS split=train batch=3/3 label=3/37 round=16620/18008 elapsed=1986.6s
+EVAL_PROGRESS split=train batch=3/3 label=6/37 round=2020/9837 elapsed=2006.6s
+EVAL_PROGRESS split=train batch=3/3 label=6/37 round=9360/9837 elapsed=2026.6s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=6640/21926 elapsed=2046.6s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=10340/21926 elapsed=2066.7s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=13080/21926 elapsed=2086.7s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=15380/21926 elapsed=2106.8s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=17540/21926 elapsed=2126.9s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=19580/21926 elapsed=2147.0s
+EVAL_PROGRESS split=train batch=3/3 label=8/37 round=21660/21926 elapsed=2167.1s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=6460/24147 elapsed=2187.1s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=10180/24147 elapsed=2207.2s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=12900/24147 elapsed=2227.3s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=15160/24147 elapsed=2247.4s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=17060/24147 elapsed=2267.5s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=18860/24147 elapsed=2287.5s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=20660/24147 elapsed=2307.8s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=22300/24147 elapsed=2327.9s
+EVAL_PROGRESS split=train batch=3/3 label=9/37 round=24100/24147 elapsed=2348.1s
+EVAL_PROGRESS split=train batch=3/3 label=10/37 round=7800/9919 elapsed=2368.2s
+EVAL_PROGRESS split=train batch=3/3 label=13/37 round=5540/8664 elapsed=2388.2s
+EVAL_PROGRESS split=train batch=3/3 label=16/37 round=3240/9718 elapsed=2408.2s
+EVAL_PROGRESS split=train batch=3/3 label=16/37 round=9160/9718 elapsed=2428.3s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=6880/20123 elapsed=2448.4s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=10560/20123 elapsed=2468.4s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=13480/20123 elapsed=2488.5s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=16280/20123 elapsed=2508.6s
+EVAL_PROGRESS split=train batch=3/3 label=17/37 round=19160/20123 elapsed=2528.8s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=6040/21839 elapsed=2548.8s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=9820/21839 elapsed=2568.9s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=12580/21839 elapsed=2589.0s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=14800/21839 elapsed=2609.2s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=16700/21839 elapsed=2629.2s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=18440/21839 elapsed=2649.3s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=20020/21839 elapsed=2669.5s
+EVAL_PROGRESS split=train batch=3/3 label=18/37 round=21520/21839 elapsed=2689.8s
+EVAL_PROGRESS split=train batch=3/3 label=25/37 round=5920/9435 elapsed=2709.9s
+EVAL_PROGRESS split=train batch=3/3 label=26/37 round=3700/6637 elapsed=2729.9s
+EVAL_PROGRESS split=train batch=3/3 label=27/37 round=5700/6328 elapsed=2749.9s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=7140/14401 elapsed=2769.9s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=10720/14401 elapsed=2790.0s
+EVAL_PROGRESS split=train batch=3/3 label=29/37 round=13520/14401 elapsed=2810.0s
+EVAL_BATCH_FINISHED split=train batch=3/3 elapsed=2827.4s
+EVAL_FINISHED split=train seconds=2827.40
+EVAL_START split=validation rows=79450 points=1208 batches=1
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=7160/18008 elapsed=20.1s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=10720/18008 elapsed=40.1s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=13420/18008 elapsed=60.2s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=15620/18008 elapsed=80.4s
+EVAL_PROGRESS split=validation batch=1/1 label=3/37 round=17500/18008 elapsed=100.5s
+EVAL_PROGRESS split=validation batch=1/1 label=6/37 round=7900/9837 elapsed=120.6s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=6200/21926 elapsed=140.6s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=10220/21926 elapsed=160.7s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=13100/21926 elapsed=180.7s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=15340/21926 elapsed=200.9s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=17380/21926 elapsed=220.9s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=19280/21926 elapsed=241.1s
+EVAL_PROGRESS split=validation batch=1/1 label=8/37 round=20940/21926 elapsed=261.2s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=4100/24147 elapsed=281.2s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=8880/24147 elapsed=301.3s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=11980/24147 elapsed=321.4s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=14400/24147 elapsed=341.4s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=16460/24147 elapsed=361.6s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=18260/24147 elapsed=381.8s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=19940/24147 elapsed=401.8s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=21500/24147 elapsed=421.9s
+EVAL_PROGRESS split=validation batch=1/1 label=9/37 round=22960/24147 elapsed=442.0s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=2120/9919 elapsed=462.0s
+EVAL_PROGRESS split=validation batch=1/1 label=10/37 round=9180/9919 elapsed=482.0s
+EVAL_PROGRESS split=validation batch=1/1 label=13/37 round=8240/8664 elapsed=502.0s
+EVAL_PROGRESS split=validation batch=1/1 label=16/37 round=9060/9718 elapsed=522.1s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=7280/20123 elapsed=542.1s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=10980/20123 elapsed=562.1s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=13680/20123 elapsed=582.1s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=15900/20123 elapsed=602.1s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=17920/20123 elapsed=622.4s
+EVAL_PROGRESS split=validation batch=1/1 label=17/37 round=19800/20123 elapsed=642.5s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=6840/21839 elapsed=662.5s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=10400/21839 elapsed=682.6s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=13060/21839 elapsed=702.7s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=15220/21839 elapsed=722.7s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=17100/21839 elapsed=742.7s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=18800/21839 elapsed=762.8s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=20360/21839 elapsed=782.9s
+EVAL_PROGRESS split=validation batch=1/1 label=18/37 round=21820/21839 elapsed=803.2s
+EVAL_PROGRESS split=validation batch=1/1 label=25/37 round=9435/9435 elapsed=823.3s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=6260/14401 elapsed=843.3s
+EVAL_PROGRESS split=validation batch=1/1 label=29/37 round=11180/14401 elapsed=863.3s
+EVAL_PROGRESS split=validation batch=1/1 label=30/37 round=2420/6046 elapsed=883.3s
+EVAL_BATCH_FINISHED split=validation batch=1/1 elapsed=887.4s
+EVAL_FINISHED split=validation seconds=887.40
+EVAL_START split=test rows=79457 points=0 batches=1
+EVAL_BATCH_FINISHED split=test batch=1/1 elapsed=10.8s
+EVAL_FINISHED split=test seconds=10.76
+
+============================================================
+FINAL RESULTS for h_nmr_spectra:
+Train F1 Micro: 0.9787
+Train F1 Macro: 0.7725
+Validation F1 Micro: 0.8901
+Validation F1 Macro: 0.5597
+Test F1 Micro: 0.8893
+Test F1 Macro: 0.5612
+Fit time: 19209.08s
+Test prediction time: 10.76s
+============================================================
+
+Results saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_41/attempts/20261117T171315.792860Z-9c3933aa/artifacts/hnmr/original/results.pickle
+XGBoost model saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_41/attempts/20261117T171315.792860Z-9c3933aa/artifacts/hnmr/original/hnmr_xgboost_model.pickle
+Training logs saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_41/attempts/20261117T171315.792860Z-9c3933aa/artifacts/hnmr/original/training_logs.csv
+
+Combined training logs saved to: /workspace/experiments/xgboost_raw_native/hnmr/seed_41/attempts/20261117T171315.792860Z-9c3933aa/artifacts/training_logs_all_columns.csv
